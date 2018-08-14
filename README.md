@@ -1,0 +1,51 @@
+CyHy Reports
+=============
+
+This package is used to generate CyHy reports and scorecards.  
+
+Installation
+------------
+
+Required third party libraries can be installed using: `pip install -r requirements.txt`
+
+Required configurations:
+Every report generator will read `/etc/cyhy/cyhy.conf` to determine which CyHy database to use.
+
+
+Docker Goodies
+--------------
+Support for Docker has been added.  Note that the container's cyhy user can only write to the mapped home volume, which is the default working directory for all execs.  This is very important because any required input files (e.g. the PREVIOUS_SCORECARD_JSON_FILE for CybEx scorecard creation) must reside in the directory mapped to /home/cyhy.
+
+To build the Docker container for cyhy-reports:
+
+```bash
+docker build -t dhub.ncats.dhs.gov:5001/cyhy-reports .
+```
+
+To generate a CyHy report:
+```bash
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-report [OPTIONS]
+```
+
+To generate a Cyber Exposure (CybEx) scorecard:
+```bash
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-cybex-scorecard [OPTIONS]
+```
+
+<!-- OUTDATED INFO BELOW...
+
+To run the container:
+```bash
+docker run --name cyhy-reports --detach --volume /private/etc/cyhy:/etc/cyhy --volume /tmp/cyhy:/home/cyhy --dns=172.20.11.20 ncats/cyhy-reports
+```
+
+Create aliases to the containers commands:
+```bash
+eval "$(docker exec cyhy-reports getenv)"
+```
+
+To attach a shell:
+```bash
+docker exec -ti cyhy-reports /bin/bash
+``` 
+-->

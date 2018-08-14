@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+#me = os.path.realpath(__file__)
+#myDir = os.path.dirname(me)
+#sys.path.append(os.path.join(myDir, '..', 'cyhy'))
+
+import cyhy_report.m1513_scorecard.generate_m1513_scorecard as generate_m1513_scorecard
+generate_m1513_scorecard.main()

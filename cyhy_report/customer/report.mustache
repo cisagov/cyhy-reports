@@ -1,0 +1,1419 @@
+{{=<< >>=}}
+\documentclass[twoside]{article}
+
+% xetex
+\usepackage{geometry} % full page
+\usepackage{fontspec} % provides font selecting commands
+\usepackage[font=sf]{caption} % change caption font to sans
+\usepackage{titlesec} % control section title fonts
+\usepackage{rotating} % provides text rotation
+\usepackage{color} % provides background colorbox
+\usepackage{layout} % display page dimensions
+\usepackage{datetime} % format dates
+\usepackage[titletoc,toc,title]{appendix}
+\usepackage{booktabs} % nice book tables
+\usepackage[table,cymk]{xcolor} % add color to tables and page background
+\usepackage{todonotes} % development notes
+\usepackage{float} % the H float placement
+\usepackage{longtable} % allows tables to span multiple pages
+\usepackage{pdflscape} % rotation of pdf paper
+\usepackage{multicol} % allows switching column formats without ejecting a page
+\usepackage{dashrule} % draw variety of dashed rules
+\usepackage[autolanguage]{numprint} % prints numbers with a separator every three digits
+\usepackage[rel]{overpic} % typeset over images
+\usepackage[shortcuts]{extdash} % allow hyphenation of hyphenated words look for \-/
+\usepackage{textcomp}
+\usepackage{amssymb} % used for \checkmark symbol
+\usepackage{lpic} % used to put text over title page graphic
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PDF Metadata
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \definecolor{linkblue}{HTML}{145680}
+% \definecolor{midnightblue}{rgb}{0.1, 0.1, 0.44}
+\definecolor{darkcerulean}{rgb}{0.03, 0.27, 0.49}
+\usepackage[pdfauthor={National Cybersecurity Assessments and Technical Services},
+            pdftitle={Cyber Hygiene Assessment for <<&owner.agency.name>>},
+            pdfsubject={Assessment},
+            pdfkeywords={cyhy, cyber, hygiene, security, assessment, dhs, nppd, cs\&c, nccic, ncats, <<&owner.agency.acronym>><<#report_oid>>, oid:<<&report_oid>><</report_oid>>},
+            %pdfproducer={xdvipdfmx},
+            pdfcreator={XeTeX with hyperref},
+			colorlinks=true, linkcolor=black, urlcolor=darkcerulean]{hyperref}
+			%colorlinks=true, linkcolor=darkcerulean, urlcolor=darkcerulean]{hyperref}		% turn linkcolor back on when CYHY-1 is solved
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% URL and Link Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{url} % support for in-document urls
+%\hypersetup{
+    % colorlinks=false,
+    % hide all links by setting them to white
+    % linkbordercolor={1 1 1},
+    % citebordercolor={1 1 1},
+    % urlbordercolor ={1 1 1}
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Links to Appendix Subsections	http://tex.stackexchange.com/questions/149807/autoref-subsections-in-appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\appendixautorefname{Appendix}
+
+% begin appendix autoref patch [\autoref subsections in appendix](http://tex.stackexchange.com/questions/149807/autoref-subsections-in-appendix)
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\hyper@makecurrent}{%
+    \ifx\Hy@param\Hy@chapterstring
+        \let\Hy@param\Hy@chapapp
+    \fi
+}{%
+    \iftoggle{inappendix}{%true-branch
+        % list the names of all sectioning counters here
+        \@checkappendixparam{chapter}%
+        \@checkappendixparam{section}%
+        \@checkappendixparam{subsection}%
+        \@checkappendixparam{subsubsection}%
+        \@checkappendixparam{paragraph}%
+        \@checkappendixparam{subparagraph}%
+    }{}%
+}{}{\errmessage{failed to patch}}
+
+\newcommand*{\@checkappendixparam}[1]{%
+    \def\@checkappendixparamtmp{#1}%
+    \ifx\Hy@param\@checkappendixparamtmp
+        \let\Hy@param\Hy@appendixstring
+    \fi
+}
+\makeatletter
+
+\newtoggle{inappendix}
+\togglefalse{inappendix}
+
+\apptocmd{\appendix}{\toggletrue{inappendix}}{}{\errmessage{failed to patch}}
+\apptocmd{\subappendices}{\toggletrue{inappendix}}{}{\errmessage{failed to patch}}
+% end appendix autoref patch
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Geometry Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\geometry{
+  top=0.75in,
+  inner=0.75in,
+  outer=0.75in,
+  bottom=0.75in,
+  headheight=3ex,
+  headsep=2ex,
+}
+%\geometry{showframe=true}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Header/Footer Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[CO,CE]{\usvardate\formatdate<<&calc.title_date_tex>>}
+% \fancyhead[RO,RE]{\colorbox{black}{\textcolor{tlp-amber}{\TLPFont{TLP:AMBER}}}}
+% \fancyfoot[RO,RE]{\colorbox{black}{\textcolor{tlp-amber}{\TLPFont{TLP:AMBER}}}}
+\fancyfoot[LE,LO] {\thepage}
+\renewcommand{\headrulewidth}{0.0pt}
+\renewcommand{\footrulewidth}{0.0pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Draft Watermark
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<<#draft>>
+\usepackage{draftwatermark}
+\SetWatermarkLightness{0.9}
+\SetWatermarkText{DRAFT}
+<</draft>>
+
+\usepackage{engord}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Date Format Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newdateformat{usvardate}{%
+\monthname[\THEMONTH] \THEDAY, \THEYEAR}
+
+\newdateformat{isodate}{%
+\THEYEAR-\twodigit{\THEMONTH}-\twodigit{\THEDAY}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Color Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Primary Palette
+\definecolor{dhs-blue}{cmyk}{1.0,0.45,0.0,0.37}
+\definecolor{dhs-light-blue}{cmyk}{1.0,0.16,0.0,0.27}
+\definecolor{dhs-gray}{cmyk}{0.0,0.0,0.0,0.28}
+\definecolor{dhs-dark-gray}{cmyk}{0.0,0.0,0.0,0.79}
+\definecolor{dhs-blue-gray}{cmyk}{0.77,0.51,0.34,0.25}
+\definecolor{dhs-white}{cmyk}{0.0,0.0,0.0,0.0}
+%%% Support Palette
+\definecolor{dhs-red}{cmyk}{0.0,1.0,0.79,0.20}
+\definecolor{dhs-green}{cmyk}{0.56,0.0,1.0,0.27}
+%%% Table Colors
+\definecolor{row-gray}{cmyk}{0.0,0.0,0.0,0.15}
+\definecolor{row-light-blue}{cmyk}{0.08,0.0,0.0,0.03}
+%%% Vulnerability Colors
+\definecolor{v-critical}{HTML}{C66270}
+\definecolor{v-high}{HTML}{CF9C66}
+\definecolor{v-medium}{HTML}{CFC666}
+\definecolor{v-low}{HTML}{5C90BA}
+%%% Signal Colors
+\definecolor{v-good}{HTML}{7BBE5E}
+\definecolor{v-bad}{HTML}{C66270}
+%%% TLP Colors - see https://www.us-cert.gov/tlp
+\definecolor{tlp-red}{cmyk}{0.0,1.0,0.79,0.0}
+\definecolor{tlp-amber}{cmyk}{0.0,0.25,1.0,0.0}
+\definecolor{tlp-green}{cmyk}{0.79,0.0,1.0,0.0}
+\definecolor{tlp-white}{cmyk}{0.0,0.0,0.0,0.0}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Attachments Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{attachfile2} % enable attachments to pdfs generated by xelatex
+\attachfilesetup{color = dhs-blue}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Spacing Above/Below Captions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\abovecaptionskip}{0pt}
+\setlength{\belowcaptionskip}{0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Custom Graphics Scaling
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% based on: http://stackoverflow.com/questions/122348/scale-image-down-but-not-up-in-latex
+
+\newlength{\imgwidth}
+
+% #1 - maximum image scale (optional default = 1.0)
+% #2 - image file name (no extension)
+% #3 - caption text
+\newcommand\scalegraphics[3][1.0]{
+    \settowidth{\imgwidth}{\includegraphics[scale=#1]{#2}}
+    \setlength{\imgwidth}{\minof{\imgwidth}{\textwidth}}
+    \includegraphics[width=\imgwidth]{#2}
+	\caption{#3}
+	\label{fig:#2}
+}
+
+\newcommand\scalegraphicsnofig[2][1.0]{
+    \settowidth{\imgwidth}{\includegraphics[scale=#1]{#2}}
+    \setlength{\imgwidth}{\minof{\imgwidth}{\textwidth}}
+    \includegraphics[width=\imgwidth]{#2}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Font Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\defaultfontfeatures{Scale=MatchLowercase}
+\setmainfont[Mapping=tex-text]{Arial}
+%\setsansfont[Mapping=tex-text]{Franklin Gothic Book}
+\setmonofont{Source Code Pro}
+
+% DHS NCCIC Standard Fonts
+\newfontfamily{\ArialFont}{Arial}
+\newfontfamily{\FranklinGothicMediumFont}{Franklin Gothic Medium}
+\newcommand\NCCICCoverTitle{\FranklinGothicMediumFont\fontsize{24pt}{24pt}\selectfont}
+\newcommand\NCCICTitle{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
+\newcommand\NCCICHeadingOne{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
+\newcommand\NCCICHeadingTwo{\FranklinGothicMediumFont\fontsize{14pt}{14pt}\selectfont}
+\newcommand\NCCICHeadingThree{\FranklinGothicMediumFont\fontsize{13pt}{13pt}\slshape\selectfont}	% \slshape gives italics (slanted type)
+\newcommand\NCCICHeadingFour{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\slshape\selectfont}
+\newcommand\NCCICCaption{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\slshape\selectfont}
+
+\newfontfamily{\FranklinGothicBookFont}{Franklin Gothic Book}
+\newcommand\NCCICTitleCoverNumberDate{\FranklinGothicBookFont\fontsize{10pt}{10pt}\selectfont}
+
+\newfontfamily{\FranklinGothicDemiFont}{Franklin Gothic Demi}
+\newcommand\TLPFont{\FranklinGothicDemiFont\fontsize{11pt}{11pt}\selectfont}
+
+% Report Card Fonts and Hashes
+% \newfontfamily{\RCHeadFont}{Avenir Next Condensed Demi Bold}
+% \newfontfamily{\RCSubFont}{Baskerville SemiBold}
+% \newfontfamily{\RCBigNumFont}{Avenir Next Demi Bold}
+% \newfontfamily{\RCSmallNumFont}{Avenir Next Regular}
+\newfontfamily{\RCArrowFont}{Apple SD Gothic Neo}
+\newfontfamily{\RCFlatArrowFont}{Cambria Math}
+
+\newcommand\RCHeadA{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
+\newcommand\RCHeadB{\FranklinGothicMediumFont\fontsize{14pt}{14pt}\selectfont}
+\newcommand\RCSub{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\selectfont}
+\newcommand\RCBigNum{\ArialFont\fontsize{16pt}{16pt}\selectfont}
+\newcommand\RCMediumNum{\ArialFont\fontsize{14pt}{14pt}\selectfont}
+\newcommand\RCSmallNum{\ArialFont\fontsize{10pt}{10pt}\selectfont}
+% \newcommand\RCHeadA{\RCHeadFont\fontsize{28pt}{33.6pt}\selectfont}
+% \newcommand\RCHeadB{\RCHeadFont\fontsize{14pt}{16.8pt}\selectfont}
+% \newcommand\RCSub{\RCSubFont\fontsize{8.5pt}{10.8pt}\selectfont}
+% \newcommand\RCBigNum{\RCBigNumFont\fontsize{18pt}{21.6pt}\selectfont}
+% \newcommand\RCMediumNum{\RCBigNumFont\fontsize{14pt}{16pt}\selectfont}
+% \newcommand\RCSmallNum{\RCSmallNumFont\fontsize{9pt}{10.8pt}\selectfont}
+\newcommand\RCHashDot{\hdashrule[6pt]{\linewidth}{1pt}{1pt}}
+\newcommand\RCHashThick{\hdashrule{\linewidth}{3pt}{}}
+\newcommand\RCUpArrow{\RCArrowFont\fontsize{14pt}{14pt}\selectfont⬆}
+\newcommand\RCDownArrow{\RCArrowFont\fontsize{14pt}{14pt}\selectfont⬇}
+\newcommand\RCFlatArrow{\RCFlatArrowFont\fontsize{14pt}{14pt}\selectfont⬌}
+\newcommand\RCBullet{\RCFlatArrowFont\fontsize{22pt}{22pt}\selectfont•}
+
+% Set formats for each heading level
+\titleformat*{\section}{\NCCICHeadingOne\color{dhs-blue}}
+\titleformat*{\subsection}{\NCCICHeadingTwo\color{dhs-dark-gray}}
+\titleformat*{\subsubsection}{\NCCICHeadingThree\color{dhs-blue}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Graphics Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif, .png}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Paragraph Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% be default the first paragraph of as section is not indented but the remainder are.
+% in this document we want more uniformity.
+% so we could indent the first paragraph using the following line:
+%\usepackage{indentfirst}
+% or we could supress all paragraph indentations and add a line between paragraphs
+\setlength{\parindent}{0pt}
+\addtolength{\parskip}{\baselineskip}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Paragraph Setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% see: http://tex.stackexchange.com/questions/7347/fixed-column-width-table-with-text-left-aligned-in-cells
+\usepackage{array}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+% Allow underscore character to trigger a break between lines, similar to hyphen
+% see: http://tex.stackexchange.com/questions/9937/underscore-makes-text-go-past-end-of-line-into-margins
+\renewcommand\_{\textunderscore\allowbreak}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Write Column Width to Disk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% from: http://tex.stackexchange.com/questions/7201/how-to-write-the-columnwidth-to-an-external-file
+\newdimen\tempcolwidth \tempcolwidth0pt
+\newwrite\widthfile
+\AtBeginDocument{\checkcolwidth}
+\newcommand\checkcolwidth{%
+        \InputIfFileExists{\jobname.width}{}{}%
+        \ifdim\columnwidth=\tempcolwidth\else
+                \openout\widthfile=\jobname.width
+                \write\widthfile{\tempcolwidth=\the\columnwidth}%
+                \closeout\widthfile
+        \fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Hidden Sections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% from: http://tex.stackexchange.com/questions/29261/how-to-suppress-typesetting-of-section-title
+% and http://tex.stackexchange.com/questions/68272/make-section-headings-invisible
+\newcommand{\hiddensection}[1]{%
+  \refstepcounter{section}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+  \sectionmark{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Acronym / Glossary Definitions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[acronym]{glossaries}
+\makeglossaries
+\newacronym{AGENCY}{<<&owner.agency.acronym>>}{<<&owner.agency.name>>}
+\newacronym[description={Department of Homeland Security [\href{https://www.dhs.gov}{https://www.dhs.gov}]}]{DHS}{DHS}{Department of Homeland Security}
+\newacronym[description={National Protection and Programs Directorate [\href{https://www.dhs.gov/national-protection-and-programs-directorate}{https://www.dhs.gov/national-protection-and-programs-directorate}]}]{NPPD}{NPPD}{National Protection and Programs Directorate}
+\newacronym[description={Office of Cybersecurity and Communications [\href{https://www.dhs.gov/office-cybersecurity-and-communications}{https://www.dhs.gov/office-cybersecurity-and-communications}]}]{CSC}{CS\&C}{Office of Cybersecurity and Communications}
+\newacronym{CSV}{CSV}{Comma-Separated Values}
+\newacronym[description={National Cybersecurity and Communications Integration Center [\href{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}]}]{NCCIC}{NCCIC}{National Cybersecurity and Communications Integration Center}
+\newacronym{NCATS}{NCATS}{National Cybersecurity Assessments and Technical Services}
+\newacronym{CyHy}{CyHy}{Cyber Hygiene}
+\newacronym[description={Common Vulnerabilities and Exposures; for more information refer to \href{https://cve.mitre.org/about/faqs.html}{https://cve.mitre.org/about/faqs.html}}]{CVE}{CVE}{Common Vulnerabilities and Exposures}
+\newacronym[description={Common Vulnerability Scoring System; for more information refer to \href{https://www.first.org/cvss/v2}{https://www.first.org/cvss/v2}}]{CVSS}{CVSS}{Common Vulnerability Scoring System}
+\newacronym{DNS}{DNS}{Domain Name Service}
+\newacronym{DNSSEC}{DNSSEC}{Domain Name Service Security Extension}
+\newacronym{FTP}{FTP}{File Transfer Protocol}
+\newacronym{HTTP}{HTTP}{Hypertext Transfer Protocol}
+\newacronym{HTTPS}{HTTPS}{Hypertext Transfer Protocol Secure}
+\newacronym{IP}{IP}{Internet Protocol}
+\newacronym{IT}{IT}{Information Technology}
+\newacronym[description={National Institute of Standards and Technology; for more information refer to \href{http://www.nist.gov}{http://www.nist.gov}}]{NIST}{NIST}{National Institute of Standards and Technology}
+\newacronym[description={National Vulnerability Database; for more information refer to \href{https://nvd.nist.gov}{https://nvd.nist.gov}}]{NVD}{NVD}{National Vulnerability Database}
+\newacronym{OS}{OS}{Operating System}
+\newacronym{POAM}{POA\&M}{Plan Of Action and Milestones}
+\newacronym{RRS}{RRS}{Risk Rating System}
+\newacronym{SMTP}{SMTP}{Simple Mail Transfer Protocol}
+\newacronym{SSH}{SSH}{Secure Shell}
+\newacronym{TCP}{TCP}{Transmission Control Protocol}
+
+\newglossaryentry{active vulnerability}{name={active vulnerability}, plural={active vulnerabilities}, description={A vulnerability that was detected in the most recent scan of a host used for this report}}
+\newglossaryentry{false positive}{name={false positive}, description={Any normal or expected behavior that is identified in this report as a potentially exploitable vulnerability}}
+\newglossaryentry{host}{name={host}, description={A device that has a least one open port/listening service}}
+\newglossaryentry{initial detection}{name={initial detection}, description={The initial point in time when Cyber Hygiene scans identified a vulnerability. This date is used to calculate the vulnerability's age}}
+\newglossaryentry{IP address}{name={IP address}, description={A numerical label that identifies each device using the Internet Protocol to communicate over a network}}
+\newglossaryentry{latest detection}{name={latest detection}, description={The most recent time when Cyber Hygiene scans identified a particular vulnerability}}
+\newglossaryentry{mitigation detection}{name={mitigation detection}, description={The date when a previously identified vulnerability was no longer detected by Cyber Hygiene scans}}
+\newglossaryentry{service}{name={service}, description={An application running at the network application layer that provides communications capabilities across an IP computer network}}
+\newglossaryentry{severity}{name={severity}, description={Please review the following guide for vulnerability severity scoring information: \href{https://www.first.org/cvss/v2/guide}{https://www.first.org/cvss/v2/guide}}}
+\newglossaryentry{vulnerability}{name={vulnerability}, plural={vulnerabilities}, description={A weakness in an information system, system security procedures, internal controls, or implementation that could be exploited by a threat source}}
+\newglossaryentry{vulnerability age}{name={vulnerability age}, description={The time between a vulnerability's initial detection date and its latest detection date}}
+\newglossaryentry{vulnerable host}{name={vulnerable host}, description={A host with at least one vulnerability detected on the most recent scan used for this report}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Front Matter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+	\begin{titlepage}
+		\newgeometry{left=0.1in,right=0.0in,top=0.0in,bottom=0.0in}
+
+		% Fake a header for the title page
+		\vspace*{0.5mm}
+		\begin{minipage}{\textwidth}
+    	\begin{minipage}{.32\linewidth}
+				\ % placeholder for left side of header
+			\end{minipage}
+			\begin{minipage}{.34\linewidth}
+				\ % placeholder for center of header
+			\end{minipage}
+			\begin{minipage}{.33\linewidth}
+				\ % placeholder for right side of header
+			\end{minipage}
+  		\end{minipage}
+
+		\vspace*{1.0in}
+    \hspace*{3.5mm}
+		\begin{lpic}[] {assets/assessment-summary-title}
+      \lbl[tl]{11, 114; {\textcolor{dhs-white}{\NCCICTitle{Cyber Hygiene Assessment}}}}
+			\lbl[tl]{150, 15.3; \colorbox{yellow}{\NCCICTitleCoverNumberDate{CYHY\uppercase{<<&report_oid>>}}}}
+			\lbl[tl]{150, 6.9; \colorbox{yellow}{\NCCICTitleCoverNumberDate{\usvardate\formatdate<<&calc.title_date_tex>>}}}
+		\end{lpic}
+		\\~\\
+    \hspace*{9mm}{\textcolor{dhs-blue}{\NCCICCoverTitle{Cyber Hygiene Assessment\\}}}
+    \hspace*{8.3mm}{\textcolor{dhs-blue}{\NCCICTitle{<<&owner.agency.name>>}}}
+
+		% Fake a footer for the title page
+		\vspace*{1.6in}
+		\begin{minipage}{\textwidth}
+    	\begin{minipage}{.32\linewidth}
+				\hspace*{3mm} \raggedright \includegraphics[height=0.8in]{assets/dhs-nccic-logo}
+			\end{minipage}
+			\begin{minipage}{.34\linewidth}
+				\ % placeholder for center of footer
+			\end{minipage}
+			\begin{minipage}{.33\linewidth}
+				\ % placeholder for right side of footer
+			\end{minipage}
+  	\end{minipage}
+	\end{titlepage}
+\restoregeometry
+
+% \pagecolor{white}
+\tableofcontents
+\listoffigures
+\listoftables
+%\listoftodos
+
+\newpage
+\renewcommand{\footrulewidth}{0.4pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Content Start
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{How To Use This Report}
+\label{sec:how-to-use-this-report}
+Welcome to your \gls{CyHy} report. This document aims to be a comprehensive weekly snapshot of known \glspl{vulnerability} detected on Internet-facing \glspl{host} for \gls{AGENCY}.
+
+You may wonder what you're supposed to do with all this information. While it's not our intent to prescribe to you a particular process for remediating vulnerabilities, we hope you'll use this report to strengthen your security posture. Here's a basic flow:
+
+\begin{enumerate}
+\item Review the \hyperref[sec:report-card]{Cyber Hygiene Report Card} for a high-level overview. This section gives a quick comparison of the problems we find week to week. If this is your first report, you should note that the Report Card will initially lack historical data to make comparisons against, though that data will exist in your next report.
+\item See \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities} for a list of unique vulnerabilities across all the systems we detect problems with. \autoref{app:detailed-findings}: \nameref{app:detailed-findings} provides more information about each vulnerability and all the hosts that we detect are susceptible to a given vulnerability. You should focus on those vulnerabilities rated with the greatest \gls{severity}, as well as those that impact your high-value assets, but don't ignore the medium or low vulnerabilities. Recognize that a vulnerability's rating tends to get worse with time.
+\item If this report is not your first, review \autoref{app:vuln-changes-since-last-report}: \nameref{app:vuln-changes-since-last-report} for a breakdown of all the changes we detected in your scope in the last week.
+\item If you've patched a vulnerability since your last report, verify it's listed here. If it's not present, there may still be an issue. It may also be possible that the issue was fixed after our latest scan, which was on \usvardate\formatdate<<&calc.end_date_tex>>.
+\item For additional analysis, see \autoref{app:attachments}: \nameref{app:attachments}, which provides \gls{CSV} files for all findings, \glspl{service}, hosts, and the scope that we scan.
+\end{enumerate}
+
+You should be aware that Cyber Hygiene does not scan your entire scope (all of the addresses your organization has sent us) every week, but does attempt to scan every \gls{host} each week. For an explanation of how \gls{CyHy} works, see the \nameref{sec:methodology} section.
+
+As you review the report, you may have additional questions. Check out the answers we provide in the \nameref{app:FAQ} section. If you have any additional questions, email us at  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+
+\subsection{<<&owner.agency.acronym>> Points of Contact}
+\label{subsec:points-of-contact}
+\gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, \gls{DHS} requests that you funnel your request through your technical POC(s).
+	\begin{table*}[h!]
+ 		\centering
+ 		\rowcolors{2}{white}{row-gray}
+  		\begin{tabular}{llll}
+	  	\toprule
+	  	 Type & Name & Email Address & Phone Number \\
+	  	\midrule
+      <<#owner.agency.contacts>>
+      <<type>> & <<name>> & \href{mailto:<<email>>}{<<email>>} & <<phone>> \\
+      <</owner.agency.contacts>>
+	  	\bottomrule
+  		\end{tabular}
+	\end{table*}
+
+\newpage
+\hiddensection{Report Card}
+\label{sec:report-card}
+{\RCHeadA\color{dhs-blue} CYBER HYGIENE REPORT CARD}
+\vspace*{0.3in}
+\\
+{\RCHeadB\color{dhs-dark-gray} HIGH LEVEL FINDINGS\\
+\RCHashThick}\\
+\\
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub ADDRESSES OWNED}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&calc.address_count>>}}%
+	<<#calc.address_count_up_flag>>\RCUpArrow<</calc.address_count_up_flag>>%
+	<<#calc.address_count_down_flag>>\RCDownArrow<</calc.address_count_down_flag>>%
+	<<#calc.address_count_flat_flag>>\RCFlatArrow<</calc.address_count_flat_flag>>%
+	\\
+	<<#calc.address_count_up_flag>>{\RCSmallNum \numprint{<<&calc.address_count_up>>} increase}<</calc.address_count_up_flag>>%
+	<<#calc.address_count_down_flag>>{\RCSmallNum \numprint{<<&calc.address_count_down>>} decrease}<</calc.address_count_down_flag>>%
+	<<#calc.address_count_flat_flag>>{\RCSmallNum no change}<</calc.address_count_flat_flag>>\\%
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub ADDRESSES SCANNED}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&calc.addresses_scanned>>}}%
+	<<#calc.addresses_scanned_up_flag>>\RCUpArrow<</calc.addresses_scanned_up_flag>>%
+	<<#calc.addresses_scanned_down_flag>>\RCDownArrow<</calc.addresses_scanned_down_flag>>%
+	<<#calc.addresses_scanned_flat_flag>>\RCFlatArrow<</calc.addresses_scanned_flat_flag>>%
+	\\
+	<<#calc.addresses_scanned_up_flag>>{\RCSmallNum \numprint{<<&calc.addresses_scanned_up>>} increase<</calc.addresses_scanned_up_flag>>%
+	<<#calc.addresses_scanned_down_flag>>{\RCSmallNum \numprint{<<&calc.addresses_scanned_down>>} decrease<</calc.addresses_scanned_down_flag>>%
+	<<#calc.addresses_scanned_flat_flag>>{\RCSmallNum no change<</calc.addresses_scanned_flat_flag>>%
+	\\
+	\numprint{<<&calc.addresses_scanned_percent>>}\% of addresses scanned}
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.48\textwidth}
+	{\RCSub LATEST SCANS}\\[-0.75pt]
+	\RCHashDot\\
+	{\RCSmallNum \textbf{Addresses:} <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
+	{\RCSmallNum \textbf{Vulnerabilities:} <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
+	\vspace*{0.08in}
+	%
+	%
+\end{minipage}%
+
+\vspace*{0.1in}
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub HOSTS}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.host_count>>}}%
+	<<#calc.host_count_up_flag>>\RCUpArrow<</calc.host_count_up_flag>>%
+	<<#calc.host_count_down_flag>>\RCDownArrow<</calc.host_count_down_flag>>%
+	<<#calc.host_count_flat_flag>>\RCFlatArrow<</calc.host_count_flat_flag>>%
+	\\
+	<<#calc.host_count_up_flag>>{\RCSmallNum \numprint{<<&calc.host_count_up>>} increase}<</calc.host_count_up_flag>>%
+	<<#calc.host_count_down_flag>>{\RCSmallNum \numprint{<<&calc.host_count_down>>} decrease}<</calc.host_count_down_flag>>%
+	<<#calc.host_count_flat_flag>>{\RCSmallNum no change}<</calc.host_count_flat_flag>>\\%
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub VULNERABLE HOSTS}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerable_host_count>>}}%
+	<<#calc.vuln_host_count_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_host_count_up_flag>>%
+	<<#calc.vuln_host_count_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_host_count_down_flag>>%
+	<<#calc.vuln_host_count_flat_flag>>\RCFlatArrow<</calc.vuln_host_count_flat_flag>>%
+	\\
+	<<#calc.vuln_host_count_up_flag>>{\RCSmallNum \numprint{<<&calc.vuln_host_count_up>>} increase<</calc.vuln_host_count_up_flag>>%
+	<<#calc.vuln_host_count_down_flag>>{\RCSmallNum \numprint{<<&calc.vuln_host_count_down>>} decrease<</calc.vuln_host_count_down_flag>>%
+	<<#calc.vuln_host_count_flat_flag>>{\RCSmallNum no change<</calc.vuln_host_count_flat_flag>>%
+	\\
+	\color{black}<<&calc.vuln_host_percent>>\% of hosts vulnerable}
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub VULNERABILITIES}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerabilities.total>>}}%
+	<<#calc.vuln_total_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_total_up_flag>>%
+	<<#calc.vuln_total_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_total_down_flag>>%
+	<<#calc.vuln_total_flat_flag>>\RCFlatArrow<</calc.vuln_total_flat_flag>>%
+	\\
+	<<#calc.vuln_total_up_flag>>{\RCSmallNum \numprint{<<&calc.vuln_total_up>>} increase}<</calc.vuln_total_up_flag>>%
+	<<#calc.vuln_total_down_flag>>{\RCSmallNum \numprint{<<&calc.vuln_total_down>>} decrease}<</calc.vuln_total_down_flag>>%
+	<<#calc.vuln_total_flat_flag>>{\RCSmallNum no change}<</calc.vuln_total_flat_flag>>\\%
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\RCSub SERVICES}\\[-3pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.port_count>>}}%
+	<<#calc.port_count_up_flag>>\RCUpArrow<</calc.port_count_up_flag>>%
+	<<#calc.port_count_down_flag>>\RCDownArrow<</calc.port_count_down_flag>>%
+	<<#calc.port_count_flat_flag>>\RCFlatArrow<</calc.port_count_flat_flag>>%
+	\\
+	<<#calc.port_count_up_flag>>{\RCSmallNum \numprint{<<&calc.port_count_up>>} increase}<</calc.port_count_up_flag>>%
+	<<#calc.port_count_down_flag>>{\RCSmallNum \numprint{<<&calc.port_count_down>>} decrease}<</calc.port_count_down_flag>>%
+	<<#calc.port_count_flat_flag>>{\RCSmallNum no change}<</calc.port_count_flat_flag>>\\%
+\end{minipage}%
+\vspace*{0.2in}
+\\
+{\RCHeadB\color{dhs-dark-gray} VULNERABILITIES\\
+\RCHashThick}\\
+\\
+\begin{minipage}[b]{0.2125\textwidth}
+	{\color{v-critical}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub CRITICAL}\\[1pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerabilities.critical>>}}%
+	<<#calc.vuln_critical_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_critical_up_flag>>%
+	<<#calc.vuln_critical_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_critical_down_flag>>%
+	<<#calc.vuln_critical_flat_flag>>\RCFlatArrow<</calc.vuln_critical_flat_flag>>%
+	\\\\
+	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.critical>>} resolved\\
+	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.critical>>} new
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\color{v-high}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub HIGH}\\[1pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerabilities.high>>}}%
+	<<#calc.vuln_high_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_high_up_flag>>%
+	<<#calc.vuln_high_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_high_down_flag>>%
+	<<#calc.vuln_high_flat_flag>>\RCFlatArrow<</calc.vuln_high_flat_flag>>%
+	\\\\
+	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.high>>} resolved\\
+	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.high>>} new
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\color{v-medium}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub MEDIUM}\\[1pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerabilities.medium>>}}%
+	<<#calc.vuln_medium_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_medium_up_flag>>%
+	<<#calc.vuln_medium_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_medium_down_flag>>%
+	<<#calc.vuln_medium_flat_flag>>\RCFlatArrow<</calc.vuln_medium_flat_flag>>%
+	\\\\
+	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.medium>>} resolved\\
+	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.medium>>} new
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.2125\textwidth}
+	{\color{v-low}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub LOW}\\[1pt]
+	\RCHashDot\\
+	{\RCBigNum \numprint{<<&ss0.vulnerabilities.low>>}}%
+	<<#calc.vuln_low_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_low_up_flag>>%
+	<<#calc.vuln_low_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_low_down_flag>>%
+	<<#calc.vuln_low_flat_flag>>\RCFlatArrow<</calc.vuln_low_flat_flag>>%
+	\\\\
+	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.low>>} resolved\\
+	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.low>>} new
+\end{minipage}
+
+\vspace*{0.2in}
+\begin{minipage}[b]{0.48\textwidth}
+	{\RCSub PREVIOUS REPORT}\hfill{\color{v-good}\raisebox{-0.8ex}{\RCBullet}\RCSmallNum resolved}\\
+	\RCHashDot\\
+	\scalegraphicsnofig{report-card-previous}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.48\textwidth}
+	{\RCSub CURRENT REPORT}\hfill{\color{v-bad}\raisebox{-0.8ex}{\RCBullet}\RCSmallNum new}\\
+	\RCHashDot\\
+	\scalegraphicsnofig{report-card-current}
+\end{minipage}
+
+{\RCHeadB\color{dhs-dark-gray} VULNERABILITY RESPONSE TIME <<#calc.ss0_tix_closed_after_date_tex>>(since \usvardate\formatdate<<&calc.ss0_tix_closed_after_date_tex>>)<</calc.ss0_tix_closed_after_date_tex>>\\
+\RCHashThick}\\
+\\
+%\begin{tabular}{@{}lll@{\hspace{2em}}ll@{\hspace{2em}}ll@{\hspace{2em}}ll@{}}
+\begin{tabular}{@{}llp{0.5in}llp{0.5in}llp{0.5in}lll@{}}
+  & \multicolumn{2}{l}{\color{v-critical}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub CRITICAL} & & \multicolumn{2}{l}{\color{v-high}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub HIGH} & & \multicolumn{2}{l}{\color{v-medium}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub MEDIUM} & & \multicolumn{2}{l}{\color{v-low}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub LOW} \\
+  & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} \\
+{\RCSub DAYS TO MITIGATE} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.critical.median>>\numprint{<<&calc.ss0_tix_days_to_close.critical.median>>}<</calc.ss0_tix_days_to_close.critical.median>><<^calc.ss0_tix_days_to_close.critical.median>>\numprint{0}<</calc.ss0_tix_days_to_close.critical.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.critical.max>>\numprint{<<&calc.ss0_tix_days_to_close.critical.max>>}<</calc.ss0_tix_days_to_close.critical.max>><<^calc.ss0_tix_days_to_close.critical.max>>\numprint{0}<</calc.ss0_tix_days_to_close.critical.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.high.median>>\numprint{<<&calc.ss0_tix_days_to_close.high.median>>}<</calc.ss0_tix_days_to_close.high.median>><<^calc.ss0_tix_days_to_close.high.median>>\numprint{0}<</calc.ss0_tix_days_to_close.high.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.high.max>>\numprint{<<&calc.ss0_tix_days_to_close.high.max>>}<</calc.ss0_tix_days_to_close.high.max>><<^calc.ss0_tix_days_to_close.high.max>>\numprint{0}<</calc.ss0_tix_days_to_close.high.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.medium.median>>\numprint{<<&calc.ss0_tix_days_to_close.medium.median>>}<</calc.ss0_tix_days_to_close.medium.median>><<^calc.ss0_tix_days_to_close.medium.median>>\numprint{0}<</calc.ss0_tix_days_to_close.medium.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.medium.max>>\numprint{<<&calc.ss0_tix_days_to_close.medium.max>>}<</calc.ss0_tix_days_to_close.medium.max>><<^calc.ss0_tix_days_to_close.medium.max>>\numprint{0}<</calc.ss0_tix_days_to_close.medium.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.low.median>>\numprint{<<&calc.ss0_tix_days_to_close.low.median>>}<</calc.ss0_tix_days_to_close.low.median>><<^calc.ss0_tix_days_to_close.low.median>>\numprint{0}<</calc.ss0_tix_days_to_close.low.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.low.max>>\numprint{<<&calc.ss0_tix_days_to_close.low.max>>}<</calc.ss0_tix_days_to_close.low.max>><<^calc.ss0_tix_days_to_close.low.max>>\numprint{0}<</calc.ss0_tix_days_to_close.low.max>>} \\
+{\RCSub DAYS CURRENTLY ACTIVE} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.median>>\numprint{<<&calc.ss0_tix_days_open.critical.median>>}<</calc.ss0_tix_days_open.critical.median>><<^calc.ss0_tix_days_open.critical.median>>\numprint{0}<</calc.ss0_tix_days_open.critical.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.max>>\numprint{<<&calc.ss0_tix_days_open.critical.max>>}<</calc.ss0_tix_days_open.critical.max>><<^calc.ss0_tix_days_open.critical.max>>\numprint{0}<</calc.ss0_tix_days_open.critical.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.high.median>>\numprint{<<&calc.ss0_tix_days_open.high.median>>}<</calc.ss0_tix_days_open.high.median>><<^calc.ss0_tix_days_open.high.median>>\numprint{0}<</calc.ss0_tix_days_open.high.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.high.max>>\numprint{<<&calc.ss0_tix_days_open.high.max>>}<</calc.ss0_tix_days_open.high.max>><<^calc.ss0_tix_days_open.high.max>>\numprint{0}<</calc.ss0_tix_days_open.high.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.median>>\numprint{<<&calc.ss0_tix_days_open.medium.median>>}<</calc.ss0_tix_days_open.medium.median>><<^calc.ss0_tix_days_open.medium.median>>\numprint{0}<</calc.ss0_tix_days_open.medium.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.max>>\numprint{<<&calc.ss0_tix_days_open.medium.max>>}<</calc.ss0_tix_days_open.medium.max>><<^calc.ss0_tix_days_open.medium.max>>\numprint{0}<</calc.ss0_tix_days_open.medium.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.low.median>>\numprint{<<&calc.ss0_tix_days_open.low.median>>}<</calc.ss0_tix_days_open.low.median>><<^calc.ss0_tix_days_open.low.median>>\numprint{0}<</calc.ss0_tix_days_open.low.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.low.max>>\numprint{<<&calc.ss0_tix_days_open.low.max>>}<</calc.ss0_tix_days_open.low.max>><<^calc.ss0_tix_days_open.low.max>>\numprint{0}<</calc.ss0_tix_days_open.low.max>>} \\
+\end{tabular}
+
+%% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
+<<#expiring_soon_false_positive_tickets_count>>
+\vspace*{2mm}
+{\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
+See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
+
+%\twocolumn
+\section{Executive Summary}
+\label{sec:executive-summary}
+This report provides the results of a \gls{DHS} / \gls{NCATS} \gls{CyHy} assessment of \gls{AGENCY} conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
+The Cyber Hygiene assessment includes network mapping and \gls{vulnerability} scanning for Internet\-/accessible \gls{AGENCY} \glspl{host}.  This report is intended to provide \gls{AGENCY} with enhanced understanding of their cyber posture and to promote a secure and resilient \gls{IT} infrastructure across \gls{AGENCY}'s Internet\-/accessible networks and hosts.
+
+For this reporting period, a total of \numprint{<<&ss0.host_count>>} hosts were identified out of the \numprint{<<&calc.address_count>>} addresses provided to \gls{NCATS}.  The scanning revealed \numprint{<<&ss0.vulnerabilities.total>>} total potential vulnerabilities on  \numprint{<<&ss0.vulnerable_host_count>>} vulnerable hosts, <<&calc.vuln_host_percent>>\% of all \gls{AGENCY} hosts.  \numprint{<<&ss0.unique_port_count>>} distinct open ports, \numprint{<<&calc.ss0_unique_services_count>>} distinct services, and \numprint{<<&ss0.unique_operating_systems>>} operating systems were detected.
+
+\numprint{<<&ss0.unique_vulnerabilities.total>>} distinct types of potential vulnerabilities (\numprint{<<&ss0.unique_vulnerabilities.critical>>} critical, \numprint{<<&ss0.unique_vulnerabilities.high>>} high, \numprint{<<&ss0.unique_vulnerabilities.medium>>} medium, and \numprint{<<&ss0.unique_vulnerabilities.low>>} low) were detected, as shown in \autoref{tab:vulns-by-severity}.  The vulnerabilities that were detected most frequently on \gls{AGENCY} hosts are displayed in \autoref{fig:top-five-vulnerabilities-count}.
+
+\gls{AGENCY} should review the potential vulnerabilities detected and report any \glspl{false positive} back to \gls{NCATS} so they can be excluded from future reports.  Please refer to \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities} for an illustration of the breakdown of vulnerability occurrences over time.
+
+%{\renewcommand{\arraystretch}{0.85}	% Slims down all following table heights by factor of 0.85
+\begin{minipage}{\linewidth}
+    \centering
+    \begin{minipage}{0.45\linewidth}
+		\begin{table}[H]
+		  \centering
+		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
+			  \toprule
+			  Severity & \multicolumn{2}{r}{Distinct Vulnerabilities} & \multicolumn{2}{r}{Total Vulnerabilities} \\
+			  \midrule
+			  Critical & \numprint{<<&ss0.unique_vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.vulnerabilities.critical>>} \\
+			  High & \numprint{<<&ss0.unique_vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.vulnerabilities.high>>} \\
+			  Medium & \numprint{<<&ss0.unique_vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.vulnerabilities.medium>>} \\
+			  Low & \numprint{<<&ss0.unique_vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.low>>} & \numprint{<<&ss0.vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.vulnerabilities.low>>} \\
+			  \midrule
+			  Total & & \numprint{<<&ss0.unique_vulnerabilities.total>>} & & \numprint{<<&ss0.vulnerabilities.total>>} \\
+			  \bottomrule
+		  \end{tabular}
+		  \vspace{3mm} \caption{Number of Vulnerabilities by Severity Level}
+		  \label{tab:vulns-by-severity}
+		\end{table}
+	\end{minipage}
+	\hspace{0.05\linewidth}
+	\begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphics{top-five-vulnerabilities-count}{Top Vulnerabilities by Occurrence}
+		\end{figure}
+	\end{minipage}
+\end{minipage}
+
+\vspace{0.2in}
+Additionally, the top high-risk \glspl{host} and top risk-based \glspl{vulnerability} are displayed in \autoref{fig:top-five-high-risk-hosts} and \autoref{fig:top-five-risk-based-vulnerabilities}.  For more information about these risk calculations, refer to \autoref{tab:risk-rating-system}: \nameref{tab:risk-rating-system}.
+
+\begin{minipage}{\linewidth}
+    \centering
+    \begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphics{top-five-high-risk-hosts}{Top High-Risk Hosts}
+		\end{figure}
+	\end{minipage}
+    \hspace{0.05\linewidth}
+    \begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphics{top-five-risk-based-vulnerabilities}{Top Risk-Based Vulnerabilities}
+		\end{figure}
+	\end{minipage}
+\end{minipage}
+
+\clearpage
+
+The most frequently detected operating systems and services for \gls{AGENCY} are displayed in \autoref{tab:top-operating-systems} and  \autoref{tab:top-services} respectively.
+
+\begin{minipage}{\linewidth}
+    \centering
+    \begin{minipage}{0.45\linewidth}
+		\begin{table}[H]
+		  \centering
+		  \begin{tabular}{p{2.0in}rr}
+			  \toprule
+			  Operating System & \multicolumn{2}{c}{Detections} \\
+			  \midrule
+			  <<#top_operating_systems>><<&operating_system>> & \numprint{<<&percent>>}\% & \numprint{<<&count>>} \\
+			  <</top_operating_systems>>
+			  \bottomrule
+		  \end{tabular}
+		  \vspace{3mm} \caption{Top Operating Systems Detected}\label{tab:top-operating-systems}
+		\end{table}
+		<<^top_operating_systems>>\begin{center}No Operating Systems Detected\end{center}<</top_operating_systems>>
+	\end{minipage}
+    \hspace{0.05\linewidth}
+    \begin{minipage}{0.45\linewidth}
+		\begin{table}[H]
+		  \centering
+		  \begin{tabular}{p{2.0in}rr}
+			  \toprule
+			  Service & \multicolumn{2}{c}{Detections} \\
+			  \midrule
+			  <<#top_services>><<&service_name>> & \numprint{<<&percent>>}\% & \numprint{<<&count>>} \\
+			  <</top_services>>
+			  \bottomrule
+		  \end{tabular}
+		  \vspace{3mm} \caption{Top Services Detected}\label{tab:top-services}
+		\end{table}
+		<<^top_services>>\begin{center}No Services Detected\end{center}<</top_services>>
+	\end{minipage}
+\end{minipage}
+
+\vspace{0.2in}
+The next two figures illustrate how quickly \gls{AGENCY} responds to \glspl{vulnerability} that have been identified.  \autoref{fig:vuln-responsiveness-days-to-close} shows how long it has taken \gls{AGENCY} to mitigate vulnerabilities of each severity level<<#calc.ss0_tix_closed_after_date_tex>> (for vulnerabilities mitigated since \usvardate\formatdate<<&calc.ss0_tix_closed_after_date_tex>>)<</calc.ss0_tix_closed_after_date_tex>>, while \autoref{fig:vuln-responsiveness-days-open} shows the median ages of current \glspl{active vulnerability}.  \Gls{vulnerability age} is based on the \gls{initial detection} date by \gls{CyHy}.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{vuln-responsiveness-days-to-close}{Median Time in Days to Mitigate Vulnerabilities}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{vuln-responsiveness-days-open}{Median Age in Days of Active Vulnerabilities}
+\end{figure}
+
+\clearpage
+
+\autoref{fig:critical-vuln-ages-over-time} displays the number of active critical \glspl{vulnerability} that were less than 30 days old and more than 30 days old, as of the date indicated on the graph.  \Gls{vulnerability age} is based on the \gls{initial detection} date by \gls{CyHy}.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{critical-vuln-ages-over-time}{Critical Vulnerability Age Over Time}
+\end{figure}
+
+\vspace{0.2in}
+\autoref{fig:active-critical-age-distribution} and \autoref{tab:active-critical-age-summary} provide an age breakdown of every currently active critical vulnerability for \gls{AGENCY}.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{active-critical-age-distribution}{Active Critical Vulnerability Age}
+\end{figure}
+
+\vspace{0.2in}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l<<#active_critical_age_counts>>r<</active_critical_age_counts>>}
+	  \toprule
+	  <<#active_critical_age_counts>>& <<&bucket_range>> <</active_critical_age_counts>>\\
+	  <<#active_critical_age_counts>>& Days <</active_critical_age_counts>>\\
+	  \midrule
+	  Active Critical Vulnerabilities <<#active_critical_age_counts>>& \numprint{<<&count>>} <</active_critical_age_counts>>\\
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{Active Critical Vulnerability Age Summary}\label{tab:active-critical-age-summary}
+\end{table}
+
+\clearpage
+
+<<#display_owner>>\begin{landscape}
+\section{Sub-Organization Summary}
+\label{sec:sub-org-summary}
+This section shows the key \gls{CyHy} metrics for each sub-organization within \gls{AGENCY}.  A \gls{CSV} with this data can be found in \autoref{app:attachments}: \nameref{app:attachments}.
+\rowcolors{3}{white}{row-gray}
+\setlength{\tabcolsep}{4.5pt}
+\begin{longtable}{p{1.0in}|rr|rr|rrrr|r|rrrr|rrrr}
+	\toprule\label{tab:sub-org-summary}
+	Org & \multicolumn{2}{c|}{Addresses} & \multicolumn{2}{c|}{Hosts} & \multicolumn{4}{c|}{Vulnerabilities Detected} & Services & \multicolumn{4}{c|}{Median Days To Mitigate} & \multicolumn{4}{c}{Median Days Currently Active} \\
+	Name & Owned & Scanned & Detected & Vulnerable & Critical & High & Med & Low & Detected & Critical & High & Med & Low & Critical & High & Med & Low \\
+	\midrule \endhead
+		<<#ss0_descendant_data>><<&owner>> & \numprint{<<&address_count>>} & \numprint{<<&addresses_scanned_percent>>}\% & \numprint{<<&host_count>>} & \numprint{<<&vulnerable_host_count>>} (<<&vuln_host_percent>>\%) & \numprint{<<&vulnerabilities.critical>>} & \numprint{<<&vulnerabilities.high>>} & \numprint{<<&vulnerabilities.medium>>} & \numprint{<<&vulnerabilities.low>>} & \numprint{<<&port_count>>} & \numprint{<<&tix_days_to_close.critical.median>>} & \numprint{<<&tix_days_to_close.high.median>>} & \numprint{<<&tix_days_to_close.medium.median>>} & \numprint{<<&tix_days_to_close.low.median>>} & \numprint{<<&tix_days_open.critical.median>>} & \numprint{<<&tix_days_open.high.median>>} & \numprint{<<&tix_days_open.medium.median>>} & \numprint{<<&tix_days_open.low.median>>} \\
+		<</ss0_descendant_data>>
+	\midrule
+	\midrule
+		<<&ss0.owner>> Total & \numprint{<<&calc.address_count>>} & \numprint{<<&calc.addresses_scanned_percent>>}\% & \numprint{<<&ss0.host_count>>} & \numprint{<<&ss0.vulnerable_host_count>>} (<<&calc.vuln_host_percent>>\%) & \numprint{<<&ss0.vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.low>>} & \numprint{<<&ss0.port_count>>} & \numprint{<<&calc.ss0_tix_days_to_close.critical.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.high.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.medium.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.low.median>>} & \numprint{<<&calc.ss0_tix_days_open.critical.median>>} & \numprint{<<&calc.ss0_tix_days_open.high.median>>} & \numprint{<<&calc.ss0_tix_days_open.medium.median>>} & \numprint{<<&calc.ss0_tix_days_open.low.median>>} \\
+	\bottomrule
+\end{longtable}
+\addtocounter{table}{-1}
+\end{landscape}
+<</display_owner>>
+
+\section{Methodology}
+\label{sec:methodology}
+\subsection{Background}
+The \gls{NCATS} team conducted a Cyber Hygiene assessment of \gls{AGENCY}'s Internet-facing networks and \glspl{host} from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC. This report provides result summaries and detailed findings of the \gls{CyHy} assessment activity for \gls{AGENCY}<<#display_owner>> and its associated sub-organizations<</display_owner>>. All scan results are included in \autoref{app:attachments}: \nameref{app:attachments} as \gls{CSV} files.
+
+Cyber Hygiene is intended to improve your security posture by proactively identifying and reporting on \glspl{vulnerability} and configuration issues present on Internet-facing systems before those vulnerabilities can be exploited.
+
+Cyber Hygiene is a service of \gls{NCATS}, organized under the \gls{DHS} \gls{NPPD}, \gls{CSC}, \gls{NCCIC}.
+
+\gls{DHS} began Cyber Hygiene in January 2012 to assess, on a recurring basis, the ``health" of unclassified federal civilian networks accessible via the Internet. Since then, the program has grown to provide a persistent scanning service to federal, state, local, tribal, and territorial governments and private sector organizations.
+
+Upon submission of an Acceptance Letter, \gls{AGENCY} provided \gls{NCATS} with their public network address information. \gls{AGENCY} and \gls{NCATS} agreed on any time restrictions which would be imposed on the scanning activity.
+
+\subsection{Process}
+\label{subsec:methodology-process}
+All Cyber Hygiene scanning activity originates from the \textbf{64.69.57.0/24} network.
+
+\gls{CyHy} uses a combination of scanning services for testing:
+\begin{itemize}
+\item Network Mapping
+\item Vulnerability Scanning
+\end{itemize}
+
+\textbf{\underline{Network Mapping}}
+
+Using Nmap [\href{https://nmap.org}{https://nmap.org}], we attempt to determine what \glspl{host} are available, identify what \glspl{service} (application name and version) those hosts are offering, and what \gls{OS} versions they are running. We first scan the most commonly detected 1,000 \gls{TCP} ports of the addresses you've submitted to us to get a quick understanding of the active/dark landscape. An address that has a least one port open/listening service is considered a \textit{host} and is then fully port-scanned (\gls{TCP}) and included in the vulnerability scan.  For the purposes of this report, \textit{tcpwrapped} ports are not considered to be open; for more information on tcpwrapped ports, refer to the \nameref{app:FAQ} section.
+
+If no services are detected in the most common 1,000 ports on a given \gls{IP} address, that address is considered ``dark" in \gls{CyHy} and will be re-scanned after at least 90 days to check for change. Addresses marked dark are not included in the host count of the weekly report. Understand that \gls{CyHy} is not attempting to make a judgment call about why an address is unresponsive. If there's not a port open, it's not a \textit{host} in the language of \gls{CyHy}.
+
+\newpage
+\textbf{\underline{Vulnerability Scanning}}
+
+Using Nessus, a commercial vulnerability scanner, each host is evaluated against a library of vulnerabilities that an Internet-based actor could exploit. Vulnerabilities are reported with a severity of critical, high, medium, or low to facilitate prioritization of remediation efforts. We enable all \href{https://www.tenable.com/plugins/}{Nessus Plugins} [\href{https://www.tenable.com/plugins/}{https://www.tenable.com/plugins/}] except those in the ``Denial of Service" family.
+
+\textbf{\underline{Scanning Frequency}}
+
+Scanning occurs continuously between each weekly report. All \glspl{host} are scanned for \glspl{vulnerability} at least once every two weeks; hosts with vulnerabilities are scanned more frequently.
+
+Cyber Hygiene's scan prioritization is as follows:
+\begin{itemize}
+\item Addresses with no running \glspl{service} detected (dark space) are rescanned after at least 90 days.
+\item Hosts with no vulnerabilities detected are rescanned every 7 days.
+\item Hosts with low-severity vulnerabilities are rescanned every 6 days.
+\item Hosts with medium-severity vulnerabilities are rescanned every 4 days.
+\item Hosts with high-severity vulnerabilities are rescanned every 24 hours.
+\item Hosts with critical-severity vulnerabilities are rescanned every 12 hours.
+\end{itemize}
+
+You should understand that a single host may have multiple vulnerabilities of varying \gls{severity}, which impacts the frequency that the host is scanned.
+
+To be clear, it is not the case that we scan your entire address scope for vulnerabilities each week (unless each address you've provided to us has a responsive host). It is the case, though, that each host will get vulnerability scanned at least once per week.
+
+\textbf{\underline{Recurring Vulnerabilities}}
+
+After you've remediated a vulnerability (and it remains resolved for a period of 90 days), the host's scan priority will drop. This approach allows the \gls{NCATS} team to focus on the areas of importance and give more attention to the hosts that need it.
+
+Vulnerabilities are assigned an age in order to track timeliness of remediation. \Gls{vulnerability age} is determined by when it was first detected on a host, not from when it first appeared on a report. As scanning occurs continuously between weekly reports, it is possible to have ``new" vulnerabilities appear on a report that are already days old. It is also possible for a vulnerability to fluctuate between being detected and not detected during mid-week scans and then at a future time appear in a report as many days old.  If a mitigated vulnerability is re-detected less than 90 days after the date of non-detection, it will be considered to be the same vulnerability with the same ``\gls{initial detection} date" as previously recorded. If it is re-detected more than 90 days after the date of non-detection, it will be treated as a new vulnerability with a new ``initial detection date".
+
+\newpage
+\textbf{\underline{Vulnerability Scoring}}
+
+The Nessus vulnerability scanner references the \gls{NVD} [\href{https://nvd.nist.gov/}{https://nvd.nist.gov/}] for its vulnerability information. The \gls{NVD} provides \gls{CVSS} scores for many known vulnerabilities. In particular, \gls{NVD} supports the \gls{CVSS} version standard for all \gls{CVE} vulnerabilities.
+
+The \gls{CVSS} is a free and open industry standard for assessing the severity of computer system security vulnerabilities. \gls{CVSS} attempts to assign severity scores to vulnerabilities, allowing responders to prioritize responses and resources according to threat. The \gls{NVD} uses severity rankings of ``Low," ``Medium," and ``High" in addition to the numeric \gls{CVSS} scores, but these qualitative rankings are simply mapped from the numeric \gls{CVSS} base scores:
+\begin{itemize}
+\item Vulnerabilities are labeled ``Low" severity if they have a \gls{CVSS} base score of 0.0-3.9.
+\item Vulnerabilities will be labeled ``Medium" severity if they have a base \gls{CVSS} score of 4.0-6.9.
+\item Vulnerabilities will be labeled ``High" severity if they have a \gls{CVSS} base score of 7.0-10.0.
+\end{itemize}
+Nessus has a ``critical" rating which it uses for \gls{CVSS} 10 vulnerabilities. Where the \gls{NVD} has not provided a \gls{CVE} severity rating, the Nessus scanner relies on its own rankings.
+
+\textbf{\underline{What's In The Report?}}
+
+Though Cyber Hygiene initiates multiple scans between reports, \textit{only the latest scan data for each host is used to determine current vulnerability}. This is the data that appears in the main body of the report and in \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities}, \autoref{app:new-vulnerabilities}: \nameref{app:new-vulnerabilities} and \autoref{app:redetected-vulnerabilities}: \nameref{app:redetected-vulnerabilities}.
+
+If a vulnerability was detected since that last report (e.g., it wasn't in the previous report's findings, though \gls{CyHy} saw it mid-week) but it was not in the latest scan, we include it in \autoref{app:recently-detected-vulnerabilities}: \nameref{app:recently-detected-vulnerabilities}.
+
+If a vulnerability that was previously reported to you is no longer detected by the latest scan, the vulnerability and host will be listed in \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities}.
+
+We encourage you to validate the status of vulnerabilities in both \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities} and \autoref{app:recently-detected-vulnerabilities}: \nameref{app:recently-detected-vulnerabilities} against your change control register. This will help to ensure that the vulnerability we detected has actually been remediated and is not simply unresponsive to our scans.
+
+% \gls{DNSSEC} Security Scan – \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning performs in-depth checks to ensure that all .GOV DNS domains validate and a have properly implemented DNS security extensions.
+
+\clearpage
+\section{Approximate Host Locations}
+\label{sec:host-locations}
+The map below shows the approximate locations of detected \glspl{host} as listed in a geo-location database.  This map is provided as a tool to identify hosts that may have been mistakenly added in to, or removed from scope.  The map is scaled to include all known \gls{AGENCY} host locations.
+
+\begin{figure}[tbh]
+	\centering
+	\scalegraphics{network-map}{Approximate Host Locations}
+\end{figure}
+
+\clearpage
+\section{Vulnerability Scan Results}
+\label{sec:vulnerability-results}
+For this period, \gls{CyHy} detected \numprint{<<&ss0.vulnerabilities.total>>} occurrences of \numprint{<<&ss0.unique_vulnerabilities.total>>} distinct \glspl{vulnerability} (\numprint{<<&ss0.vulnerabilities.critical>>} critical, \numprint{<<&ss0.vulnerabilities.high>>} high, \numprint{<<&ss0.vulnerabilities.medium>>} medium, and \numprint{<<&ss0.vulnerabilities.low>>} low).  \gls{AGENCY} should review the vulnerabilities detected and report any \glspl{false positive} back to \gls{NCATS} so these can be excluded from future reports (see the \nameref{app:FAQ} section for more about false positives).
+
+The scanning detected \numprint{<<&ss0.vulnerable_host_count>>} vulnerable \glspl{host}---\numprint{<<&density.1-5>>} hosts with one to five vulnerabilities were identified; \numprint{<<&density.6-9>>} hosts had between six and nine vulnerabilities; \numprint{<<&density.10+>>} hosts had ten or more vulnerabilities identified.
+
+\begin{minipage}{\linewidth}
+    \centering
+    \begin{minipage}{0.45\linewidth}
+		\begin{table}[H]
+		  \centering
+		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
+			  \toprule
+			  Severity & \multicolumn{2}{r}{Distinct Vulnerabilities} & \multicolumn{2}{r}{Total Vulnerabilities} \\
+			  \midrule
+			  Critical & \numprint{<<&ss0.unique_vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.vulnerabilities.critical>>} \\
+			  High & \numprint{<<&ss0.unique_vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.vulnerabilities.high>>} \\
+			  Medium & \numprint{<<&ss0.unique_vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.vulnerabilities.medium>>} \\
+			  Low & \numprint{<<&ss0.unique_vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.low>>} & \numprint{<<&ss0.vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.vulnerabilities.low>>} \\
+			  \midrule
+			  Total & & \numprint{<<&ss0.unique_vulnerabilities.total>>} & & \numprint{<<&ss0.vulnerabilities.total>>} \\
+			  \bottomrule
+		  \end{tabular}
+		  \vspace{3mm} \caption{Number of Vulnerabilities by Severity Level}
+		  \label{tab:vulns-by-risk}
+		\end{table}
+	\end{minipage}
+    \hspace{0.05\linewidth}
+    \begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphics{vulnerability-count-per-host}{Vulnerability Count per Host}
+		\end{figure}
+	\end{minipage}
+\end{minipage}
+
+The \gls{CVSS} scores for all \glspl{active vulnerability} can be found in \autoref{fig:active-vulns-cvss-histogram}.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{active-vulns-cvss-histogram}{CVSS Histogram for Active Vulnerabilities}
+\end{figure}
+
+The top vulnerabilities according to \gls{CVSS} score are represented in \autoref{tab:top-ten-vulnerabilities}.
+
+\begin{table*}[h!]
+  \centering
+  \rowcolors{2}{white}{row-gray}
+  \begin{tabular}{p{4.75in}rrr}
+	  \toprule
+	  Vulnerability Name & Severity & Hosts & CVSS Score \\
+	  \midrule
+	  <<#top_10_vulnerability_occurrence>><<&plugin_name>> & <<&severity>> & <<&count>> & <<&cvss_base_score>> \\
+	  <</top_10_vulnerability_occurrence>>
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{Top Vulnerabilities by \gls{CVSS}}
+  \label{tab:top-ten-vulnerabilities}
+\end{table*}
+<<^top_10_vulnerability_occurrence>>\begin{center}There were no vulnerabilities detected in the latest scans.\end{center}<</top_10_vulnerability_occurrence>>
+
+\clearpage
+A complete list of distinct \glspl{vulnerability} detected, including \gls{severity} level and number of \glspl{host} having the vulnerability can be found in \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities}.  Full details on every detected vulnerability can be found in \autoref{app:detailed-findings}: \nameref{app:detailed-findings}.  Every critical and high finding detected, along with the hosts that have these findings, are listed in \autoref{app:critical-findings}: \nameref{app:critical-findings}.
+
+The top high-risk hosts are identified in \autoref{tab:top-hosts} by combining the total number of vulnerabilities, the severity of the vulnerabilities, and a weighted \gls{CVSS} score for vulnerabilities detected.  For more information on the formula, please refer to \autoref{tab:risk-rating-system}: \nameref{tab:risk-rating-system}.
+
+\begin{table*}[h!]
+  \centering
+  \rowcolors{2}{white}{row-gray}
+  \begin{tabular}{lrrrrr}
+	  \toprule
+	  IP Address & Critical & High & Medium & Low & Total \\
+	  \midrule
+	  <<#top_10_risky_hosts>><<&ip>> & <<&critical>> & <<&high>> & <<&medium>> & <<&low>> & <<&total>> \\
+	  <</top_10_risky_hosts>>
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{Top Hosts by Weighted Risk}
+  \label{tab:top-hosts}
+\end{table*}
+<<^top_10_risky_hosts>>\begin{center}There were no vulnerable hosts detected in the latest scans.\end{center}<</top_10_risky_hosts>>
+
+The \gls{RRS} emphasizes higher-rated \gls{CVSS} scores to ensure that hosts with a large number of lower-risk vulnerabilities do not outweigh hosts with a smaller number of high-risk vulnerabilities, while ensuring that hosts with an extreme number of low-risk vulnerabilities are not overshadowed by hosts with a single higher-risk issue.  The \gls{RRS} also ensures that hosts with a significant number of high-risk vulnerabilities will not be overshadowed by a host with only a single critical vulnerability.
+
+\autoref{tab:risk-rating-system} illustrates the base and weighted \gls{CVSS} scores and shows the equivalent number of lower-risk vulnerabilities to weigh evenly with a single critical (\gls{CVSS} score of 10) vulnerability.
+
+\begin{table}[h!]
+  \centering
+  \rowcolors{2}{white}{row-gray}
+  \begin{tabular}{rrr}
+	  \toprule
+	  Base CVSS Score & Weighted CVSS Score & Equivalent to CVSS Score 10 \\
+	  \midrule
+	  <<#risk_rating_system>><<&index>> & \numprint{<<&weighted>>} & \numprint{<<&equivalent>>} \\
+	  <</risk_rating_system>>
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{Risk Rating System}
+  \label{tab:risk-rating-system}
+\end{table}
+
+As an example, a host having 400 vulnerabilities with a base \gls{CVSS} score of 1.0 would get a weighted \gls{RRS} score of \numprint{4e-04}, which is considered lower-risk than a host with a single critical vulnerability (\gls{RRS} score of 10.0).  Similarly, a host having 4 vulnerabilities with a base \gls{CVSS} score of 8 would get a \gls{RRS} score of \numprint{8.39} and still be considered a lower risk than a host with a single critical vulnerability (\gls{RRS} score of \numprint{10.0}).
+
+\clearpage
+\section{Results Trending}
+\label{sec:trends}
+To help decision-makers, this section provides a comparison of the current data against similar \gls{CyHy} scans conducted over time.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{total-vulnerabilities-over-time}{Total Active Vulnerabilities Over Time}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{vulns-over-time-critical-high}{Active Critical and High Vulnerabilities Over Time}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{vulns-over-time-medium-low}{Active Medium and Low Vulnerabilities Over Time}
+\end{figure}
+
+\clearpage
+
+\gls{AGENCY} \gls{vulnerability} profile over time, reporting on the total hosts detected, number of hosts with vulnerabilities, number of distinct \glspl{service}, and the number of distinct vulnerabilities detected can be found in \autoref{fig:vulnerable-hosts-over-time}, \autoref{fig:distinct-services-over-time}, and \autoref{fig:distinct-vulns-over-time} respectively.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{vulnerable-hosts-over-time}{Vulnerable Hosts Over Time}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{distinct-services-over-time}{Distinct Services Over Time}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{distinct-vulns-over-time}{Distinct Vulnerabilities Over Time}
+\end{figure}
+
+\clearpage
+
+\begin{table*}[h!]
+  \centering
+  \begin{tabular}{lrrr}
+	  \toprule
+	  & Previous Report & Current Report & \% Change \\
+	  \midrule
+	  Hosts & \numprint{<<&ss1.host_count>>} & \numprint{<<&ss0.host_count>>} & <<&calc.host_count_percent>>\% \\
+	  Vulnerable Hosts & \numprint{<<&ss1.vulnerable_host_count>>} & \numprint{<<&ss0.vulnerable_host_count>>} & <<&calc.vulnerable_host_count_percent>>\% \\
+	  Distinct Services & \numprint{<<&calc.ss1_unique_services_count>>} & \numprint{<<&calc.ss0_unique_services_count>>} & <<&calc.unique_services_percent>>\% \\
+	  Distinct Vulnerabilities & \numprint{<<&ss1.unique_vulnerabilities.total>>} & \numprint{<<&ss0.unique_vulnerabilities.total>>} & <<&calc.unique_vulnerabilities_percent>>\% \\
+	  Distinct Operating Systems & \numprint{<<&ss1.unique_operating_systems>>} & \numprint{<<&ss0.unique_operating_systems>>} & <<&calc.unique_operating_systems_percent>>\% \\
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{Comparison with Previous Report}
+  \label{tab:previous-report-comparison}
+\end{table*}
+
+\vspace{0.2in}
+Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_vulnerabilities_per_host>> \glspl{vulnerability} per host.  For \glspl{vulnerable host}, \gls{AGENCY} averaged <<&calc.average_vulnerabilities_per_vulnerable_host.total>> total vulnerabilities per host.  By \gls{severity}, vulnerable hosts averaged <<&calc.average_vulnerabilities_per_vulnerable_host.critical>> critical, <<&calc.average_vulnerabilities_per_vulnerable_host.high>> high, <<&calc.average_vulnerabilities_per_vulnerable_host.medium>> medium, and <<&calc.average_vulnerabilities_per_vulnerable_host.low>> low vulnerabilities per host.
+
+
+% \clearpage
+% \section{DNSSEC Scan Results}
+% \label{sec:dnssec}
+% Implementing \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning checks to ensure all important DNS elements are up to date and reports any deficiencies.  The scan operates by mimicking the same process employed by Internet browsers to verify that a domain uses \gls{DNSSEC}.  \gls{DNSSEC} Scans are conducted weekly and incorporated into the Cyber Hygiene report.  \gls{AGENCY} had 0 of 1 (0\%) domains fully compliant with \gls{DNSSEC}.  \autoref{tab:dnssec-report} illustrates the current and quarterly \gls{DNSSEC} score for all \gls{AGENCY} domains.  Over the past thirteen months, \gls{AGENCY} compliance has stayed constant and, is generally below the CH average.  For full \gls{DNSSEC} results, please refer to \autoref{app:dnssec-results}.
+% \begin{figure}[H]
+% 	\centering
+% 	\scalegraphics{dnssec-domain-compliance}{Compliant vs. Not Compliant Domains}
+% \end{figure}
+% \begin{figure}[H]
+% 	\centering
+% 	\scalegraphics{dnssec-percent-compliant}{Percent of Compliant Domains}
+% \end{figure}
+%
+% \begin{table}[h!]
+%   \centering
+%   \rowcolors{2}{white}{row-gray}
+%   \begin{tabular}{lrr}
+% 	  \toprule
+% 	  Domain & Status & SOA Expiration Date \\
+% 	  \midrule
+% 	  \bottomrule
+%   \end{tabular}
+%   \caption{\gls{DNSSEC} Results by Domain}
+%   \label{tab:dnssec-report}
+% \end{table}
+
+\clearpage
+\section{Conclusion}
+\label{sec:conclusion}
+\gls{AGENCY} should use the data provided in this report to correct any identified \glspl{vulnerability}, configuration errors, and security concerns in your external network perimeter. If \gls{AGENCY} has questions, comments, or concerns about the findings or data contained in this report, please work with your designated technical point of contact when requesting assistance from \gls{NCATS} at \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+
+\onecolumn
+\appendices
+\appendix
+\section{Vulnerability Summary}
+\label{app:detected-vulnerabilities}
+This section presents counts of all distinct \glspl{vulnerability} that were detected in the latest scans.  It shows the name of the vulnerability, the \gls{severity} level of the vulnerability, and the number of vulnerability detections in the previous report vs. this report.  Low, medium, high, and critical vulnerabilities are displayed.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{p{4.0in}rrrr}
+	\toprule\label{tab:vulnerability-history}
+	Vulnerability & Severity & Previous & Current & Change \\
+	\midrule \endhead
+	<<#vulnerability_history>><<&plugin_name>> & <<&severity>> & <<&count_1>> & <<&count_0>> & <<&percent_change>>\% \\
+	<</vulnerability_history>>
+	\bottomrule
+\end{longtable}
+<<^vulnerability_history>>\begin{center}There were no vulnerabilities detected in the latest scans.\end{center}<</vulnerability_history>>
+\addtocounter{table}{-1}
+\newpage
+
+\begin{landscape}
+\section{Vulnerability Changes Since Last Report}
+\label{app:vuln-changes-since-last-report}
+
+\subsection{Mitigated Vulnerabilities}
+\label{app:mitigated-vulnerabilities}
+This section lists the \glspl{vulnerability} that were included on the previous report, but were not detected by the latest scans.  The table provides the \gls{initial detection} and \gls{mitigation detection} dates, plus the number of days it took to mitigate each vulnerability.
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.2in}rrrrrrr}
+	\toprule\label{tab:resolved-vulnerabilities}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial & Mitigation & Days To \\
+	<<#display_owner>> & <</display_owner>>&  &  &  & Detection & Detected (UTC) & Mitigate \\
+	\midrule \endhead
+	<<#resolved_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> & <<#time_closed_date_tex>>\isodate\formatdate<<&time_closed_date_tex>><</time_closed_date_tex>> \  <<#time_closed_time_tex>>\formattime<<&time_closed_time_tex>><</time_closed_time_tex>><<^time_closed_time_tex>>NA<</time_closed_time_tex>> & <<#days_to_close>><<&days_to_close>><</days_to_close>><<^days_to_close>>NA<</days_to_close>>\\
+	<</resolved_vulnerabilities>>
+	\bottomrule
+\end{longtable}
+<<^resolved_vulnerabilities>>\begin{center}There were no vulnerabilities mitigated since the previous report.\end{center}<</resolved_vulnerabilities>>
+\addtocounter{table}{-1}
+
+\subsection{New Vulnerabilities Detected}
+\label{app:new-vulnerabilities}
+This section lists the new \glspl{vulnerability} that were detected for the first time in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerabilty.
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.5in}rrrrr}
+	\toprule\label{tab:new-vulnerabilities}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection \\
+	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC)\\
+	\midrule \endhead
+	<<#brand_new_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<</brand_new_vulnerabilities>>
+	\bottomrule
+\end{longtable}
+<<^brand_new_vulnerabilities>>\begin{center}There were no new vulnerabilities detected for the first time by the latest scans.\end{center}<</brand_new_vulnerabilities>>
+\addtocounter{table}{-1}
+
+\subsection{Re-Detected (Previously-Mitigated) Vulnerabilities}
+\label{app:redetected-vulnerabilities}
+This section lists the \glspl{vulnerability} that were previously detected, then mitigated, and were re-detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerabilty.
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.0in}rrrrrr}
+	\toprule\label{tab:redetected-vulnerabilities}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & Age \\
+	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Days \\
+	\midrule \endhead
+	<<#redetected_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
+	<</redetected_vulnerabilities>>
+	\bottomrule
+\end{longtable}
+<<^redetected_vulnerabilities>>\begin{center}There were no previously-mitigated vulnerabilities that were re-detected.\end{center}<</redetected_vulnerabilities>>
+\addtocounter{table}{-1}
+
+\subsection{Recently-Detected Vulnerabilities}
+\label{app:recently-detected-vulnerabilities}
+This section lists the \glspl{vulnerability} that were detected since the last report, but not detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerabilty.  It is \textbf{strongly recommended} to verify if the vulnerabilities below were actively mitigated by your organization.  If they were not, it is highly likely these vulnerabilities will be detected again by future scans.
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.2in}rrrrrr}
+	\toprule\label{tab:recently-detected-vulnerabilities}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & Age \\
+	<<#display_owner>> & <</display_owner>> &  &  &  & (UTC) & (UTC) & Days \\
+	\midrule \endhead
+	<<#recently_detected_closed_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
+	<</recently_detected_closed_tickets>>
+	\bottomrule
+\end{longtable}
+<<^recently_detected_closed_tickets>>\begin{center}There were no recently-detected vulnerabilities that were not detected in the latest scans.\end{center}<</recently_detected_closed_tickets>>
+\addtocounter{table}{-1}
+\end{landscape}
+
+\begin{landscape}
+\section{Detailed Findings and Recommended Mitigations by Vulnerability}
+\label{app:detailed-findings}
+This section presents detailed scan results from the network mapping and \gls{vulnerability} scans.  Vulnerabilities identified have a recommended mitigation solution that should be considered in order to establish or maintain a secure network.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{p{1.5in}p{0.5in}p{0.5in}p{6.0in}}
+	\toprule\label{tab:detailed-findings}
+  Vulnerability & Severity & CVSS & Solution \\
+	\midrule \endhead
+	<<#detailed_findings>><<&plugin_name>> & <<&severity>> & <<&cvss_base_score>> & <<&solution>> \\
+	 \nopagebreak & \multicolumn{3}{p{\textwidth}}{\textit{\underline{<<&addresses_count>> Affected Host(s):}} <<&addresses>>
+     \newline{}\textit{\underline{Initial Detection:}} \isodate\formatdate<<&first_detected_date_tex>> \  \formattime<<&first_detected_time_tex>> UTC
+	 \newline{}\textit{\underline{Latest Detection:}} \isodate\formatdate<<&last_detected_date_tex>> \  \formattime<<&last_detected_time_tex>> UTC
+	 \newline{}\textit{\underline{Description:}} <<&description>>} \\
+	<</detailed_findings>>
+	\bottomrule
+\end{longtable}
+<<^detailed_findings>>\begin{center}There were no vulnerability findings.\end{center}<</detailed_findings>>
+\addtocounter{table}{-1}
+\end{landscape}
+
+\begin{landscape}
+\section{Critical and High Vulnerability Mitigations by IP Address}
+\label{app:critical-findings}
+This section presents detailed scan results, ordered by \gls{host}, from the network mapping and \gls{vulnerability} scans.  The table only displays high and critical vulnerabilities.  Vulnerabilities identified have a recommended mitigation solution that should be considered in order to establish or maintain a secure network.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>lp{0.5in}p{1.8in}p{0.5in}rp{3.5in}}
+	\toprule\label{tab:mitigations}
+  	<<#display_owner>>Owner & <</display_owner>>Host & Port(s) & Vulnerability & Severity & Age & Solution \\
+  	<<#display_owner>> & <</display_owner>> & & & & Days & \\
+	\midrule \endhead
+	<<#mitigations>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&ports>> & <<&plugin_name>> & <<&severity>> & <<&age>> & <<&solution>> \\
+	<</mitigations>>
+	\bottomrule
+\end{longtable}
+<<^mitigations>>\begin{center}There were no critical or high vulnerabilities detected.\end{center}<</mitigations>>
+\addtocounter{table}{-1}
+\end{landscape}
+
+\begin{landscape}
+\section{False Positive Findings}
+\label{app:false-positive-findings}
+This section lists findings that \gls{AGENCY} asserted to \gls{NCATS} to be \gls{false positive} (i.e., data that incorrectly indicates a \gls{vulnerability} is present). If \gls{AGENCY} would like to report findings for false positive consideration, please submit an email through your designated technical point of contact with an analysis and evidence indicating how \gls{AGENCY} determined the finding is a false positive. Unless \gls{NCATS} determines the submission is insufficient, \gls{NCATS} will leave the determination for what constitutes a false positive to report recipients.  False positive status expires by default 365 days after the false positive was marked as such by \gls{NCATS}.  When a finding's false positive status expires, the finding will be removed from this section.  If the finding is then re-detected, its status should be reviewed.
+
+<<#false_positive_tickets_count>>
+\subsection{Expiring Soon False Positive Findings}
+\label{app:expiring-soon-false-positive-findings}
+This section lists false positive findings whose status as a false positive is expiring within <<&false_positive_expiring_soon_days>> days. If \gls{AGENCY} would like to extend the expiration date of a false positive, please submit an email through your designated technical point of contact with an analysis and evidence indicating how \gls{AGENCY} determined the finding is still considered a false positive. For a full listing of false positives, please see \autoref{app:all-false-positive-findings}: \nameref{app:all-false-positive-findings}.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+	\toprule\label{tab:expiring-soon-false-positive-findings}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	\midrule \endhead
+	<<#expiring_soon_false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<</expiring_soon_false_positive_tickets>>
+	\bottomrule
+\end{longtable}
+<<^expiring_soon_false_positive_tickets>>\begin{center}There are currently no false positive findings that will expire in the next <<&false_positive_expiring_soon_days>> days.\end{center}<</expiring_soon_false_positive_tickets>>
+\addtocounter{table}{-1}
+
+\subsection{All False Positive Findings}
+\label{app:all-false-positive-findings}
+<</false_positive_tickets_count>>
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+	\toprule\label{tab:false-positive-findings}
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	\midrule \endhead
+	<<#false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<</false_positive_tickets>>
+	\bottomrule
+\end{longtable}
+<<^false_positive_tickets>>\begin{center}There are currently no false positive findings.\end{center}<</false_positive_tickets>>
+\addtocounter{table}{-1}
+\end{landscape}
+
+\section{Frequently Asked Questions}
+\label{app:FAQ}
+This section seeks to answer the most frequently asked questions about Cyber Hygiene reports.
+
+\begin{enumerate}
+	\item \textbf{I think the \gls{vulnerability} listed in my report is a \gls{false positive}. Can you remove it from my report?}
+	\begin{itemize}
+		\item If you believe a finding to be in error, you can submit a false positive assertion to  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov} which should include the following:
+		\begin{itemize}
+			\item the name of the vulnerability,
+			\item \gls{IP address} and port, and
+			\item your analysis and supporting evidence.
+		\end{itemize}
+		\gls{NCATS} will review and perform our own analysis. This will not include exploiting a vulnerability, but may include actively sending packets to the \gls{host} in question.
+		\item If our research appears to confirm your analysis, the vulnerability will be marked as a false positive for that host and will stop appearing in the main body of report for one year. Vulnerabilities marked as 'false positive' will be reported in \autoref{app:false-positive-findings}: \nameref{app:false-positive-findings}, along with the name and date of the individual who submitted the request to us.
+		\item \gls{NCATS} reserves the right to assert that certain findings are not false positives, and when false positive assertions are accepted by \gls{NCATS}, that acceptance should not be construed as validation that a finding is in fact a false positive.
+	\end{itemize}
+
+	\item \textbf{Can I get the data you created this report from in \gls{CSV}?}
+	\begin{itemize}
+		\item Certainly! See \autoref{app:attachments}: \nameref{app:attachments}.
+	\end{itemize}
+
+	\item \textbf{I fixed a vulnerability listed in my report. Can you rescan to verify?}
+	\begin{itemize}
+		\item \gls{CyHy} automatically rescans whenever a vulnerability is detected, so there is no need to notify us that you've fixed something. If we can no longer detect the vulnerability, it will be listed in \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities}.
+	\end{itemize}
+
+	<<#owner_is_federal_executive>>\item \textbf{The \gls{DHS} Binding Operational Directive 15-01 (BOD) requires my agency to fix Critical vulnerabilities within 30 days. If we can't do that, who do we contact and what needs to be sent?}
+	\begin{itemize}
+		\item For all questions or submissions related to the BOD, please email \href{mailto:fnr.bod@hq.dhs.gov}{fnr.bod@hq.dhs.gov}.
+		\item To be clear, if a Critical vulnerability
+		\begin{itemize}
+			\item is less than 30 days old and your agency can fix it before it hits 30 days old, nothing needs to be sent to DHS.
+			\item can't or won't be fixed within 30 days (or it's already older than 30 days), send  \href{mailto:fnr.bod@hq.dhs.gov}{fnr.bod@hq.dhs.gov} a \gls{POAM} that includes the following information:
+			\begin{enumerate}
+				\item a detailed justification outlining any barriers to expedited mitigation,
+				\item the steps you are taking to get to a resolution, and
+				\item a timeframe for mitigation.
+			\end{enumerate}
+		\end{itemize}
+		\item Remediation of the Critical vulnerability will be validated when our scans no longer detect the vulnerability, not through an assessment of or concurrence with your submitted \gls{POAM}. Even with the submission of a \gls{POAM}, the vulnerability will continue to be listed on your \gls{CyHy} report until remediated (i.e., it will not be marked as a false positive).
+	\end{itemize}<</owner_is_federal_executive>>
+
+	\item \textbf{Can I add my third-party hosted/managed servers?}
+	\begin{itemize}
+		\item Yes, and we recommend that you do so, but we request that you obtain authorization/consent before we begin scanning them. \gls{DHS} does not require documentation from your third-parties.
+	\end{itemize}
+
+	\item \textbf{Why do the host counts in my Cyber Hygiene report not match the number of known Internet-facing end points on my network?}
+	\begin{itemize}
+		\item This is likely due to a difference in what we're defining as a host. \gls{CyHy} considers a device a host if there is at least one open port/service operating at the address. When we scan, any number of things can occur that make it appear that nothing is at that address (e.g., our scans are blocked by host or network filters, the device is down for maintenance, packets are dropped or lost en route, etc.).
+    \item If a port is detected as 'tcpwrapped', it means that the TCP handshake was completed, but the connection was closed before any data was sent back.  For the purposes of this report, tcpwrapped ports are not considered to be 'open'.  If a device only responds with tcpwrapped ports, then it will not be considered a host by \gls{CyHy}.  For more information about tcpwrapped ports, see \href{https://secwiki.org/w/FAQ_tcpwrapped}{https://secwiki.org/w/FAQ\_tcpwrapped}.
+		\item The intent of \gls{CyHy} is to find vulnerabilities, not count hosts, and our metrics should not be relied upon as a verified host count of your organization. The weekly host count should be taken as an estimate. If, however, there are no or extremely low host counts reported when there are known active hosts, it is possible that the \gls{CyHy} scans are being blocked.
+	\end{itemize}
+
+	\item \textbf{I've added a new host and your scans are not picking it up.}
+	\begin{itemize}
+		\item \gls{CyHy} is not scanning your entire \gls{IP} scope every week. If you've stood up a new server in a range that we only recently scanned and found nothing in, it's possible that the new server would not appear for nearly 90 days. If you want the new host to be scanned immediately, you can email \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov} and we'll manually scan it, which will add it to your weekly report.
+	\end{itemize}
+
+	\item \textbf{I'm getting SSL/TLS certificate vulnerabilities that I think are incorrect.}
+	\begin{itemize}
+		\item In our scans, we will use the Mozilla trust store. \gls{NCATS} will not accept any other roots. This is done as a matter of practice and principle: as practice, because maintaining private roots from our various stakeholders is operationally infeasible; as principle, because our scans aim to ensure that the user of your services is protected. The Mozilla trust store is generally representative of a 'lowest common denominator' in what a public-serving site can reasonably expect of those users whose devices they do not manage.
+		\item Ensure that the root your certificate is issued from is included in the Mozilla root store. You should also verify that the intermediate certificates are presented with your site certificate. This allows the scanner to validate the certificate's chain of trust.
+		\item Though the site is Federal Government-centric, tons of great information can be found at \href{https://https.cio.gov/}{https.cio.gov} regarding \gls{HTTPS}, much of which is applicable for SSL/TLS more generally.
+	\end{itemize}
+
+  \item \textbf{What do the different appendices represent? How can a vulnerability be in more than one appendix? Which vulnerabilities are counted in the Report Card?}
+	\begin{table*}[h!]
+ 		\centering
+ 		\rowcolors{3}{white}{row-gray}
+  		\begin{tabular}{p{3.5in}ccccccc}
+	  	\toprule
+	  	Vulnerability Type & Counted in   & \multicolumn{6}{c}{Listed in Appendix} \\
+		                     & Report Card? & \ref{app:detected-vulnerabilities} & \ref{app:mitigated-vulnerabilities} & \ref{app:new-vulnerabilities} & \ref{app:redetected-vulnerabilities} & \ref{app:recently-detected-vulnerabilities} & \ref{app:detailed-findings} \\
+	  	\midrule
+		  Detected in latest scan, for the first time (i.e. ``brand new \mbox{vulnerability}") & Yes & \checkmark & & \checkmark & & & \checkmark \\
+		  Re-detected in latest scan (previously reported; was present in last week's Appendix \ref{app:detected-vulnerabilities} and \ref{app:detailed-findings}) & Yes & \checkmark & & & & & \checkmark \\
+		  Re-detected in latest scan (previously reported and mitigated; was NOT present in last week's Appendix \ref{app:detected-vulnerabilities} and \ref{app:detailed-findings}) & Yes & \checkmark & & & \checkmark & & \checkmark \\
+		  Reported last week in Appendix \ref{app:detected-vulnerabilities} and \ref{app:detailed-findings}, but not detected since then (i.e. ``currently mitigated") & No & & \checkmark & & & & \\
+		  Not detected in latest scan, but detected at some point \mbox{between} last report and latest scan & No & & & & & \checkmark & \\
+      % \mboxes above prevent LaTeX from hyphenating the word across two lines (i.e. "be- \n tween")
+	  	\bottomrule
+  		\end{tabular}
+	\end{table*}
+
+	\item \textbf{Can you scan my IPv6 addresses?}
+	\begin{itemize}
+		\item There is currently no ETA for \gls{CyHy} to scan IPv6 addresses.
+	\end{itemize}
+
+	\item \textbf{Can you scan this list of domains for me?}
+	\begin{itemize}
+		\item For vulnerability scanning, \gls{CyHy} does not presently scan domain names directly, but we expect to do so in FY18.
+	\end{itemize}
+
+	\item \textbf{How can I change who receives my Cyber Hygiene report?}
+	\begin{itemize}
+		\item The \gls{CyHy} report will be delivered to a single address. Most organizations set up a distribution address which takes incoming mail and delivers it to individual mailboxes. \gls{NCATS} strongly recommends this approach because it allows your organization to grant access to the report to whomever you'd like, as well as manage the change control of employees onboarding or leaving. If you need to change the distro we mail to, email us at \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+	\end{itemize}
+
+	\item \textbf{Can I change the password for my report?}
+	\begin{itemize}
+		\item If you need to request a new password for your report, email us at  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}. Please let us know if you'd like the password texted, delivered over the phone (note if voicemail is ok), or just emailed back.
+	\end{itemize}
+
+	\item \textbf{How is the age of each vulnerability calculated?}
+	\begin{itemize}
+		\item \Gls{vulnerability age} is determined by when it was first detected on a host, not from when it first appeared on a report.  For more information, refer to the ``Recurring Vulnerabilities" paragraph in \autoref{subsec:methodology-process}: \nameref{sec:methodology} / \nameref{subsec:methodology-process}.
+	\end{itemize}
+\end{enumerate}
+
+\newpage
+\section{Attachments}
+\label{app:attachments}
+If your PDF viewer supports embedded attachments you will see paperclip icons below for each attached file.
+\begin{itemize}
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} findings.csv : Detailed list of all \gls{vulnerability} findings for each \gls{IP} address and port.
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=mitigated-vulnerabilities.csv]{mitigated-vulnerabilities.csv} mitigated-vulnerabilities.csv : List of vulnerabilities that were included on the last report, but were not detected in the latest scans.
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=recently-detected.csv]{recently-detected.csv} recently-detected.csv : List of all vulnerabilities detected since the last report, but not detected in the latest scans.
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full TCP handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=hosts.csv]{hosts.csv} hosts.csv : List of \glspl{host} discovered with \gls{IP} address, best-guess \gls{OS} identification, and hostname if available.
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope.csv]{scope.csv} scope.csv : List of \gls{IP} addresses that were in scope for this report.
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=false-positive-findings.csv]{false-positive-findings.csv} false-positive-findings.csv : List of all reported \gls{false positive} vulnerability findings.
+	<<#display_owner>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=sub-org-summary.csv]{sub-org-summary.csv} sub-org-summary.csv : Data from the \nameref{sec:sub-org-summary}.<</display_owner>>
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-to-mitigate.csv]{days-to-mitigate.csv} days-to-mitigate.csv: Metrics over time for median and maximum days to mitigate findings (calculated with vulnerabilities mitigated since date listed in each row).
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-currently-active.csv]{days-currently-active.csv} days-currently-active.csv: Metrics over time for median and maximum age of active vulnerabilities (active as of date listed in each row).
+\end{itemize}
+
+% Figures:
+% \begin{itemize}
+% 	\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=top-five-vulnerabilities-count.pdf]{top-five-vulnerabilities-count.pdf} top-five-vulnerabilities-count.pdf : The vulnerabilities detected most frequently on \gls{AGENCY} hosts  (\autoref{fig:top-five-vulnerabilities-count})
+% \end{itemize}
+
+% \section{\gls{DNSSEC} Scan Results}
+% \label{app:dnssec-results}
+% This section displays \gls{AGENCY} non-compliant \gls{DNS} domains.  In order to be considered compliant all the fields in the table below must be scored as true except for Domain Uses NSEC and NEC3, only one of which must be true.
+\newpage
+\section{Glossary and Acronyms}
+\printglossaries %TODO stop from printing subtitle Acronyms
+\end{document}
