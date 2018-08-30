@@ -9,7 +9,7 @@ Options:
   -h, --help            show this help message and exit
   --no-dock             do not use docker for scorecard and reports
   --no-snapshots        do not create a scorecard or snapshots, jump straight to reports
-  --nolog               do not log that this scorecard and these reports were created
+  --no-log              do not log that this scorecard and these reports were created
 '''
 
 from docopt import docopt
@@ -314,7 +314,7 @@ def main():
         use_docker = 0
 
     nolog = False
-    if args['--nolog']:
+    if args['--no-log']:
         nolog = True
 
     control_id = pause_commander(db)
