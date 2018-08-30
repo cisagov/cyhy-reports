@@ -66,7 +66,7 @@ def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_s
     else:
         logging.info('  Not using Docker to create CybEx Scorecard...')
         os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_OUTPUT_DIR))
-        response = subprocess.call(['cyhy-cybex-scorecard', '-f', cyhy_db_section, scan_db_section, os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
+        response = subprocess.call(['cyhy-cybex-scorecard','--nolog','-f', cyhy_db_section, scan_db_section, os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
 
     return response
 
@@ -91,7 +91,7 @@ def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_s
 def sample_report(cyhy_db_section):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info('Creating SAMPLE report...')
-    p = subprocess.Popen(['cyhy-report','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(['cyhy-report','--nolog','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     data, err = p.communicate()
     return_code = p.returncode
     
@@ -157,7 +157,7 @@ def create_reports(customer_list, cyhy_db_section, use_docker):
         if use_docker == 1:
             p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            p = subprocess.Popen(['cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            p = subprocess.Popen(['cyhy-report','--nolog','-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         data, err = p.communicate()
         report_time = time.time() - report_time
         longest_reports.append((i,report_time))
