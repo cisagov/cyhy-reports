@@ -9,6 +9,7 @@ Options:
   -h, --help            show this help message and exit
   --no-dock             do not use docker for scorecard and reports
   --no-snapshots        do not create a scorecard or snapshots, jump straight to reports
+  --nolog               do not log that this report was created
 '''
 
 from docopt import docopt
@@ -59,14 +60,20 @@ def create_subdirectories():
                    CYBEX_CSV_DIR, CYHY_REPORT_DIR]:
         distutils.dir_util.mkpath(os.path.join(WEEKLY_REPORT_BASE_DIR, subdir))
 
-def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_section, use_docker):
+def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_section, use_docker, nolog):
     response = None
     if use_docker == 1:
-        response = subprocess.call(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(SCORECARD_OUTPUT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-cybex-scorecard', '-f', cyhy_db_section, scan_db_section, os.path.join(SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
+        if nolog:
+            response = subprocess.call(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(SCORECARD_OUTPUT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-cybex-scorecard', '--nolog', '-f', cyhy_db_section, scan_db_section, os.path.join(SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
+        else:
+            response = subprocess.call(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(SCORECARD_OUTPUT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-cybex-scorecard', '-f', cyhy_db_section, scan_db_section, os.path.join(SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
     else:
         logging.info('  Not using Docker to create CybEx Scorecard...')
         os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_OUTPUT_DIR))
-        response = subprocess.call(['cyhy-cybex-scorecard','--nolog','-f', cyhy_db_section, scan_db_section, os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
+        if nolog:
+            response = subprocess.call(['cyhy-cybex-scorecard','--nolog','-f', cyhy_db_section, scan_db_section, os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
+        else:
+            response = subprocess.call(['cyhy-cybex-scorecard','-f', cyhy_db_section, scan_db_section, os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_JSON_OUTPUT_DIR, previous_scorecard_filename)])
 
     return response
 
@@ -88,10 +95,13 @@ def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_s
 #        logging.info('Failed ELECTION report')
 #        logging.info('Stderr report detail: %s%s', data, err)
 
-def sample_report(cyhy_db_section):
+def sample_report(cyhy_db_section, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info('Creating SAMPLE report...')
-    p = subprocess.Popen(['cyhy-report','--nolog','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    if nolog:
+        p = subprocess.Popen(['cyhy-report','--nolog','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(['cyhy-report','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     data, err = p.communicate()
     return_code = p.returncode
     
@@ -150,14 +160,20 @@ def chunks(l, n):
         # Create an index range for l of n items:
         yield l[i:i+n]
 
-def create_reports(customer_list, cyhy_db_section, use_docker):
+def create_reports(customer_list, cyhy_db_section, use_docker, nolog):
     for i in customer_list:
         report_time = time.time()
         logging.info('%s Starting report for: %s', threading.current_thread().name, i)
         if use_docker == 1:
-            p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            if nolog:
+                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '--nolog', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            p = subprocess.Popen(['cyhy-report','--nolog','-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            if nolog:
+                p = subprocess.Popen(['cyhy-report', '--nolog', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                p = subprocess.Popen(['cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         data, err = p.communicate()
         report_time = time.time() - report_time
         longest_reports.append((i,report_time))
@@ -170,7 +186,7 @@ def create_reports(customer_list, cyhy_db_section, use_docker):
             logging.info('%s Stderr report detail: %s%s', threading.current_thread().name, data, err)
             reports_failed.append(i)
 
-def gen_weekly_reports(db, successful_snaps, cyhy_db_section, use_docker):
+def gen_weekly_reports(db, successful_snaps, cyhy_db_section, use_docker, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start = time.time()
     # Create a list that from the results of the function chunks:
@@ -178,7 +194,7 @@ def gen_weekly_reports(db, successful_snaps, cyhy_db_section, use_docker):
     thread_list = list(chunks(successful_snaps, int(math.ceil(float(len(successful_snaps))/float(REPORT_THREADS)))))
     for i in thread_list:
         try:
-           t = threading.Thread(target=create_reports, args=(i, cyhy_db_section, use_docker))
+           t = threading.Thread(target=create_reports, args=(i, cyhy_db_section, use_docker, nolog))
            threads.append(t)
            t.start()
            time.sleep(0.5)
@@ -297,6 +313,10 @@ def main():
         # take action to run scorecard and reports without docker
         use_docker = 0
 
+    nolog = False
+    if args['--nolog']:
+        nolog = True
+
     control_id = pause_commander(db)
     logging.info('Pausing Commander...')
     logging.info('Control ID: %s', control_id)
@@ -318,7 +338,7 @@ def main():
         if old_json_files:
             previous_scorecard_filename = old_json_files[-1]
             logging.info('  Using previous CybEx Scorecard JSON: {}'.format(previous_scorecard_filename))
-            scorecard_success = gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_section, use_docker)
+            scorecard_success = gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_section, use_docker, nolog)
             if scorecard_success == 0:
                 logging.info('Successfully generated CybEx Scorecard')
                 # Create latest directory where we can stash a copy of the
@@ -355,8 +375,8 @@ def main():
 
         #gen_election_report(cyhy_db_section)
 
-        sample_report(cyhy_db_section)  # Create the sample (anonymized) report
-        reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, use_docker)
+        sample_report(cyhy_db_section, nolog)  # Create the sample (anonymized) report
+        reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, use_docker, nolog)
         pull_cybex_ticket_csvs()
     finally:
         sync_all_tallies(db)
@@ -383,9 +403,9 @@ def main():
         logging.info('Total time: %.2f minutes', (round(time.time() - start,1)/60))
         logging.info('END\n\n')
 
-        logging.info('Kicking off the emailing of reports...')
-        subprocess.call('/var/cyhy/cyhy-mailer/start.sh')
-        logging.info('Done.')
+        # logging.info('Kicking off the emailing of reports...')
+        # subprocess.call('/var/cyhy/cyhy-mailer/start.sh')
+        # logging.info('Done.')
 
 if __name__=='__main__':
     main()
