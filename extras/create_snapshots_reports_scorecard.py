@@ -380,7 +380,7 @@ def main():
         pull_cybex_ticket_csvs()
     finally:
         sync_all_tallies(db)
-        resume_commander(db,control_id)
+        resume_commander(db, control_id)
 
         if args['--no-snapshots']:
             logging.info('Number of snapshots generated: 0')
