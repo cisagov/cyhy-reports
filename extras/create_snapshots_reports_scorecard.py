@@ -10,6 +10,7 @@ Options:
   --no-dock             do not use docker for scorecard and reports
   --no-snapshots        do not create a scorecard or snapshots, jump straight to reports
   --no-log              do not log that this scorecard and these reports were created
+  --no-pause            do not pause the commander when generating reports
 '''
 
 from docopt import docopt
@@ -317,9 +318,10 @@ def main():
     if args['--no-log']:
         nolog = True
 
-    control_id = pause_commander(db)
-    logging.info('Pausing Commander...')
-    logging.info('Control ID: %s', control_id)
+    if not args['--no-pause']:
+        control_id = pause_commander(db)
+        logging.info('Pausing Commander...')
+        logging.info('Control ID: %s', control_id)
 
     # Check for cyhy-reports container running
     if use_docker == 1:
@@ -380,7 +382,8 @@ def main():
         pull_cybex_ticket_csvs()
     finally:
         sync_all_tallies(db)
-        resume_commander(db, control_id)
+        if not args['--no-pause']:
+            resume_commander(db, control_id)
 
         if args['--no-snapshots']:
             logging.info('Number of snapshots generated: 0')
