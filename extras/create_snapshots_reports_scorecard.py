@@ -42,7 +42,7 @@ REPORT_THREADS = 16
 NCATS_DHUB_URL = 'dhub.ncats.cyber.dhs.gov:5001'
 NCATS_WEB_URL = 'web.data.ncats.cyber.dhs.gov'
 
-WEEKLY_REPORT_BASE_DIR = '/var/cyhy/weekly_reporting'
+WEEKLY_REPORT_BASE_DIR = '/var/cyhy/reports'
 SCORECARD_OUTPUT_DIR =  'scorecards'
 SCORECARD_JSON_OUTPUT_DIR = 'JSONfiles'
 CYBEX_CSV_DIR = 'cybex_csvs'
