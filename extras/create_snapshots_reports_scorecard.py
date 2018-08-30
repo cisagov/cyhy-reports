@@ -9,7 +9,7 @@ Options:
   -h, --help            show this help message and exit
   --no-dock             do not use docker for scorecard and reports
   --no-snapshots        do not create a scorecard or snapshots, jump straight to reports
-  --nolog               do not log that this report was created
+  --nolog               do not log that this scorecard and these reports were created
 '''
 
 from docopt import docopt
