@@ -276,7 +276,7 @@ def pull_cybex_ticket_csvs(db):
         path = os.path.join(WEEKLY_REPORT_BASE_DIR, CYBEX_CSV_DIR, filename)
         logging.info('Creating CSV {}'.format(filename))
         with open(path, 'w') as csv_file:
-            csv_file.write(cybex_queries.csv_get_open_tickets(db, CRITICAL_SEVERITY))
+            csv_file.write(data)
         # Copy the CSVs into the "latest" scorecard directory.  This is for the
         # automated report sending.
         latest_path = os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_OUTPUT_DIR,
