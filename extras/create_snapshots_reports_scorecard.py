@@ -14,9 +14,6 @@ Options:
 '''
 
 from docopt import docopt
-from cyhy.db import database, CHDatabase
-from cyhy.core import Config, STATUS, STAGE, SCAN_TYPE
-from cyhy.util import util
 from sets import Set
 from collections import defaultdict
 import datetime, time
@@ -25,15 +22,19 @@ from bson import ObjectId
 import sys
 import glob
 import os
-from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from socket import gethostname
 import logging
-import urllib2
 import threading
 import multiprocessing
 import math
 import distutils.dir_util
 import shutil
+
+from cyhy.core import Config, STATUS, STAGE, SCAN_TYPE
+from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
+from cyhy.db import database, CHDatabase
+from cyhy.util import util
+from ncats_webd import cybex_queries
 
 current_time = util.utcnow()
 
@@ -49,6 +50,9 @@ SCORECARD_OUTPUT_DIR =  'scorecards'
 SCORECARD_JSON_OUTPUT_DIR = 'JSONfiles'
 CYBEX_CSV_DIR = 'cybex_csvs'
 CYHY_REPORT_DIR = os.path.join('report_archive', 'reports{}'.format(current_time.strftime('%Y%m%d')))
+
+CRITICAL_SEVERITY = 4
+HIGH_SEVERITY = 3
 
 # Global variables for threading
 reports_generated = []
@@ -265,33 +269,28 @@ def resume_commander(db, pause_doc_id):
     logging.info('Commander control doc {} successfully deleted (commander should resume unless other control docs exist)'.format(pause_doc_id))
     return True
 
-def pull_cybex_ticket_csvs():
+def pull_cybex_ticket_csvs(db):
     today = current_time.strftime('%Y%m%d')
-    url_tail = ('c2', 'c3', 'c5', 'c6')
-    file_name = ('cybex_open_tickets_critical_', 'cybex_closed_tickets_critical_', 'cybex_open_tickets_high_', 'cybex_closed_tickets_high_')
 
-    for u, f in zip(url_tail, file_name):
-        current_csv_url = 'http://{}/api/cybex/?{}'.format(NCATS_WEB_URL, u)
-        current_csv_filename = '{}{}.csv'.format(f, today)
-        current_csv_path = os.path.join(WEEKLY_REPORT_BASE_DIR, CYBEX_CSV_DIR, current_csv_filename)
-        logging.info('Downloading CSV: {} -> {}'.format(current_csv_url, current_csv_filename))
-        try:
-            response = urllib2.urlopen(current_csv_url)
-            html = response.read()
-            text_file = open(current_csv_path, "w")
-            text_file.write(html)
-            text_file.close()
-        except Exception as e:
-            logging.error('Failed to download {} from {}'.format(current_csv_filename, current_csv_url))
-            logging.error(e)
+    def save_csv(filename, data):
+        path = os.path.join(WEEKLY_REPORT_BASE_DIR, CYBEX_CSV_DIR, filename)
+        logging.info('Creating CSV {}'.format(filename))
+        with open(path, 'w') as csv_file:
+            csv_file.write(cybex_queries.csv_get_open_tickets(db, CRITICAL_SEVERITY))
+        # Copy the CSVs into the "latest" scorecard directory.  This is for the
+        # automated report sending.
+        latest_path = os.path.join(WEEKLY_REPORT_BASE_DIR, SCORECARD_OUTPUT_DIR,
+                                   "latest", filename)
+        shutil.copy(path, latest_path)
 
-        # Copy the CSV into the "latest" scorecard directory.  This is
-        # for the automated report sending.
-        shutil.copy(current_csv_path,
-                    os.path.join(WEEKLY_REPORT_BASE_DIR,
-                                 SCORECARD_OUTPUT_DIR,
-                                 "latest",
-                                 current_csv_filename))
+    save_csv('cybex_open_tickets_critical_{}.csv'.format(today),
+             cybex_queries.csv_get_open_tickets(db, CRITICAL_SEVERITY))
+    save_csv('cybex_closed_tickets_critical_{}.csv'.format(today),
+             cybex_queries.csv_get_closed_tickets(db, CRITICAL_SEVERITY))
+    save_csv('cybex_open_tickets_critical_{}.csv'.format(today),
+             cybex_queries.csv_get_open_tickets(db, HIGH_SEVERITY))
+    save_csv('cybex_closed_tickets_critical_{}.csv'.format(today),
+             cybex_queries.csv_get_closed_tickets(db, HIGH_SEVERITY))
 
 def main():
     # import IPython; IPython.embed() #<<< BREAKPOINT >>>
@@ -379,7 +378,7 @@ def main():
 
         sample_report(cyhy_db_section, nolog)  # Create the sample (anonymized) report
         reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, use_docker, nolog)
-        pull_cybex_ticket_csvs()
+        pull_cybex_ticket_csvs(db)
     finally:
         sync_all_tallies(db)
         if not args['--no-pause']:
