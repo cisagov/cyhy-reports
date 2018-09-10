@@ -287,9 +287,9 @@ def pull_cybex_ticket_csvs(db):
              cybex_queries.csv_get_open_tickets(db, CRITICAL_SEVERITY))
     save_csv('cybex_closed_tickets_critical_{}.csv'.format(today),
              cybex_queries.csv_get_closed_tickets(db, CRITICAL_SEVERITY))
-    save_csv('cybex_open_tickets_critical_{}.csv'.format(today),
+    save_csv('cybex_open_tickets_high_{}.csv'.format(today),
              cybex_queries.csv_get_open_tickets(db, HIGH_SEVERITY))
-    save_csv('cybex_closed_tickets_critical_{}.csv'.format(today),
+    save_csv('cybex_closed_tickets_high_{}.csv'.format(today),
              cybex_queries.csv_get_closed_tickets(db, HIGH_SEVERITY))
 
 def main():
