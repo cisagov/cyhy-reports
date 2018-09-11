@@ -328,6 +328,7 @@
 \usepackage[acronym]{glossaries}
 \makeglossaries
 \newacronym{AGENCY}{<<&owner.agency.acronym>>}{<<&owner.agency.name>>}
+\newacronym{AWS}{AWS}{Amazon Web Services}
 \newacronym[description={Department of Homeland Security [\href{https://www.dhs.gov}{https://www.dhs.gov}]}]{DHS}{DHS}{Department of Homeland Security}
 \newacronym[description={National Protection and Programs Directorate [\href{https://www.dhs.gov/national-protection-and-programs-directorate}{https://www.dhs.gov/national-protection-and-programs-directorate}]}]{NPPD}{NPPD}{National Protection and Programs Directorate}
 \newacronym[description={Office of Cybersecurity and Communications [\href{https://www.dhs.gov/office-cybersecurity-and-communications}{https://www.dhs.gov/office-cybersecurity-and-communications}]}]{CSC}{CS\&C}{Office of Cybersecurity and Communications}
@@ -830,7 +831,7 @@ Upon submission of an Acceptance Letter, \gls{AGENCY} provided \gls{NCATS} with 
 
 \subsection{Process}
 \label{subsec:methodology-process}
-All Cyber Hygiene scanning activity originates from the \textbf{64.69.57.0/24} network.
+All Cyber Hygiene scanning activity originates from a dynamic set of \gls{AWS} \gls{IP} addresses in the US East and US West regions. The live list of active addresses can be found at \href{https://rules.ncats.cyber.dhs.gov}{https://rules.ncats.cyber.dhs.gov}. The addresses in that list will change based on overall \gls{CyHy} scan demand.
 
 \gls{CyHy} uses a combination of scanning services for testing:
 \begin{itemize}
