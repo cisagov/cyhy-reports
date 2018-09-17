@@ -251,7 +251,7 @@ def pause_commander(db):
             logging.error('Commander failed to pause!')
             doc.delete()
             logging.info('Commander control doc {_id} successfully deleted'.format(**doc))
-            sys.exit(return_code)
+            sys.exit(-1)
             return None
         doc.reload()
     return doc['_id']
