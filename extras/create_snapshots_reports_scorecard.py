@@ -237,8 +237,8 @@ def sync_all_tallies(db):
     logging.info('Done syncing all tallies')
 
 def pause_commander(db):
-    PAUSE_ITERATION_LIMIT = 24          # number of iterations to wait before giving up
-    PAUSE_ITERATION_WAIT_SECONDS = 5    # number of seconds to wait between each check to see if the commander has paused
+    PAUSE_ITERATION_LIMIT = 30          # number of iterations to wait before giving up
+    PAUSE_ITERATION_WAIT_SECONDS = 60   # number of seconds to wait between each check to see if the commander has paused
     pause_iteration_count = 0
     ch = CHDatabase(db)
     doc = ch.pause_commander('create_snapshots_reports_scorecard', 'report generation')
@@ -251,7 +251,7 @@ def pause_commander(db):
             logging.error('Commander failed to pause!')
             doc.delete()
             logging.info('Commander control doc {_id} successfully deleted'.format(**doc))
-            sys.exit(return_code)
+            sys.exit(-1)
             return None
         doc.reload()
     return doc['_id']
