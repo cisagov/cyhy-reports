@@ -433,12 +433,12 @@ class ReportGenerator(object):
         else:
             self.__results['owner_is_federal_executive'] = False
 
-        results = database.run_pipeline(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__db)
+        results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__db)
         database.id_expand(results)
         self.__results['operating_system_count'] = results
 
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
-        results = database.run_pipeline(queries.ip_geoloc_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.ip_geoloc_pl(ss0_owners), self.__db)
         database.id_expand(results)
         self.__results['ip_geoloc'] = results
 

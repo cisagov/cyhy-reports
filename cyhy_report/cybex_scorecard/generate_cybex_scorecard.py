@@ -236,10 +236,10 @@ class ScorecardGenerator(object):
 
         # Get relevant critical-severity ticket data
         pipeline_collection = self.__open_tix_opened_in_date_range_pl(CRITICAL_SEVERITY, self.__generated_time)
-        self.__results['vuln-scan']['open_critical_ticket_counts'] = database.run_pipeline(pipeline_collection, self.__cyhy_db)
+        self.__results['vuln-scan']['open_critical_ticket_counts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         pipeline_collection = self.__active_hosts_pl()
-        self.__results['vuln-scan']['active_hosts'] = database.run_pipeline(pipeline_collection, self.__cyhy_db)
+        self.__results['vuln-scan']['active_hosts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         # Throw out data from orgs with descendants
         # list(self.__results[results_field]) iterates over a *copy* of the list so items can be properly removed from the original
@@ -253,10 +253,10 @@ class ScorecardGenerator(object):
             descendants = self.__cyhy_db.RequestDoc.get_all_descendants(r['_id'])
 
             pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(CRITICAL_SEVERITY, self.__generated_time, r['_id'], descendants)
-            self.__results['vuln-scan']['open_critical_ticket_counts'] += database.run_pipeline(pipeline_collection, self.__cyhy_db)
+            self.__results['vuln-scan']['open_critical_ticket_counts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
             pipeline_collection = self.__active_hosts_for_orgs_pl(r['_id'], descendants)
-            self.__results['vuln-scan']['active_hosts'] += database.run_pipeline(pipeline_collection, self.__cyhy_db)
+            self.__results['vuln-scan']['active_hosts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
             address_count = len(r.networks)         # Top-level org count of addresses (networks)
             for descendant_id in descendants:       # Iterate through descendants and grab count of addresses

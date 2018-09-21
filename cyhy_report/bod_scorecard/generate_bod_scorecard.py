@@ -226,23 +226,23 @@ class ScorecardGenerator(object):
         
         # Get relevant critical ticket data
         pipeline_collection = self.__open_critical_tix_opened_in_date_range_pl(BEFORE_THE_DAWN_OF_CYHY, self.__generated_time)
-        self.__results['open_critical_tix'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['open_critical_tix'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         prev_scorecard_generated_time = parser.parse(self.__previous_scorecard_data['generated_time'])
         pipeline_collection = self.__open_critical_tix_opened_in_date_range_pl(prev_scorecard_generated_time, self.__generated_time)
-        self.__results['open_critical_tix_opened_since_previous_scorecard'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['open_critical_tix_opened_since_previous_scorecard'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__open_critical_tix_opened_in_date_range_pl(self.__generated_time - timedelta(days=30), self.__generated_time)
-        self.__results['open_critical_tix_opened_less_than_30_days_ago'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['open_critical_tix_opened_less_than_30_days_ago'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__open_critical_tix_opened_in_date_range_pl(BEFORE_THE_DAWN_OF_CYHY, self.__generated_time - timedelta(days=90))
-        self.__results['open_critical_tix_opened_more_than_90_days_ago'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['open_critical_tix_opened_more_than_90_days_ago'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__critical_tix_open_on_date_open_since_date_pl(self.__bod_effective_date, self.__bod_effective_date)
-        self.__results['critical_tix_open_at_bod_start'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['critical_tix_open_at_bod_start'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__closed_critical_tix_open_on_date_pl(self.__bod_effective_date, self.__generated_time)
-        self.__results['critical_tix_open_at_bod_start_now_closed'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['critical_tix_open_at_bod_start_now_closed'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__critical_tix_open_on_date_open_since_date_pl(self.__bod_effective_date, 
                                                                                   self.__bod_effective_date - timedelta(days=30))
-        self.__results['critical_tix_open_more_than_30_days_at_bod_start'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['critical_tix_open_more_than_30_days_at_bod_start'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = self.__active_hosts_pl()
-        self.__results['active_hosts'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['active_hosts'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         
         # Throw out data from orgs with descendants
         # list(self.__results[results_field]) iterates over a *copy* of the list so items can be properly removed from the original
@@ -259,22 +259,22 @@ class ScorecardGenerator(object):
         for r in requests_with_descendants:
             descendants = self.__db.RequestDoc.get_all_descendants(r['_id'])
             pipeline_collection = self.__open_critical_tix_opened_in_date_range_for_orgs_pl(BEFORE_THE_DAWN_OF_CYHY, self.__generated_time, r['_id'], descendants)
-            self.__results['open_critical_tix'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['open_critical_tix'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__open_critical_tix_opened_in_date_range_for_orgs_pl(prev_scorecard_generated_time, self.__generated_time, r['_id'], descendants)
-            self.__results['open_critical_tix_opened_since_previous_scorecard'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['open_critical_tix_opened_since_previous_scorecard'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__open_critical_tix_opened_in_date_range_for_orgs_pl(self.__generated_time - timedelta(days=30), self.__generated_time, r['_id'], descendants)
-            self.__results['open_critical_tix_opened_less_than_30_days_ago'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['open_critical_tix_opened_less_than_30_days_ago'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__open_critical_tix_opened_in_date_range_for_orgs_pl(BEFORE_THE_DAWN_OF_CYHY, self.__generated_time - timedelta(days=90), r['_id'], descendants)
-            self.__results['open_critical_tix_opened_more_than_90_days_ago'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['open_critical_tix_opened_more_than_90_days_ago'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__critical_tix_open_on_date_open_since_date_for_orgs_pl(self.__bod_effective_date, self.__bod_effective_date, r['_id'], descendants)
-            self.__results['critical_tix_open_at_bod_start'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['critical_tix_open_at_bod_start'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__closed_critical_tix_open_on_date_for_orgs_pl(self.__bod_effective_date, self.__generated_time, r['_id'], descendants)
-            self.__results['critical_tix_open_at_bod_start_now_closed'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['critical_tix_open_at_bod_start_now_closed'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = self.__critical_tix_open_on_date_open_since_date_for_orgs_pl(self.__bod_effective_date, self.__bod_effective_date - timedelta(days=30), r['_id'], descendants)
-            self.__results['critical_tix_open_more_than_30_days_at_bod_start'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['critical_tix_open_more_than_30_days_at_bod_start'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             
             pipeline_collection = self.__active_hosts_for_orgs_pl(r['_id'], descendants)
-            self.__results['active_hosts'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['active_hosts'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
         
     def __populate_scorecard_doc(self):        
         # Go through each request doc and check if the org has a current tally doc
