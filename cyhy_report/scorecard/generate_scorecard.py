@@ -152,9 +152,9 @@ class ScorecardGenerator(object):
                         
         # Get relevant ticket age data
         pipeline_collection = queries.open_ticket_age_pl(self.__generated_time)
-        self.__results['open_ticket_age'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['open_ticket_age'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         pipeline_collection = queries.closed_ticket_age_pl(self.__generated_time - timedelta(days=CLOSED_TICKETS_DAYS))
-        self.__results['closed_ticket_age'] = database.run_pipeline(pipeline_collection, self.__db)
+        self.__results['closed_ticket_age'] = database.run_pipeline_cursor(pipeline_collection, self.__db)
         
         # Throw out ticket data from orgs with descendants
         # list(<ticket_data>) iterates over a *copy* of the list so items can be properly removed from the original
@@ -170,9 +170,9 @@ class ScorecardGenerator(object):
         for r in requests_with_descendants:
             descendants = self.__db.RequestDoc.get_all_descendants(r['_id'])
             pipeline_collection = queries.open_ticket_age_for_orgs_pl(self.__generated_time, r['_id'], descendants)
-            self.__results['open_ticket_age'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['open_ticket_age'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
             pipeline_collection = queries.closed_ticket_age_for_orgs_pl(self.__generated_time - timedelta(days=CLOSED_TICKETS_DAYS), r['_id'], descendants)
-            self.__results['closed_ticket_age'] += database.run_pipeline(pipeline_collection, self.__db)
+            self.__results['closed_ticket_age'] += database.run_pipeline_cursor(pipeline_collection, self.__db)
     
     def __populate_scorecard_doc(self):
         # Go through each request doc and check if the org has a current tally doc
