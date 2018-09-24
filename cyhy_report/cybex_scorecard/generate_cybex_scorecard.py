@@ -274,7 +274,7 @@ class ScorecardGenerator(object):
                                                                                                                         'agency.id': {'$in':cybex_orgs}},
                                                                                                                        {'_id':0, 'domain':1}) ]
 
-        self.__results['trustymail_base_domains'] = self.__scan_db.trustymail.aggregate([
+        self.__results['trustymail_base_domains'] = list(self.__scan_db.trustymail.aggregate([
                     {'$match': {'latest':True, 'domain':{'$in':self.__results['latest_cybex_trustymail_base_domains']}}},
                     # Pull in data from sslyze_scan collection so weak crypto status can be determined
                     {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
@@ -343,7 +343,7 @@ class ScorecardGenerator(object):
                                   'live_bod1801_email_non_compliant_count': {'$subtract': ['$live_domain_count',
                                                                                            '$live_bod1801_email_compliant_count']} }},
                     {'$sort':{'_id':1}}
-                    ])['result']
+                    ], cursor={}))
 
         # Latest Trustymail metrics for base domains and subdomains that support SMTP
         self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains'] = [ i['domain'] for i in self.__scan_db.trustymail.find(
@@ -353,7 +353,7 @@ class ScorecardGenerator(object):
                                                                                                                      {'domain_supports_smtp':True}]},
                                                                                                             {'_id':0, 'domain':1}) ]
 
-        self.__results['trustymail_base_domains_and_smtp_subdomains'] = self.__scan_db.trustymail.aggregate([
+        self.__results['trustymail_base_domains_and_smtp_subdomains'] = list(self.__scan_db.trustymail.aggregate([
                     {'$match': {'latest':True, 'domain':{'$in':self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']}}},
                     # Pull in data from sslyze_scan collection so weak crypto status can be determined
                     {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
@@ -432,10 +432,10 @@ class ScorecardGenerator(object):
                                   'live_bod1801_email_non_compliant_count': {'$subtract': ['$live_domain_count',
                                                                                            '$live_bod1801_email_compliant_count']} }},
                     {'$sort':{'_id':1}}
-                    ])['result']
+                    ], cursor={}))
 
         # Trustymail DMARC summary Metrics (live base domains only)
-        self.__results['trustymail_dmarc_summary'] = self.__scan_db.trustymail.aggregate([
+        self.__results['trustymail_dmarc_summary'] = list(self.__scan_db.trustymail.aggregate([
                     {'$match': {'agency.id': {'$in':cybex_orgs}, 'live':True, 'is_base_domain': True}},
                     {'$project': {'domain':'$domain',
                                   'scan_date':'$scan_date',
@@ -463,7 +463,7 @@ class ScorecardGenerator(object):
                                 'no_dmarc_record': {'$sum': {'$cond': [{'$eq': ['$dmarc_record', False]},1,0] }}}},
                     {'$sort': {'_id':-1}},      # Reverse sort + limit = most-recent n results
                     {'$limit': TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT}
-                    ])['result']
+                    ], cursor={}))
 
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
@@ -471,7 +471,7 @@ class ScorecardGenerator(object):
                                                                                                                           'agency.id': {'$in':cybex_orgs}},
                                                                                                                          {'_id':0, 'domain':1}) ]
 
-        self.__results['https-scan'] = self.__scan_db.https_scan.aggregate([
+        self.__results['https-scan'] = list(self.__scan_db.https_scan.aggregate([
                     {'$match': {'latest':True, 'domain': {'$in':self.__results['latest_cybex_https_scan_live_hostnames']}}},
                     # Pull in data from sslyze_scan collection so weak crypto status can be determined
                     {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
@@ -516,7 +516,7 @@ class ScorecardGenerator(object):
                                   'live_missing_https_hsts_count': {'$subtract': ['$live_domain_count',
                                                                                   '$live_uses_strong_hsts_count']}}},
                     {'$sort':{'_id':1}}
-                    ])['result']
+                    ], cursor={}))
 
     def __run_sslyze_scan_queries(self, cybex_orgs):
         # Query sslyze-scans for weak crypto in domains (includes both web and email servers)
@@ -524,7 +524,7 @@ class ScorecardGenerator(object):
         latest_cybex_hostnames = list(set(self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']) |
                                       set(self.__results['latest_cybex_https_scan_live_hostnames']))
 
-        self.__results['sslyze-scan'] = self.__scan_db.sslyze_scan.aggregate([
+        self.__results['sslyze-scan'] = list(self.__scan_db.sslyze_scan.aggregate([
                     {'$match': {'latest':True, 'domain':{'$in':latest_cybex_hostnames},
                                 'scanned_port': {'$in':[25, 587, 465, 443]}}},    # 25, 587, 465 = SMTP (email)    443 = HTTPS (web)
                     {'$project': {'agency_id':'$agency.id', 'domain':'$domain',
@@ -542,7 +542,7 @@ class ScorecardGenerator(object):
                                 'domain_count': {'$sum': 1},
                                 'domains_with_weak_crypto_count': {'$sum': {'$cond': [{'$eq': ['$domain_has_weak_crypto', True]},1,0] }}}},
                     {'$sort':{'_id':1}}
-                    ])['result']
+                    ], cursor={}))
 
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
