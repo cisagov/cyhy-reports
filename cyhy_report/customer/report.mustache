@@ -439,6 +439,7 @@ You may wonder what you're supposed to do with all this information. While it's 
 \item If this report is not your first, review \autoref{app:vuln-changes-since-last-report}: \nameref{app:vuln-changes-since-last-report} for a breakdown of all the changes we detected in your scope in the last week.
 \item If you've patched a vulnerability since your last report, verify it's listed here. If it's not present, there may still be an issue. It may also be possible that the issue was fixed after our latest scan, which was on \usvardate\formatdate<<&calc.end_date_tex>>.
 \item For additional analysis, see \autoref{app:attachments}: \nameref{app:attachments}, which provides \gls{CSV} files for all findings, \glspl{service}, hosts, and the scope that we scan.
+\item Review \autoref{app:false-positive-findings}: \nameref{app:false-positive-findings} to track any upcoming expiration dates for false positive designations. For any new false positives, please complete and return to \gls{NCATS} the False Positive Assertion Form found in \autoref{app:attachments}: \nameref{app:attachments}.
 \end{enumerate}
 
 You should be aware that Cyber Hygiene does not scan your entire scope (all of the addresses your organization has sent us) every week, but does attempt to scan every \gls{host} each week. For an explanation of how \gls{CyHy} works, see the \nameref{sec:methodology} section.
@@ -1239,7 +1240,7 @@ This section presents detailed scan results, ordered by \gls{host}, from the net
 \begin{landscape}
 \section{False Positive Findings}
 \label{app:false-positive-findings}
-This section lists findings that \gls{AGENCY} asserted to \gls{NCATS} to be \gls{false positive} (i.e., data that incorrectly indicates a \gls{vulnerability} is present). If \gls{AGENCY} would like to report findings for false positive consideration, please submit an email through your designated technical point of contact with an analysis and evidence indicating how \gls{AGENCY} determined the finding is a false positive. Unless \gls{NCATS} determines the submission is insufficient, \gls{NCATS} will leave the determination for what constitutes a false positive to report recipients.  False positive status expires by default 365 days after the false positive was marked as such by \gls{NCATS}.  When a finding's false positive status expires, the finding will be removed from this section.  If the finding is then re-detected, its status should be reviewed.
+This section lists findings that \gls{AGENCY} asserted to \gls{NCATS} to be \glspl{false positive} (i.e., data that incorrectly indicates a \gls{vulnerability} is present). If \gls{AGENCY} would like to report findings for false positive consideration, please complete the False Positive Assertion Form included in \autoref{app:attachments}: \nameref{app:attachments}. Unless \gls{NCATS} determines the submission is insufficient, \gls{NCATS} will leave the determination for what constitutes a false positive to report recipients.  False positive status expires by default 365 days after the false positive was marked as such by \gls{NCATS}.  When a finding's false positive status expires, the finding will be removed from this section.  If the finding is then re-detected, \gls{NCATS} recommends \gls{AGENCY} review its status.
 
 <<#false_positive_tickets_count>>
 \subsection{Expiring Soon False Positive Findings}
@@ -1283,14 +1284,9 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 \begin{enumerate}
 	\item \textbf{I think the \gls{vulnerability} listed in my report is a \gls{false positive}. Can you remove it from my report?}
 	\begin{itemize}
-		\item If you believe a finding to be in error, you can submit a false positive assertion to  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov} which should include the following:
-		\begin{itemize}
-			\item the name of the vulnerability,
-			\item \gls{IP address} and port, and
-			\item your analysis and supporting evidence.
-		\end{itemize}
-		\gls{NCATS} will review and perform our own analysis. This will not include exploiting a vulnerability, but may include actively sending packets to the \gls{host} in question.
-		\item If our research appears to confirm your analysis, the vulnerability will be marked as a false positive for that host and will stop appearing in the main body of report for one year. Vulnerabilities marked as 'false positive' will be reported in \autoref{app:false-positive-findings}: \nameref{app:false-positive-findings}, along with the name and date of the individual who submitted the request to us.
+		\item If you believe a finding to be in error, please complete and return to \gls{NCATS} the False Positive Assertion Form found in \autoref{app:attachments}: \nameref{app:attachments}.
+		\item \gls{NCATS} will review and perform our own analysis. This will not include exploiting a vulnerability, but may include actively sending packets to the \gls{host} in question.
+		\item If our research appears to confirm your analysis, the vulnerability will be marked as a false positive for that host and will stop appearing in the main body of the report for one year. Vulnerabilities marked as 'false positive' will be reported in \autoref{app:false-positive-findings}: \nameref{app:false-positive-findings}, along with the dates of when the false positive took effect and when it will expire.
 		\item \gls{NCATS} reserves the right to assert that certain findings are not false positives, and when false positive assertions are accepted by \gls{NCATS}, that acceptance should not be construed as validation that a finding is in fact a false positive.
 	\end{itemize}
 
@@ -1404,6 +1400,7 @@ If your PDF viewer supports embedded attachments you will see paperclip icons be
 	<<#display_owner>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=sub-org-summary.csv]{sub-org-summary.csv} sub-org-summary.csv : Data from the \nameref{sec:sub-org-summary}.<</display_owner>>
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-to-mitigate.csv]{days-to-mitigate.csv} days-to-mitigate.csv: Metrics over time for median and maximum days to mitigate findings (calculated with vulnerabilities mitigated since date listed in each row).
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-currently-active.csv]{days-currently-active.csv} days-currently-active.csv: Metrics over time for median and maximum age of active vulnerabilities (active as of date listed in each row).
+  \item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-false-positive-assertion-form.pdf]{assets/cyber-hygiene-false-positive-assertion-form.pdf} cyber-hygiene-false-positive-assertion-form.pdf: Form to request that one or more vulnerabilities be marked as \glspl{false positive}; send the completed form to \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
 \end{itemize}
 
 % Figures:
