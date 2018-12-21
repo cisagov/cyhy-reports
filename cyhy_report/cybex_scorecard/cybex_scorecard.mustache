@@ -532,7 +532,7 @@ BOD 18-01 \textemdash \ DMARC Status}}}
     \end{minipage}
     \hspace*{15mm}
     \begin{minipage}[t]{0.45\linewidth}
-      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_domain_count>>} \href{https://github.com/GSA/data/blob/gh-pages/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}}} that currently resolve in public DNS queries:
+      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_domain_count>>} \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}}} that currently resolve in public DNS queries:
       \begin{itemize}[topsep=-10pt, itemsep=-2pt]
         \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_valid_dmarc_count>>} (<<&federal_totals.trustymail.base_domains.live_valid_dmarc_pct_int>>\%)} have a valid \textbf{DMARC record}
         \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_dmarc_reject_count>>} (<<&federal_totals.trustymail.base_domains.live_dmarc_reject_pct_int>>\%)} have a valid DMARC record with a \textbf{policy of ``reject"}
@@ -549,7 +549,7 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 \textit{Notes:}
 \begin{itemize}[topsep=-10pt, itemsep=-2pt]
 	\item BOD 18-01 \href{https://cyber.dhs.gov/guide/#what-is-the-scope-of-bod-18-01}{\underline{applies to all agency-owned domains}}, regardless of domain suffix.
-	\item The number of \textbf{Domains tested} in each scan may vary depending on additions/removals from the master list of \href{https://github.com/GSA/data/blob/gh-pages/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}} and network conditions that can affect the results of public DNS queries.
+	\item The number of \textbf{Domains tested} in each scan may vary depending on additions/removals from the master list of \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}} and network conditions that can affect the results of public DNS queries.
   \item The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-email-security-summary.csv").
 \end{itemize}
 
@@ -705,7 +705,7 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
 
 {\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \textbf{Live Domains and SMTP Subdomains:} The number of second-level agency-owned domains (according to \href{https://github.com/GSA/data/blob/gh-pages/dotgov-domains/current-federal.csv}{\underline{DotGov}}) and mail-sending hosts (subdomains) that responded to DNS queries on the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.% (All other metrics are based on the adjudication that a domain is ``live".) These have the potential to be different, especially in the case of new or unused domains.
+  \item \textbf{Live Domains and SMTP Subdomains:} The number of second-level agency-owned domains (according to \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{DotGov}}) and mail-sending hosts (subdomains) that responded to DNS queries on the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.% (All other metrics are based on the adjudication that a domain is ``live".) These have the potential to be different, especially in the case of new or unused domains.
   \item \textbf{Valid DMARC Record:} Percentage of Live Domains and SMTP Subdomains where a DMARC (TXT) record is present at \texttt{\_dmarc.<domain>.gov}, or covered by a record at its second-level domain.
   \item \textbf{DMARC Reject:} Percentage of Live Domains and SMTP Subdomains with a Valid DMARC Record of ``\texttt{p=reject}".
   \item \textbf{Reports DMARC To DHS:} Percentage of Live Domains and SMTP Subdomains where DHS is a recipient of DMARC aggregate reports \\ (``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}")
