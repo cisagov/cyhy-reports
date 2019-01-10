@@ -49,5 +49,6 @@ setup(
         "docopt >= 0.6.2",
         "unicodecsv >= 0.9.4",
         "pyPdf >= 1.13",
+        "requests >= 2.21.0"
     ]
 )
