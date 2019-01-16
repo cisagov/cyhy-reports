@@ -481,11 +481,16 @@ class ScorecardGenerator(object):
 
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
-        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({'latest':True, 'live':True,
-                                                                                                                          'agency.id': {'$in':cybex_orgs}},
-                                                                                                                         {'_id':0, 'domain':1}) ]
+        ocsp_exclusions_list = [d for d in self.__ocsp_exclusions.keys()]
         # Drop domains that are OCSP sites, since they are to be excluded
-        self.__results['latest_cybex_https_scan_live_hostnames'] = [domain for domain in self.__results['latest_cybex_https_scan_live_hostnames'] if domain not in self.__ocsp_exclusions]
+        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({
+            'latest': True,
+            'live': True,
+            'agency.id': {'$in': cybex_orgs},
+            # For some reason I get an error is I just use
+            # self.__ocsp_exclusions.keys() here
+            'domain': {'$nin': ocsp_exclusions_list}
+        }, {'_id':0, 'domain':1})]
 
         self.__results['https-scan'] = list(self.__scan_db.https_scan.aggregate([
                     {'$match': {'latest':True, 'domain': {'$in':self.__results['latest_cybex_https_scan_live_hostnames']}}},
