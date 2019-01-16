@@ -492,6 +492,8 @@ class ScorecardGenerator(object):
             #
             # Since we're moving to Python 3 eventually, it seems
             # reasonable to leave the explicit list(...) in.
+            #
+            # TODO: Update this comment after moving to Python 3.
             'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
         }, {'_id':0, 'domain':1})]
 
