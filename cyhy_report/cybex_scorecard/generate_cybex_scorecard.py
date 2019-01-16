@@ -45,6 +45,7 @@ import numpy as np
 from bson import ObjectId
 from docopt import docopt
 from pyPdf import PdfFileWriter, PdfFileReader
+import requests
 
 # intra-project modules
 from cyhy.core import *
@@ -111,8 +112,11 @@ ACTIVE_CRITICAL_AGE_BUCKETS = [(0,7), (7,14), (14,21), (21,30), (30,90)]    # Ag
 TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 6      # Number of Trustymail scans to fetch summary data for
 BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 
+OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/ocsp-crl.csv'
+OCSP_FILE = '/tmp/ocsp-crl.csv'
+
 class ScorecardGenerator(object):
-    def __init__(self, cyhy_db, scan_db, previous_scorecard_json_file, debug=False, final=False, log_scorecard=True, use_web_data=False, anonymize=False):
+    def __init__(self, cyhy_db, scan_db, ocsp_file, previous_scorecard_json_file, debug=False, final=False, log_scorecard=True, use_web_data=False, anonymize=False):
         self.__cyhy_db = cyhy_db
         self.__scan_db = scan_db
         self.__generated_time = utcnow()
@@ -135,6 +139,16 @@ class ScorecardGenerator(object):
         self.__log_scorecard_to_db = log_scorecard
         self.__use_web_data = use_web_data
         self.__anonymize = anonymize
+
+        # Read in and parse the OCSP exclusion domains.
+        #
+        # We use a dict for ocsp_exclusions because we want to take
+        # advantage of the speed of the underlying hash map.  (We only
+        # care if a domain is present as an exclusion or not.)
+        self.__ocsp_exclusions = {}
+        with open(ocsp_file, newline='') as f:
+            csvreader = csv.reader(f)
+            self.__ocsp_exclusions = {row[0]: None for row in csvreader}
 
     def __open_tix_opened_in_date_range_pl(self, severity, current_date):
         return [
@@ -467,9 +481,21 @@ class ScorecardGenerator(object):
 
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
-        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({'latest':True, 'live':True,
-                                                                                                                          'agency.id': {'$in':cybex_orgs}},
-                                                                                                                         {'_id':0, 'domain':1}) ]
+        # Drop domains that are OCSP sites, since they are to be excluded
+        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({
+            'latest': True,
+            'live': True,
+            'agency.id': {'$in': cybex_orgs},
+            # I get an error in Python 3 if I just use
+            # self.__ocsp_exclusions.keys() here.  This is because in
+            # Python 3 dict.keys() returns a view, not an actual list.
+            #
+            # Since we're moving to Python 3 eventually, it seems
+            # reasonable to leave the explicit list(...) in.
+            #
+            # TODO: Update this comment after moving to Python 3.
+            'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
+        }, {'_id':0, 'domain':1})]
 
         self.__results['https-scan'] = list(self.__scan_db.https_scan.aggregate([
                     {'$match': {'latest':True, 'domain': {'$in':self.__results['latest_cybex_https_scan_live_hostnames']}}},
@@ -1485,9 +1511,18 @@ def main():
     cyhy_db = database.db_from_config(args['CYHY_DB_SECTION'])
     scan_db = database.db_from_config(args['SCAN_DB_SECTION'])
 
+    # Grab OCSP/CRL hosts.  These hosts are to be removed from the
+    # list of hosts to be evaluated for HTTPS compliance, since they
+    # are not required to satisfy BOD 18-01.  For more information see
+    # here:
+    # https://https.cio.gov/guide/#are-federally-operated-certificate-revocation-services-crl-ocsp-also-required-to-move-to-https
+    response = requests.get(OCSP_URL)
+    with f as open(OCSP_FILE, 'w'):
+        f.write(response.text)
+
     if cyhy_db.RequestDoc.find_one({'report_types':REPORT_TYPE.CYBEX}):
         print 'Generating Cyber Exposure Scorecard...'
-        generator = ScorecardGenerator(cyhy_db, scan_db,
+        generator = ScorecardGenerator(cyhy_db, scan_db, OCSP_FILE,
                                        args['PREVIOUS_SCORECARD_JSON_FILE'],
                                        debug=args['--debug'],
                                        final=args['--final'],
