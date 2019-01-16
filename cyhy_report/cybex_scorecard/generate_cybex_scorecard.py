@@ -486,6 +486,9 @@ class ScorecardGenerator(object):
             'latest': True,
             'live': True,
             'agency.id': {'$in': cybex_orgs},
+            # I get an error is I just use
+            # self.__ocsp_exclusions.keys() here.  This is because in
+            # python 3 dict.keys() returns a view, not an actual list.
             'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
         }, {'_id':0, 'domain':1})]
 
