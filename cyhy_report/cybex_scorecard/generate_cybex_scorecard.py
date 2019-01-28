@@ -146,7 +146,7 @@ class ScorecardGenerator(object):
         # advantage of the speed of the underlying hash map.  (We only
         # care if a domain is present as an exclusion or not.)
         self.__ocsp_exclusions = {}
-        with open(ocsp_file, newline='') as f:
+        with open(ocsp_file, 'r') as f:
             csvreader = csv.reader(f)
             self.__ocsp_exclusions = {row[0]: None for row in csvreader}
 
