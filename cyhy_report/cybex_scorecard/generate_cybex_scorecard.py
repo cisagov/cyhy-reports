@@ -146,7 +146,7 @@ class ScorecardGenerator(object):
         # advantage of the speed of the underlying hash map.  (We only
         # care if a domain is present as an exclusion or not.)
         self.__ocsp_exclusions = {}
-        with open(ocsp_file, newline='') as f:
+        with open(ocsp_file, 'r') as f:
             csvreader = csv.reader(f)
             self.__ocsp_exclusions = {row[0]: None for row in csvreader}
 
@@ -1517,7 +1517,7 @@ def main():
     # here:
     # https://https.cio.gov/guide/#are-federally-operated-certificate-revocation-services-crl-ocsp-also-required-to-move-to-https
     response = requests.get(OCSP_URL)
-    with f as open(OCSP_FILE, 'w'):
+    with open(OCSP_FILE, 'w') as f:
         f.write(response.text)
 
     if cyhy_db.RequestDoc.find_one({'report_types':REPORT_TYPE.CYBEX}):
