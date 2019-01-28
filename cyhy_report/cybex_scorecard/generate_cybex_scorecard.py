@@ -1517,7 +1517,7 @@ def main():
     # here:
     # https://https.cio.gov/guide/#are-federally-operated-certificate-revocation-services-crl-ocsp-also-required-to-move-to-https
     response = requests.get(OCSP_URL)
-    with f as open(OCSP_FILE, 'w'):
+    with open(OCSP_FILE, 'w') as f:
         f.write(response.text)
 
     if cyhy_db.RequestDoc.find_one({'report_types':REPORT_TYPE.CYBEX}):
