@@ -119,6 +119,8 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
+CERTS_DB_NAME = 'certs'
+
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
     return a DataFrame with columns if requested.'''
@@ -129,8 +131,9 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, owner, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
+    def __init__(self, db, cert_db, owner, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
         self.__db = db
+        self.__cert_db = cert_db
         self.__owner = owner
         self.__snapshots = None
         self.__no_history = None # True if only one snapshot
@@ -498,6 +501,14 @@ class ReportGenerator(object):
                     snap['owner'] = 'SUB_ORG'
 
                 self.__results['ss0_descendant_data'].append({'owner':snap['owner'], 'address_count':address_count, 'addresses_scanned':snap['addresses_scanned'], 'addresses_scanned_percent':addresses_scanned_percent, 'host_count':snap['host_count'], 'vulnerable_host_count':snap['vulnerable_host_count'], 'vuln_host_percent':vuln_host_percent, 'vulnerabilities':snap['vulnerabilities'], 'port_count':snap['port_count'], 'tix_days_to_close':tix_days_to_close, 'tix_days_open':tix_days_open})
+
+        #
+        # Run ED 19-01 queries
+        #
+        owner_domains = ['us-cert.org']
+        self.__cert_db.cert.find({
+            
+        })
 
     ###############################################################################
     # Figure Generation
@@ -1812,6 +1823,9 @@ def main():
     args = docopt(__doc__, version='v0.0.1')
     db = database.db_from_config(args['--section'])
     ch_db = CHDatabase(db)
+    # This is a bit janky, but it works since the API allows you to
+    # get the DB connection object from a database
+    cert_db = database.db_from_config(args['--section']).client[CERTS_DB_NAME]
 
     overview_data = []
 
@@ -1832,9 +1846,11 @@ def main():
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, owner, debug=args['--debug'], snapshot_id=snapshot_id,
+        generator = ReportGenerator(db, cert_db, owner, debug=args['--debug'],
+                                    snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
-                                    anonymize=args['--anonymize'], encrypt_key=report_key,
+                                    anonymize=args['--anonymize'],
+                                    encrypt_key=report_key,
                                     log_report=not args['--nolog'])
         was_encrypted, results = generator.generate_report()
 
