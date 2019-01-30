@@ -493,96 +493,6 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 
 \newpage
 \begin{landscape}
-\hiddensection{Email Security Summary Metrics}
-\label{sec:email-security-summary-metrics}
-{\textcolor{dhs-blue}{\NCCICHeadingOne{Email Security Summary Metrics}}}
-
-\vspace*{-8mm}
-\begin{minipage}{\linewidth}
-  % \centering
-  \begin{minipage}{0.50\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.50]{figure_bod1801_email_components.pdf}
-	  \end{figure}
-	\end{minipage}
-	\begin{minipage}{0.30\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.50]{figure_bod1801_email_compliant.pdf}
-	  \end{figure}
-	\end{minipage}
-\end{minipage}
-
-\vspace*{-3mm}
-\begin{minipage}{\linewidth}
-    \begin{minipage}[t]{0.45\linewidth}
-      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_domain_count>>} hostnames (Federal second-level .gov domains, plus subdomains that respond to SMTP requests)} that currently resolve in public DNS queries:
-      \begin{itemize}[topsep=-10pt, itemsep=-2pt]
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_dmarc_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_dmarc_pct_int>>\%)} have a valid \textbf{DMARC record}
-      	\item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_dmarc_reject_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_dmarc_reject_pct_int>>\%)} have a valid DMARC record with a \textbf{policy of ``reject"}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_has_bod1801_dmarc_uri_count>>}
-        (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_has_bod1801_dmarc_uri_pct_int>>\%)} have a valid DMARC record with \textbf{DHS as recipient of DMARC aggregate reports}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_supports_starttls_count>>}
-         (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_supports_starttls_pct_int>>\%)} support \textbf{STARTTLS} (or have no mail-sending hosts)
-      	\item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_spf_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_spf_pct_int>>\%)} have a valid \textbf{SPF record}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_no_weak_crypto_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
-        \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for email security}}
-      \end{itemize}
-    \end{minipage}
-    \hspace*{15mm}
-    \begin{minipage}[t]{0.45\linewidth}
-      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_domain_count>>} \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}}} that currently resolve in public DNS queries:
-      \begin{itemize}[topsep=-10pt, itemsep=-2pt]
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_valid_dmarc_count>>} (<<&federal_totals.trustymail.base_domains.live_valid_dmarc_pct_int>>\%)} have a valid \textbf{DMARC record}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_dmarc_reject_count>>} (<<&federal_totals.trustymail.base_domains.live_dmarc_reject_pct_int>>\%)} have a valid DMARC record with a \textbf{policy of ``reject"}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_has_bod1801_dmarc_uri_count>>}
-        (<<&federal_totals.trustymail.base_domains.live_has_bod1801_dmarc_uri_pct_int>>\%)} have a valid DMARC record with \textbf{DHS as recipient of DMARC aggregate reports}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_supports_starttls_count>>} (<<&federal_totals.trustymail.base_domains.live_supports_starttls_pct_int>>\%)} support \textbf{STARTTLS} (or have no mail-sending hosts)
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_valid_spf_count>>} (<<&federal_totals.trustymail.base_domains.live_valid_spf_pct_int>>\%)} have a valid \textbf{SPF record}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_no_weak_crypto_count>>} (<<&federal_totals.trustymail.base_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
-        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_bod1801_email_compliant_count>>} (<<&federal_totals.trustymail.base_domains.live_bod1801_email_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for email security}
-      \end{itemize}
-    \end{minipage}
-\end{minipage}
-
-\textit{Notes:}
-\begin{itemize}[topsep=-10pt, itemsep=-2pt]
-	\item BOD 18-01 \href{https://cyber.dhs.gov/guide/#what-is-the-scope-of-bod-18-01}{\underline{applies to all agency-owned domains}}, regardless of domain suffix.
-	\item The number of \textbf{Domains tested} in each scan may vary depending on additions/removals from the master list of \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}} and network conditions that can affect the results of public DNS queries.
-  \item The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-email-security-summary.csv").
-\end{itemize}
-
-\vspace*{-3mm}
-\begin{minipage}{\linewidth}
-  \begin{minipage}[t]{0.28\linewidth}
-    \   % space so the minipage is not "empty"
-  \end{minipage}
-  \begin{minipage}[t]{0.72\linewidth}
-    \rowcolors{4}{row-light-blue}{white}
-    \setlength{\tabcolsep}{6pt}
-    \begin{longtable}{>{\raggedright}p{1.4in}||<<#dmarc_summary>>r<</dmarc_summary>>}
-        \toprule
-        \textbf{DMARC Policy} <<#dmarc_summary>>& \textbf{\usshortvardate\formatdate<<&scan_date_tex>>} <</dmarc_summary>>\\
-        \midrule
-        \textbf{p=none} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_none>>} <</dmarc_summary>>\\
-        \textbf{p=quarantine} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_quarantine>>} <</dmarc_summary>>\\
-        \textbf{p=reject} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_reject>>} <</dmarc_summary>>\\
-        \textbf{Reports DMARC to DHS} <<#dmarc_summary>>& \numprint{<<&dmarc_correct_rua>>} <</dmarc_summary>>\\
-        \textbf{Invalid DMARC record} <<#dmarc_summary>>& \numprint{<<&invalid_dmarc_record>>} <</dmarc_summary>>\\
-        \textbf{No DMARC record} <<#dmarc_summary>>& \numprint{<<&no_dmarc_record>>} <</dmarc_summary>>\\
-        \midrule
-        \midrule
-        \textbf{Domains tested:} Total number of executive branch .gov domains <<#dmarc_summary>>& \numprint{<<&base_domain_count>>} <</dmarc_summary>>\\
-        \bottomrule
-    \end{longtable}
-  \end{minipage}
-\end{minipage}
-\end{landscape}
-
-
-\newpage
-\begin{landscape}
 \hiddensection{BOD Results By Agency}
 \label{sec:bod-results-by-agency}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{BOD Results by Agency}}}
@@ -694,6 +604,96 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
   <</all_orgs_bod1801_web_compliant>>
   \bottomrule
 \end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\hiddensection{Email Security Summary Metrics}
+\label{sec:email-security-summary-metrics}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{Email Security Summary Metrics}}}
+
+\vspace*{-8mm}
+\begin{minipage}{\linewidth}
+  % \centering
+  \begin{minipage}{0.50\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.50]{figure_bod1801_email_components.pdf}
+	  \end{figure}
+	\end{minipage}
+	\begin{minipage}{0.30\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.50]{figure_bod1801_email_compliant.pdf}
+	  \end{figure}
+	\end{minipage}
+\end{minipage}
+
+\vspace*{-3mm}
+\begin{minipage}{\linewidth}
+    \begin{minipage}[t]{0.45\linewidth}
+      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_domain_count>>} hostnames (Federal second-level .gov domains, plus subdomains that respond to SMTP requests)} that currently resolve in public DNS queries:
+      \begin{itemize}[topsep=-10pt, itemsep=-2pt]
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_dmarc_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_dmarc_pct_int>>\%)} have a valid \textbf{DMARC record}
+      	\item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_dmarc_reject_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_dmarc_reject_pct_int>>\%)} have a valid DMARC record with a \textbf{policy of ``reject"}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_has_bod1801_dmarc_uri_count>>}
+        (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_has_bod1801_dmarc_uri_pct_int>>\%)} have a valid DMARC record with \textbf{DHS as recipient of DMARC aggregate reports}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_supports_starttls_count>>}
+         (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_supports_starttls_pct_int>>\%)} support \textbf{STARTTLS} (or have no mail-sending hosts)
+      	\item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_spf_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_valid_spf_pct_int>>\%)} have a valid \textbf{SPF record}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_no_weak_crypto_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
+        \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_count>>} (<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for email security}}
+      \end{itemize}
+    \end{minipage}
+    \hspace*{15mm}
+    \begin{minipage}[t]{0.45\linewidth}
+      Of the \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_domain_count>>} \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}}} that currently resolve in public DNS queries:
+      \begin{itemize}[topsep=-10pt, itemsep=-2pt]
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_valid_dmarc_count>>} (<<&federal_totals.trustymail.base_domains.live_valid_dmarc_pct_int>>\%)} have a valid \textbf{DMARC record}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_dmarc_reject_count>>} (<<&federal_totals.trustymail.base_domains.live_dmarc_reject_pct_int>>\%)} have a valid DMARC record with a \textbf{policy of ``reject"}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_has_bod1801_dmarc_uri_count>>}
+        (<<&federal_totals.trustymail.base_domains.live_has_bod1801_dmarc_uri_pct_int>>\%)} have a valid DMARC record with \textbf{DHS as recipient of DMARC aggregate reports}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_supports_starttls_count>>} (<<&federal_totals.trustymail.base_domains.live_supports_starttls_pct_int>>\%)} support \textbf{STARTTLS} (or have no mail-sending hosts)
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_valid_spf_count>>} (<<&federal_totals.trustymail.base_domains.live_valid_spf_pct_int>>\%)} have a valid \textbf{SPF record}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_no_weak_crypto_count>>} (<<&federal_totals.trustymail.base_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
+        \item \textbf{\numprint{<<&federal_totals.trustymail.base_domains.live_bod1801_email_compliant_count>>} (<<&federal_totals.trustymail.base_domains.live_bod1801_email_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for email security}
+      \end{itemize}
+    \end{minipage}
+\end{minipage}
+
+\textit{Notes:}
+\begin{itemize}[topsep=-10pt, itemsep=-2pt]
+	\item BOD 18-01 \href{https://cyber.dhs.gov/guide/#what-is-the-scope-of-bod-18-01}{\underline{applies to all agency-owned domains}}, regardless of domain suffix.
+	\item The number of \textbf{Domains tested} in each scan may vary depending on additions/removals from the master list of \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{Federal second-level .gov domains}} and network conditions that can affect the results of public DNS queries.
+  \item The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-email-security-summary.csv").
+\end{itemize}
+
+\vspace*{-3mm}
+\begin{minipage}{\linewidth}
+  \begin{minipage}[t]{0.28\linewidth}
+    \   % space so the minipage is not "empty"
+  \end{minipage}
+  \begin{minipage}[t]{0.72\linewidth}
+    \rowcolors{4}{row-light-blue}{white}
+    \setlength{\tabcolsep}{6pt}
+    \begin{longtable}{>{\raggedright}p{1.4in}||<<#dmarc_summary>>r<</dmarc_summary>>}
+        \toprule
+        \textbf{DMARC Policy} <<#dmarc_summary>>& \textbf{\usshortvardate\formatdate<<&scan_date_tex>>} <</dmarc_summary>>\\
+        \midrule
+        \textbf{p=none} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_none>>} <</dmarc_summary>>\\
+        \textbf{p=quarantine} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_quarantine>>} <</dmarc_summary>>\\
+        \textbf{p=reject} <<#dmarc_summary>>& \numprint{<<&dmarc_policy_reject>>} <</dmarc_summary>>\\
+        \textbf{Reports DMARC to DHS} <<#dmarc_summary>>& \numprint{<<&dmarc_correct_rua>>} <</dmarc_summary>>\\
+        \textbf{Invalid DMARC record} <<#dmarc_summary>>& \numprint{<<&invalid_dmarc_record>>} <</dmarc_summary>>\\
+        \textbf{No DMARC record} <<#dmarc_summary>>& \numprint{<<&no_dmarc_record>>} <</dmarc_summary>>\\
+        \midrule
+        \midrule
+        \textbf{Domains tested:} Total number of executive branch .gov domains <<#dmarc_summary>>& \numprint{<<&base_domain_count>>} <</dmarc_summary>>\\
+        \bottomrule
+    \end{longtable}
+  \end{minipage}
+\end{minipage}
 \end{landscape}
 
 
