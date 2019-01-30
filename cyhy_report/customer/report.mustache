@@ -680,14 +680,7 @@ outlier certificates that have been issued by an unusual organization.
 \begin{minipage}[b]{0.45\textwidth}
   {\RCSub UNEXPIRED CERTIFICATES}\\[-3pt]
   \RCHashDot\\
-	  {\RCBigNum \numprint{<<&calc.address_count>>}}
-	  <<#calc.address_count_up_flag>>\RCUpArrow<</calc.address_count_up_flag>>
-	  <<#calc.address_count_down_flag>>\RCDownArrow<</calc.address_count_down_flag>>
-	  <<#calc.address_count_flat_flag>>\RCFlatArrow<</calc.address_count_flat_flag>>
-	  \\
-	  <<#calc.address_count_up_flag>>{\RCSmallNum \numprint{<<&calc.address_count_up>>} increase}<</calc.address_count_up_flag>>%
-	  <<#calc.address_count_down_flag>>{\RCSmallNum \numprint{<<&calc.address_count_down>>} decrease}<</calc.address_count_down_flag>>%
-	  <<#calc.address_count_flat_flag>>{\RCSmallNum no change}<</calc.address_count_flat_flag>>\\
+	  {\RCBigNum \numprint{<<&certs.unexpired_certs_count>>}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.45\textwidth}
@@ -731,37 +724,37 @@ outlier certificates that have been issued by an unusual organization.
 \begin{minipage}[b]{0.2125\textwidth}
   {\RCSub EXPIRED IN LAST 7 DAYS}\\[-3pt]
   \RCHashDot\\
-	  {\RCBigNum \numprint{<<&calc.address_count>>}}
+	  {\RCBigNum \numprint{<<&certs.certs_expired_last_seven_days_count>>}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.2125\textwidth}
   {\RCSub EXPIRING IN 7 DAYS}\\[-3pt]
   \RCHashDot\\
-	  {\RCBigNum \numprint{<<&calc.address_count>>}}
+	  {\RCBigNum \numprint{<<&certs.certs_expire_next_seven_days_count>>}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.2125\textwidth}
   {\RCSub EXPIRED IN LAST 30 DAYS}\\[-3pt]
   \RCHashDot\\
-	  {\RCBigNum \numprint{<<&calc.address_count>>}}
+	  {\RCBigNum \numprint{<<&certs.certs_expired_last_thirty_days_count>>}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.2125\textwidth}
   {\RCSub EXPIRING IN 30 DAYS}\\[-3pt]
   \RCHashDot\\
-	  {\RCBigNum \numprint{<<&calc.address_count>>}}
+	  {\RCBigNum \numprint{<<&certs.certs_expire_next_thirty_days_count>>}}
 \end{minipage}
 
 \setlength{\tabcolsep}{0.4pt}
 \rowcolors{4}{white}{row-gray}
-\begin{longtable}{>{\raggedright}p{2.7in}p{1.0in}p{0.7in}}
+\begin{longtable}{>{\raggedright}p{3.0in}p{1.0in}
   \toprule
-  \textbf{Issuing Agency} & \textbf{Number of Certificates} & \textbf{Percentage of Total}\\
-  \hhline{===}
+  \textbf{Issuing Agency} & \textbf{Number of Certificates}\\
+  \hhline{==}
   \endhead
-  % <<#report_doc.scores>>
-  Blah & \numprint{Blah} & \numprint{Blah}\%\\
-  % <</report_doc.scores>>
+  <<#certs.ca_aggregation>>
+  <<&issuer>> & \numprint{<<&count>>}\\
+  <</certs.ca_aggregation>>
 \end{longtable}
 <</owner_is_federal_executive>>
 

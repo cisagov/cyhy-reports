@@ -20,9 +20,18 @@ Options:
   --version                      Show version.
   -s --section=SECTION           Configuration section to use.
   -t --title-date=YYYYMMDD       Change the title page date.
+  -x --federal-slds=FILENAME     A CSV containing a list of federal SLDs in
+                                 this format:
+                                 https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv
+  -y --agency-mapping=FILENAME   A CSV containing a list of federal agency
+                                 names (as they appear in the CSV of federal
+                                 SLDs) and their associated CyHy IDs.  The
+                                 format should be identical to:
+                                 https://raw.githubusercontent.com/dhs-ncats/saver/develop/include/agencies.csv
 '''
 
 # standard python libraries
+import csv
 import sys
 import os
 import copy
@@ -120,6 +129,7 @@ RED =       '#c66270'
 BLACK =     '#000000'
 
 CERTS_DB_NAME = 'certs'
+CERT_COLLECTION_NAME = 'cert'
 
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
@@ -131,10 +141,12 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, cert_db, owner, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
+    def __init__(self, db, cert_db, owner, federal_slds, agency_mappings, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
         self.__db = db
         self.__cert_db = cert_db
         self.__owner = owner
+        self.__federal_slds = federal_slds
+        self.__agency_mappings = agency_mappings
         self.__snapshots = None
         self.__no_history = None # True if only one snapshot
         self.__latest_snapshots = None
@@ -505,10 +517,125 @@ class ReportGenerator(object):
         #
         # Run ED 19-01 queries
         #
-        owner_domains = ['us-cert.org']
-        self.__cert_db.cert.find({
+        if self.__results['owner_is_federal_executive']:
+            certs = {}
             
-        })
+            today = datetime.utcnow().date()
+            seven_days = datetime.timedelta(days=7)
+            seven_days_ago = today - seven_days
+            seven_days_from_today = today + seven_days
+            thirty_days = datetime.timedelta(days=30)
+            thirty_days_ago = today - thirty_days
+            thirty_days_from_today = today + thirty_days
+
+            owner = self.__results['owner']
+            owner_domains = [
+                row[0]
+                for row in self.__federal_slds
+                if row[2] == self.__agency_mappings[owner]
+            ]
+            owner_domains_regexes = [
+                r'^(.*\.)?{}'.format(d.replace('.', '\.'))
+                for d in owner_domains
+            ]
+            owner_domains_regex = re.compile(owner_domains_regexes.join('|'),
+                                             re.IGNORECASE)
+
+            # Get all certs for this agency that are unexpired or
+            # expired in the last 30 days
+            certs['unexpired_and_recently_expired_certs'] = list(
+                self.__cert_db.cert.find({
+                    'not_after': {
+                        '$gte': thirty_days_ago,
+                    },
+                    'subject': owner_domains_regex
+                })
+            )
+
+            # Get a count of all certs for this agency that are
+            # unexpired
+            certs['unexpired_certs_count'] = self.__cert_db.cert.count({
+                'not_after': {
+                    '$gte': today
+                },
+                'subject': owner_domains_regex
+            })
+
+            # Get a count of all certs for this agency that expired in
+            # the last 7 days
+            certs['certs_expired_last_seven_days_count'] =
+                self.__cert_db.cert.count({
+                    'not_after': {
+                        '$gte': seven_days_ago,
+                        '$lte': today
+                    },
+                    'subject': owner_domains_regex
+                }
+            )
+            # Get a count of all certs for this agency that expire in
+            # the next 7 days
+            certs['certs_expire_next_seven_days_count'] =
+                self.__cert_db.cert.count({
+                    'not_after': {
+                        '$gte': today,
+                        '$lte': seven_days_from_today
+                    },
+                    'subject': owner_domains_regex
+                }
+            )
+            # Get a count of all certs for this agency that expired in
+            # the last 30 days
+            certs['certs_expired_last_thirty_days_count'] =
+                self.__cert_db.cert.count({
+                    'not_after': {
+                        '$gte': thirty_days_ago,
+                        '$lte': today
+                    },
+                    'subject': owner_domains_regex
+                }
+            )
+            # Get a count of all certs for this agency that expire in
+            # the next 30 days
+            certs['certs_expire_next_thirty_days_count'] =
+                self.__cert_db.cert.count({
+                    'not_after': {
+                        '$gte': today,
+                        '$lte': thirty_days_from_today
+                    },
+                    'subject': owner_domains_regex
+                }
+            )
+
+            # Aggregate the unexpired certs for this agency by issuer
+            certs['ca_aggregation'] = list(
+                self.__cert_db.cert.aggregate([
+                    {
+                        '$match': {
+                            'not_after': {
+                                '$gt': today
+                            },
+                            'subject': owner_domains_regex
+                        }
+                    },
+	            {
+                        '$group': {
+                            '_id': {
+                                'issuer': '$issuer'
+                            },
+                            'count': {
+                                '$sum': 1
+                            }
+                        }
+                    },
+	            {
+                        $sort: {
+                            'count': -1
+                        }
+                    }
+	        ])
+            )
+
+            self.__results['certs'] = certs
 
     ###############################################################################
     # Figure Generation
@@ -1829,6 +1956,22 @@ def main():
 
     overview_data = []
 
+    # Read in the list of federal SLDs, if necessary
+    federal_slds = []
+    federal_sld_filename = args['--federal-slds']
+    if federal_sld_filename:
+        with open(federal_sld_filename, 'r') as current_federal_modified:
+            csvreader = csv.reader(current_federal_modified)
+            federal_slds = [row for row in csvreader]
+
+    # Read in the agency name to CyHy ID mapping, if necessary
+    agency_mappings = {}
+    agency_mapping_filename = args['--agency-mapping']
+    if agency_mapping_filename:
+        with open(agency_mapping_filename, 'r') as agency_mapping:
+            csvreader = csv.reader(agency_mapping)
+            agency_mappings = {row[1]: row[2] for row in csvreader}
+
     for owner in args['OWNER']:
         if args['--previous']:
             snapshot_id = ObjectId(args['--previous'])
@@ -1846,7 +1989,9 @@ def main():
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, cert_db, owner, debug=args['--debug'],
+        generator = ReportGenerator(db, cert_db, owner,
+                                    federal_slds, agency_mappings,
+                                    debug=args['--debug'],
                                     snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
                                     anonymize=args['--anonymize'],
