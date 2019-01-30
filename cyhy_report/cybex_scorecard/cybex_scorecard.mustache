@@ -583,41 +583,6 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 
 \newpage
 \begin{landscape}
-\hiddensection{Web Security Summary Metrics}
-\label{sec:web-security-summary-metrics}
-{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Summary Metrics}}}
-
-\begin{minipage}{\linewidth}
-  \centering
-  \begin{minipage}{0.40\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.55]{figure_bod1801_web_components.pdf}
-	  \end{figure}
-	\end{minipage}
-	\begin{minipage}{0.40\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.55]{figure_bod1801_web_compliant.pdf}
-	  \end{figure}
-	\end{minipage}
-\end{minipage}
-
-\vspace*{8mm}
-
-Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>} Federal .gov domains and subdomains} that currently respond to HTTP requests:
-\begin{itemize}[topsep=-6pt, itemsep=0pt]
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_supports_https_count>>} (<<&federal_totals.https-scan.live_domains.live_supports_https_pct_int>>\%) use HTTPS}
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_enforces_https_count>>} (<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_int>>\%) enforce HTTPS}
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_count>>} (<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_int>>\%) use Strong HSTS}
-  \item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_count>>} (<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
-  \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_count>>} (<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for web security}}
-\end{itemize}
-\end{landscape}
-
-
-\newpage
-\begin{landscape}
 \hiddensection{BOD Results By Agency}
 \label{sec:bod-results-by-agency}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{BOD Results by Agency}}}
@@ -658,6 +623,41 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 	<</all_orgs_vuln>>
   \bottomrule
 \end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\hiddensection{Web Security Summary Metrics}
+\label{sec:web-security-summary-metrics}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Summary Metrics}}}
+
+\begin{minipage}{\linewidth}
+  \centering
+  \begin{minipage}{0.40\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.55]{figure_bod1801_web_components.pdf}
+	  \end{figure}
+	\end{minipage}
+	\begin{minipage}{0.40\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.55]{figure_bod1801_web_compliant.pdf}
+	  \end{figure}
+	\end{minipage}
+\end{minipage}
+
+\vspace*{8mm}
+
+Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>} Federal .gov domains and subdomains} that currently respond to HTTP requests:
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_supports_https_count>>} (<<&federal_totals.https-scan.live_domains.live_supports_https_pct_int>>\%) use HTTPS}
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_enforces_https_count>>} (<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_int>>\%) enforce HTTPS}
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_count>>} (<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_int>>\%) use Strong HSTS}
+  \item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_count>>} (<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
+  \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_count>>} (<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for web security}}
+\end{itemize}
 \end{landscape}
 
 
