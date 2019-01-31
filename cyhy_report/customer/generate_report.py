@@ -515,7 +515,7 @@ class ReportGenerator(object):
         if self.__results['owner_is_federal_executive']:
             certs = {}
             
-            today = datetime.utcnow().date()
+            today = datetime.datetime.utcnow().date()
             seven_days = datetime.timedelta(days=7)
             seven_days_ago = today - seven_days
             seven_days_from_today = today + seven_days
