@@ -556,8 +556,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs issued for this agency during
             # the start of the current fiscal year
-            certs['certs_issued_this_fy_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_issued_this_fy_count'] = self.__cert_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': start_of_current_fy
                 },
@@ -565,8 +564,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency since
             # the start of the 2018-2019 government shutdown
-            certs['certs_issued_since_government_shutdown_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_issued_since_government_shutdown_count'] = self.__cert_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': start_of_govt_shutdown
                 },
@@ -574,8 +572,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency in the
             # last 30 days
-            certs['certs_issued_last_thirty_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_issued_last_thirty_days_count'] = self.__cert_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': thirty_days_ago
                 },
@@ -583,8 +580,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency in the
             # last 7 days
-            certs['certs_issued_last_seven_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_issued_last_seven_days_count'] = self.__cert_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': seven_days_ago
                 },
@@ -593,8 +589,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs for this agency that are
             # unexpired
-            certs['unexpired_certs_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['unexpired_certs_count'] = self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': today
                 },
@@ -603,8 +598,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs for this agency that expired in
             # the last 7 days
-            certs['certs_expired_last_seven_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_expired_last_seven_days_count'] = self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': seven_days_ago,
                     '$lte': today
@@ -613,8 +607,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expire in
             # the next 7 days
-            certs['certs_expire_next_seven_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_expire_next_seven_days_count'] = self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': today,
                     '$lte': seven_days_from_today
@@ -623,8 +616,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expired in
             # the last 30 days
-            certs['certs_expired_last_thirty_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_expired_last_thirty_days_count'] = self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': thirty_days_ago,
                     '$lte': today
@@ -633,8 +625,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expire in
             # the next 30 days
-            certs['certs_expire_next_thirty_days_count'] =
-            self.__cert_db.cert.count_documents({
+            certs['certs_expire_next_thirty_days_count'] = self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': today,
                     '$lte': thirty_days_from_today
