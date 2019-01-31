@@ -655,7 +655,7 @@ class ReportGenerator(object):
                         }
                     },
 	            {
-                        $sort: {
+                        '$sort': {
                             'count': -1
                         }
                     }
