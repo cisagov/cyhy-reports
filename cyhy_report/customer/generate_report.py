@@ -1516,6 +1516,7 @@ class ReportGenerator(object):
     #  Attachment Generation
     ###############################################################################
     def __generate_attachments(self):
+        self.__generate_certificate_attachment()
         self.__generate_findings_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
@@ -1526,6 +1527,49 @@ class ReportGenerator(object):
         self.__generate_sub_org_summary_attachment()
         self.__generate_days_to_mitigate_attachment()
         self.__generate_days_currently_active_attachment()
+
+    def __generate_certificate_attachment(self):
+        fields = (
+            'Date Cert Appeared in Logs',
+            'Subjects',
+            'Issuer',
+            'Not Valid Before',
+            'Not Valid After',
+            'Expired',
+            'Expiring in Next 30 Days',
+            'Days Until Expiration',
+            'Certificate'
+        )
+
+        today = datetime.utcnow().date()
+        thirty_days = datetime.timedelta(days=30)
+        thirty_days_from_today = today + thirty_days
+        data = self.__results['certs']['unexpired_and_recently_expired_certs']
+
+        with open('certificates.csv', 'wb') as f:
+            # We're carefully controlling the fields, so if an unknown
+            # field appears it indicates an error (probably a typo).
+            # That's why we're using extrasaction='raise' here.
+            writer = DictWriter(f, fields, extrasaction='raise')
+            writer.writeheader()
+            for d in data:
+                not_after = d['not_after']
+                expired = expired
+                expiring_in_next_thirty_days =
+                (not expired) and (not_after < thirty_days_from_today)
+
+                row = {
+                    'Date Cert Appeared in Logs': d['sct_or_not_before'],
+                    'Subjects': '"{}"'.format(d['subjects'].join(',')),
+                    'Issuer': d['issuer'],
+                    'Not Valid Before': d['not_before'],
+                    'Not Valid After': not_after,
+                    'Expired': expired,
+                    'Expiring in Next 30 Days': expiring_in_next_thirty_days,
+                    'Days Until Expiration': (not_after - today).days,
+                    'Certificate': d['pem']
+                }
+                writer.writerow(row)
 
     def __generate_findings_attachment(self):
         # remove ip_int column if we are trying to be anonymous
