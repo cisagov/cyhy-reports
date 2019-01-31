@@ -522,6 +522,12 @@ class ReportGenerator(object):
             thirty_days = datetime.timedelta(days=30)
             thirty_days_ago = today - thirty_days
             thirty_days_from_today = today + thirty_days
+            start_of_govt_shutdown = datetime.date(2018, 12, 22)
+            # If it's already October 1 or later then the FY started
+            # this year.  Otherwise it started last year.
+            start_of_current_fy = datetime.date(today.year, 10, 1)
+            if start_of_current_fy > today:
+                start_of_current_fy = datetime.date(today.year - 1, 10, 1)
 
             owner = self.__results['owner']
             owner_domains = self.__scan_db.domains.find({
@@ -537,7 +543,8 @@ class ReportGenerator(object):
                                              re.IGNORECASE)
 
             # Get all certs for this agency that are unexpired or
-            # expired in the last 30 days
+            # expired in the last 30 days.  This data will be used to
+            # generate the CSV attachment.
             certs['unexpired_and_recently_expired_certs'] = list(
                 self.__cert_db.cert.find({
                     'not_after': {
@@ -547,9 +554,47 @@ class ReportGenerator(object):
                 })
             )
 
+            # Get a count of all certs issued for this agency during
+            # the start of the current fiscal year
+            certs['certs_issued_this_fy_count'] =
+            self.__cert_db.cert.count_documents({
+                'sct_or_not_before': {
+                    '$gte': start_of_current_fy
+                },
+                'subject': owner_domains_regex
+            })
+            # Get a count of all certs issued for this agency since
+            # the start of the 2018-2019 government shutdown
+            certs['certs_issued_since_government_shutdown_count'] =
+            self.__cert_db.cert.count_documents({
+                'sct_or_not_before': {
+                    '$gte': start_of_govt_shutdown
+                },
+                'subject': owner_domains_regex
+            })
+            # Get a count of all certs issued for this agency in the
+            # last 30 days
+            certs['certs_issued_last_thirty_days_count'] =
+            self.__cert_db.cert.count_documents({
+                'sct_or_not_before': {
+                    '$gte': thirty_days_ago
+                },
+                'subject': owner_domains_regex
+            })
+            # Get a count of all certs issued for this agency in the
+            # last 7 days
+            certs['certs_issued_last_seven_days_count'] =
+            self.__cert_db.cert.count_documents({
+                'sct_or_not_before': {
+                    '$gte': seven_days_ago
+                },
+                'subject': owner_domains_regex
+            })
+
             # Get a count of all certs for this agency that are
             # unexpired
-            certs['unexpired_certs_count'] = self.__cert_db.cert.count({
+            certs['unexpired_certs_count'] =
+            self.__cert_db.cert.count_documents({
                 'not_after': {
                     '$gte': today
                 },
@@ -559,47 +604,43 @@ class ReportGenerator(object):
             # Get a count of all certs for this agency that expired in
             # the last 7 days
             certs['certs_expired_last_seven_days_count'] =
-                self.__cert_db.cert.count({
-                    'not_after': {
-                        '$gte': seven_days_ago,
-                        '$lte': today
-                    },
-                    'subject': owner_domains_regex
-                }
-            )
+            self.__cert_db.cert.count_documents({
+                'not_after': {
+                    '$gte': seven_days_ago,
+                    '$lte': today
+                },
+                'subject': owner_domains_regex
+            })
             # Get a count of all certs for this agency that expire in
             # the next 7 days
             certs['certs_expire_next_seven_days_count'] =
-                self.__cert_db.cert.count({
-                    'not_after': {
-                        '$gte': today,
-                        '$lte': seven_days_from_today
-                    },
-                    'subject': owner_domains_regex
-                }
-            )
+            self.__cert_db.cert.count_documents({
+                'not_after': {
+                    '$gte': today,
+                    '$lte': seven_days_from_today
+                },
+                'subject': owner_domains_regex
+            })
             # Get a count of all certs for this agency that expired in
             # the last 30 days
             certs['certs_expired_last_thirty_days_count'] =
-                self.__cert_db.cert.count({
-                    'not_after': {
-                        '$gte': thirty_days_ago,
-                        '$lte': today
-                    },
-                    'subject': owner_domains_regex
-                }
-            )
+            self.__cert_db.cert.count_documents({
+                'not_after': {
+                    '$gte': thirty_days_ago,
+                    '$lte': today
+                },
+                'subject': owner_domains_regex
+            })
             # Get a count of all certs for this agency that expire in
             # the next 30 days
             certs['certs_expire_next_thirty_days_count'] =
-                self.__cert_db.cert.count({
-                    'not_after': {
-                        '$gte': today,
-                        '$lte': thirty_days_from_today
-                    },
-                    'subject': owner_domains_regex
-                }
-            )
+            self.__cert_db.cert.count_documents({
+                'not_after': {
+                    '$gte': today,
+                    '$lte': thirty_days_from_today
+                },
+                'subject': owner_domains_regex
+            })
 
             # Aggregate the unexpired certs for this agency by issuer
             certs['ca_aggregation'] = list(
