@@ -20,14 +20,6 @@ Options:
   --version                      Show version.
   -s --section=SECTION           Configuration section to use.
   -t --title-date=YYYYMMDD       Change the title page date.
-  -x --federal-slds=FILENAME     A CSV containing a list of federal SLDs in
-                                 this format:
-                                 https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv
-  -y --agency-mapping=FILENAME   A CSV containing a list of federal agency
-                                 names (as they appear in the CSV of federal
-                                 SLDs) and their associated CyHy IDs.  The
-                                 format should be identical to:
-                                 https://raw.githubusercontent.com/dhs-ncats/saver/develop/include/agencies.csv
 '''
 
 # standard python libraries
@@ -63,7 +55,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 # intra-project modules
 from cyhy.core import *
 from cyhy.util import *
-from cyhy.db import database, CHDatabase
+from cyhy.db import database
 import queries
 import graphs
 
@@ -130,6 +122,8 @@ BLACK =     '#000000'
 
 CERTS_DB_NAME = 'certs'
 CERT_COLLECTION_NAME = 'cert'
+SCAN_DB_NAME = 'scan'
+DOMAINS_COLLECTION_NAME = 'domains'
 
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
@@ -141,12 +135,13 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, cert_db, owner, federal_slds, agency_mappings, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
+    def __init__(self, db, cert_db, scan_db, owner, debug=False,
+                 snapshot_id=None, title_date=None, final=False,
+                 anonymize=False, encrypt_key=None, log_report=True):
         self.__db = db
         self.__cert_db = cert_db
+        self.__scan_db = scan_db
         self.__owner = owner
-        self.__federal_slds = federal_slds
-        self.__agency_mappings = agency_mappings
         self.__snapshots = None
         self.__no_history = None # True if only one snapshot
         self.__latest_snapshots = None
@@ -529,14 +524,14 @@ class ReportGenerator(object):
             thirty_days_from_today = today + thirty_days
 
             owner = self.__results['owner']
-            owner_domains = [
-                row[0]
-                for row in self.__federal_slds
-                if row[2] == self.__agency_mappings[owner]
-            ]
+            owner_domains = self.__scan_db.domains.find({
+                'agency.id': owner
+            }, {
+                '_id': True
+            })
             owner_domains_regexes = [
                 r'^(.*\.)?{}'.format(d.replace('.', '\.'))
-                for d in owner_domains
+                for d['_id'] in owner_domains
             ]
             owner_domains_regex = re.compile(owner_domains_regexes.join('|'),
                                              re.IGNORECASE)
@@ -1949,28 +1944,12 @@ class ReportGenerator(object):
 def main():
     args = docopt(__doc__, version='v0.0.1')
     db = database.db_from_config(args['--section'])
-    ch_db = CHDatabase(db)
     # This is a bit janky, but it works since the API allows you to
-    # get the DB connection object from a database
+    # get the DB connection object from a database.
     cert_db = database.db_from_config(args['--section']).client[CERTS_DB_NAME]
+    scan_db = database.db_from_config(args['--section']).client[SCAN_DB_NAME]
 
     overview_data = []
-
-    # Read in the list of federal SLDs, if necessary
-    federal_slds = []
-    federal_sld_filename = args['--federal-slds']
-    if federal_sld_filename:
-        with open(federal_sld_filename, 'r') as current_federal_modified:
-            csvreader = csv.reader(current_federal_modified)
-            federal_slds = [row for row in csvreader]
-
-    # Read in the agency name to CyHy ID mapping, if necessary
-    agency_mappings = {}
-    agency_mapping_filename = args['--agency-mapping']
-    if agency_mapping_filename:
-        with open(agency_mapping_filename, 'r') as agency_mapping:
-            csvreader = csv.reader(agency_mapping)
-            agency_mappings = {row[1]: row[2] for row in csvreader}
 
     for owner in args['OWNER']:
         if args['--previous']:
@@ -1989,8 +1968,7 @@ def main():
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, cert_db, owner,
-                                    federal_slds, agency_mappings,
+        generator = ReportGenerator(db, cert_db, scan_db, owner,
                                     debug=args['--debug'],
                                     snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
