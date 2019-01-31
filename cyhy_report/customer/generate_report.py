@@ -524,7 +524,7 @@ class ReportGenerator(object):
             start_of_current_fy = today.replace(today.year, 10, 1,
                                                 0, 0, 0, 0)
             if start_of_current_fy > today:
-                start_of_current_fy.year = today.year - 1
+                start_of_current_fy = start_of_current_fy.replace(today.year - 1)
 
             owner = self.__results['owner']
             owner_domains = self.__scan_db.domains.find({
