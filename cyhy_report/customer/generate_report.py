@@ -120,10 +120,6 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
-CERTS_DB_NAME = 'certs'
-CERT_COLLECTION_NAME = 'cert'
-SCAN_DB_NAME = 'scan'
-DOMAINS_COLLECTION_NAME = 'domains'
 
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
@@ -135,11 +131,10 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, cert_db, scan_db, owner, debug=False,
+    def __init__(self, db, scan_db, owner, debug=False,
                  snapshot_id=None, title_date=None, final=False,
                  anonymize=False, encrypt_key=None, log_report=True):
         self.__db = db
-        self.__cert_db = cert_db
         self.__scan_db = scan_db
         self.__owner = owner
         self.__snapshots = None
@@ -546,7 +541,7 @@ class ReportGenerator(object):
             # expired in the last 30 days.  This data will be used to
             # generate the CSV attachment.
             certs['unexpired_and_recently_expired_certs'] = list(
-                self.__cert_db.cert.find({
+                self.__scan_db.cert.find({
                     'not_after': {
                         '$gte': thirty_days_ago,
                     },
@@ -556,7 +551,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs issued for this agency during
             # the start of the current fiscal year
-            certs['certs_issued_this_fy_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_issued_this_fy_count'] = self.__scan_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': start_of_current_fy
                 },
@@ -564,7 +559,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency since
             # the start of the 2018-2019 government shutdown
-            certs['certs_issued_since_government_shutdown_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_issued_since_government_shutdown_count'] = self.__scan_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': start_of_govt_shutdown
                 },
@@ -572,7 +567,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency in the
             # last 30 days
-            certs['certs_issued_last_thirty_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_issued_last_thirty_days_count'] = self.__scan_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': thirty_days_ago
                 },
@@ -580,7 +575,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs issued for this agency in the
             # last 7 days
-            certs['certs_issued_last_seven_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_issued_last_seven_days_count'] = self.__scan_db.cert.count_documents({
                 'sct_or_not_before': {
                     '$gte': seven_days_ago
                 },
@@ -589,7 +584,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs for this agency that are
             # unexpired
-            certs['unexpired_certs_count'] = self.__cert_db.cert.count_documents({
+            certs['unexpired_certs_count'] = self.__scan_db.cert.count_documents({
                 'not_after': {
                     '$gte': today
                 },
@@ -598,7 +593,7 @@ class ReportGenerator(object):
 
             # Get a count of all certs for this agency that expired in
             # the last 7 days
-            certs['certs_expired_last_seven_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_expired_last_seven_days_count'] = self.__scan_db.cert.count_documents({
                 'not_after': {
                     '$gte': seven_days_ago,
                     '$lte': today
@@ -607,7 +602,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expire in
             # the next 7 days
-            certs['certs_expire_next_seven_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_expire_next_seven_days_count'] = self.__scan_db.cert.count_documents({
                 'not_after': {
                     '$gte': today,
                     '$lte': seven_days_from_today
@@ -616,7 +611,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expired in
             # the last 30 days
-            certs['certs_expired_last_thirty_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_expired_last_thirty_days_count'] = self.__scan_db.cert.count_documents({
                 'not_after': {
                     '$gte': thirty_days_ago,
                     '$lte': today
@@ -625,7 +620,7 @@ class ReportGenerator(object):
             })
             # Get a count of all certs for this agency that expire in
             # the next 30 days
-            certs['certs_expire_next_thirty_days_count'] = self.__cert_db.cert.count_documents({
+            certs['certs_expire_next_thirty_days_count'] = self.__scan_db.cert.count_documents({
                 'not_after': {
                     '$gte': today,
                     '$lte': thirty_days_from_today
@@ -635,7 +630,7 @@ class ReportGenerator(object):
 
             # Aggregate the unexpired certs for this agency by issuer
             certs['ca_aggregation'] = list(
-                self.__cert_db.cert.aggregate([
+                self.__scan_db.cert.aggregate([
                     {
                         '$match': {
                             'not_after': {
@@ -2019,10 +2014,7 @@ class ReportGenerator(object):
 def main():
     args = docopt(__doc__, version='v0.0.1')
     db = database.db_from_config(args['--section'])
-    # This is a bit janky, but it works since the API allows you to
-    # get the DB connection object from a database.
-    cert_db = database.db_from_config(args['--section']).client[CERTS_DB_NAME]
-    scan_db = database.db_from_config(args['--section']).client[SCAN_DB_NAME]
+    scan_db = database.db_from_config('production_bod_scan')
 
     overview_data = []
 
@@ -2043,7 +2035,7 @@ def main():
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, cert_db, scan_db, owner,
+        generator = ReportGenerator(db, scan_db, owner,
                                     debug=args['--debug'],
                                     snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
