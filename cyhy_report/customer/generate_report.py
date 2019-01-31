@@ -2014,7 +2014,7 @@ class ReportGenerator(object):
 def main():
     args = docopt(__doc__, version='v0.0.1')
     db = database.db_from_config(args['--section'])
-    scan_db = database.db_from_config('production_bod_scan')
+    scan_db = database.db_from_config('scan')
 
     overview_data = []
 
