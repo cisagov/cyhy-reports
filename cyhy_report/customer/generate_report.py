@@ -536,8 +536,8 @@ class ReportGenerator(object):
                 '_id': True
             })
             owner_domains_regexes = [
-                r'^(.*\.)?{}'.format(d.replace('.', '\.'))
-                for d['_id'] in owner_domains
+                r'^(.*\.)?{}'.format(d['_id'].replace('.', '\.'))
+                for d in owner_domains
             ]
             owner_domains_regex = re.compile(owner_domains_regexes.join('|'),
                                              re.IGNORECASE)
