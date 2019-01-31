@@ -674,7 +674,7 @@ class ReportGenerator(object):
                             'count': -1
                         }
                     }
-	        ])
+	        ], cursor={})
             )
 
             self.__results['certs'] = certs
