@@ -536,10 +536,10 @@ class ReportGenerator(object):
                 '_id': True
             })
             owner_domains_regexes = [
-                r'^(.*\.)?{}'.format(d['_id'].replace('.', '\.'))
+                r'^(?:.*\.)?{}'.format(d['_id'].replace('.', '\.'))
                 for d in owner_domains
             ]
-            owner_domains_regex = re.compile(owner_domains_regexes.join('|'),
+            owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
                                              re.IGNORECASE)
 
             # Get all certs for this agency that are unexpired or
