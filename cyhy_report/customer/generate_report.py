@@ -523,14 +523,14 @@ class ReportGenerator(object):
             start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
 
             owner = self.__results['owner']
-            owner_domains = self.__scan_db.domains.find({
+            self.__results['domains'] = self.__scan_db.domains.find({
                 'agency.id': owner
             }, {
                 '_id': True
             })
             owner_domains_regexes = [
                 r'^(?:.*\.)?{}'.format(d['_id'].replace('.', '\.'))
-                for d in owner_domains
+                for d in self.__results['domains']
             ]
             owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
                                              re.IGNORECASE)
