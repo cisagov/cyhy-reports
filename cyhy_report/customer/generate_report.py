@@ -1591,7 +1591,7 @@ class ReportGenerator(object):
         # that case this isn't a federal executive agency and hence
         # the attachment won't be used
         if 'domains' in self.__results:
-            fields = ('Base Domain')
+            fields = ['Base Domain']
 
             data = self.__results['domains']
 
