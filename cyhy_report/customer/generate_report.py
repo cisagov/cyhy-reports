@@ -18,7 +18,10 @@ Options:
   -o --overview=FILENAME         Create an overview of all reports
   -p --previous=SNAPSHOT_ID      Generate a previous report.
   --version                      Show version.
-  -s --section=SECTION           Configuration section to use.
+  --cyhy-section=SECTION         Configuration section to use to access the
+                                 cyhy database.
+  --scan-section=SECTION         Configuration section to use to access the
+                                 scan database.
   -t --title-date=YYYYMMDD       Change the title page date.
 '''
 
@@ -642,7 +645,7 @@ class ReportGenerator(object):
                     {
                         '$match': {
                             'not_after': {
-                                '$gt': today
+                                '$gte': today
                             },
                             'subjects': owner_domains_regex
                         }
@@ -1558,7 +1561,7 @@ class ReportGenerator(object):
 
                     row = {
                         'Date Cert Appeared in Logs': d['sct_or_not_before'],
-                        'Subjects': '"{}"'.format(','.join(d['subjects'])),
+                        'Subjects': d['subjects'],
                         'Issuer': d['issuer'],
                         'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
                         'Not Valid After': not_after,
@@ -2032,8 +2035,8 @@ class ReportGenerator(object):
 
 def main():
     args = docopt(__doc__, version='v0.0.1')
-    db = database.db_from_config(args['--section'])
-    scan_db = database.db_from_config('scan')
+    db = database.db_from_config(args['--cyhy-section'])
+    scan_db = database.db_from_config(args['--scan-section'])
 
     overview_data = []
 
@@ -2049,7 +2052,7 @@ def main():
             title_date = None
 
         if args['--encrypt']:
-            report_key = Config(args['--section']).report_key
+            report_key = Config(args['--cyhy-section']).report_key
         else:
             report_key = None
 
