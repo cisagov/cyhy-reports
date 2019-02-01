@@ -1533,18 +1533,21 @@ class ReportGenerator(object):
                 'Not Valid Before',
                 'Not Valid After',
                 'Expired',
+                'Expiring in Next 7 Days',
                 'Expiring in Next 30 Days',
                 'Days Until Expiration',
-                'Issued Current Fiscal Year',
-                'Issued in Last 30 Days',
                 'Issued in Last 7 Days',
+                'Issued in Last 30 Days',
+                'Issued Current Fiscal Year',
                 'Certificate'
             )
 
             today = self.__generated_time
             seven_days = datetime.timedelta(days=7)
             seven_days_ago = today - seven_days
+            seven_days_from_today = today + seven_days
             thirty_days = datetime.timedelta(days=30)
+            thirty_days_ago = today - thirty_days
             thirty_days_from_today = today + thirty_days
             start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
             data = self.__results['certs']['unexpired_and_recently_expired_certs']
@@ -1559,6 +1562,7 @@ class ReportGenerator(object):
                 for d in data:
                     not_after = d['not_after'].replace(tzinfo=today.tzinfo)
                     expired = not_after <= today
+                    expiring_in_next_seven_days = (not expired) and (not_after <= seven_days_from_today)
                     expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
                     issued = d['sct_or_not_before'].replace(tzinfo=today.tzinfo)
                     issued_this_fy = issued >= start_of_current_fy
@@ -1572,6 +1576,7 @@ class ReportGenerator(object):
                         'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
                         'Not Valid After': not_after,
                         'Expired': expired,
+                        'Expiring in Next 7 Days': expiring_in_next_seven_days,
                         'Expiring in Next 30 Days': expiring_in_next_thirty_days,
                         'Days Until Expiration': (not_after - today).days,
                         'Issued Current Fiscal Year': issued_this_fy,
