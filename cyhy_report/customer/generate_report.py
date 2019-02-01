@@ -1571,7 +1571,7 @@ class ReportGenerator(object):
 
                     row = {
                         'Date Cert Appeared in Logs': issued,
-                        'Subjects': d['subjects'],
+                        'Subjects': ','.join(d['subjects']),
                         'Issuer': d['issuer'],
                         'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
                         'Not Valid After': not_after,
