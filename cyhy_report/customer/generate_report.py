@@ -1535,12 +1535,18 @@ class ReportGenerator(object):
                 'Expired',
                 'Expiring in Next 30 Days',
                 'Days Until Expiration',
+                'Issued Current Fiscal Year',
+                'Issued in Last 30 Days',
+                'Issued in Last 7 Days',
                 'Certificate'
             )
 
-            today = datetime.datetime.utcnow()
+            today = self.__generated_time
+            seven_days = datetime.timedelta(days=7)
+            seven_days_ago = today - seven_days
             thirty_days = datetime.timedelta(days=30)
             thirty_days_from_today = today + thirty_days
+            start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
             data = self.__results['certs']['unexpired_and_recently_expired_certs']
 
             with open('certificates.csv', 'wb') as f:
@@ -1554,9 +1560,13 @@ class ReportGenerator(object):
                     not_after = d['not_after'].replace(tzinfo=today.tzinfo)
                     expired = not_after <= today
                     expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
+                    issued = d['sct_or_not_before'].replace(tzinfo=today.tzinfo)
+                    issued_this_fy = d >= start_of_current_fy
+                    issued_last_thirty_days = d >= thirty_days_ago
+                    issued_last_seven_days = d >= seven_days_ago
 
                     row = {
-                        'Date Cert Appeared in Logs': d['sct_or_not_before'],
+                        'Date Cert Appeared in Logs': issued,
                         'Subjects': d['subjects'],
                         'Issuer': d['issuer'],
                         'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
@@ -1564,6 +1574,9 @@ class ReportGenerator(object):
                         'Expired': expired,
                         'Expiring in Next 30 Days': expiring_in_next_thirty_days,
                         'Days Until Expiration': (not_after - today).days,
+                        'Issued Current Fiscal Year': issued_this_fy,
+                        'Issued in Last 30 Days': issued_last_thirty_days,
+                        'Issued in Last 7 Days': issued_last_seven_days,
                         'Certificate': d['pem']
                     }
                     writer.writerow(row)
