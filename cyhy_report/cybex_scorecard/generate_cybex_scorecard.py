@@ -851,7 +851,12 @@ class ScorecardGenerator(object):
                       'sslyze-scan': {'scanned':False,
                                       'live_domains': {'domain_count':0,
                                                        'live_no_weak_crypto_count':0,
-                                                       'live_has_weak_crypto_count':0}}
+                                                       'live_has_weak_crypto_count':0}},
+                      'cert-scan': {'scanned':False,
+                                    'metrics': {'unexpired_certs_count':0,
+                                                'certs_issued_current_fy_count':0,
+                                                'certs_issued_past_30_days_count':0,
+                                                'certs_issued_past_7_days_count':0}}
                     }
             score['owner'] = r['_id']
             score['acronym'] = r['agency']['acronym']
@@ -940,6 +945,15 @@ class ScorecardGenerator(object):
                     score['sslyze-scan']['live_domains']['live_no_weak_crypto_count'] = sslyze_scan_result['domain_count'] - sslyze_scan_result['domains_with_weak_crypto_count']
                     break
 
+            # Pull cert-scan results into the score
+            if self.__results['cert-scan'].get(score['owner']):  # Found info for the current org
+                score['cert-scan']['scanned'] = True
+                for metric in ['unexpired_certs_count',
+                              'certs_issued_current_fy_count',
+                              'certs_issued_past_30_days_count',
+                              'certs_issued_past_7_days_count']:
+                    score['cert-scan']['metrics'][metric] = self.__results['cert-scan'][score['owner']][metric]
+
             # Pull vuln-scan results into the score
             for t in self.__tallies:
                 if t['_id'] == r['_id']:  # Found a current CyHy tally that matches this request (org)
@@ -992,6 +1006,8 @@ class ScorecardGenerator(object):
 
     def __calculate_federal_totals(self):
         # Build Federal/CFO Act/Non-CFO Act totals
+        # NOTE: No need to do this for cert-scan metrics because it is done
+        # in __run_cert_scan_queries() due to it being a special case
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
             self.__results[total_id] = dict()
 
