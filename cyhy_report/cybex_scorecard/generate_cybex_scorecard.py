@@ -619,7 +619,11 @@ class ScorecardGenerator(object):
         at the end, due to the possibility of a single cert applying to more
         than one organization).
         '''
-        results = defaultdict(lambda:defaultdict(lambda:0))
+        results = defaultdict(lambda: defaultdict(lambda: 0))
+        # Initialize results with every org in our domain_to_org_map
+        for org in set(self.__results['domain_to_org_map'].values()):
+            results[org] = defaultdict(lambda: 0)
+
         for cert in certificates:
             cert['cfo_act_org'] = False
             cert['non_cfo_act_org'] = False
