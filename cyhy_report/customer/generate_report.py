@@ -1561,9 +1561,9 @@ class ReportGenerator(object):
                     expired = not_after <= today
                     expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
                     issued = d['sct_or_not_before'].replace(tzinfo=today.tzinfo)
-                    issued_this_fy = d >= start_of_current_fy
-                    issued_last_thirty_days = d >= thirty_days_ago
-                    issued_last_seven_days = d >= seven_days_ago
+                    issued_this_fy = issued >= start_of_current_fy
+                    issued_last_thirty_days = issued >= thirty_days_ago
+                    issued_last_seven_days = issued >= seven_days_ago
 
                     row = {
                         'Date Cert Appeared in Logs': issued,
