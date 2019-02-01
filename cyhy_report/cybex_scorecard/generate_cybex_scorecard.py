@@ -599,6 +599,81 @@ class ScorecardGenerator(object):
             re.IGNORECASE)
 
         return domains_regex
+
+    def __accumulate_federal_cert_totals(self, results, certificate,
+                                         field_to_accumulate):
+        results['federal_totals'][field_to_accumulate] += 1
+
+        if certificate['cfo_act_org'] == True:
+            results['cfo_totals'][field_to_accumulate] += 1
+
+        if certificate['non_cfo_act_org'] == True:
+            results['non_cfo_totals'][field_to_accumulate] += 1
+
+        return results
+
+    def __create_cert_summary_by_org(self, certificates, current_fy_start):
+        '''
+        Build certificate summary results for each organization, as well as
+        accumulate Federal/CFO/Non-CFO totals (they cannot simply be added up
+        at the end, due to the possibility of a single cert applying to more
+        than one organization).
+        '''
+        results = defaultdict(lambda:defaultdict(lambda:0))
+        for cert in certificates:
+            cert['cfo_act_org'] = False
+            cert['non_cfo_act_org'] = False
+            orgs_owning_subjects = set()
+
+            for subject in cert.get('subjects'):
+                # TODO: Change the following temporary special case after the
+                # certs collection has been modified to include a field
+                # containing the set of public suffixes for the subjects
+                # in each certificate
+                subject_sld = '.'.join(subject.split('.')[-2:])
+                if subject_sld == 'fed.us':
+                    subject_sld = '.'.join(subject.split('.')[-3:])
+
+                org_id = self.__results['domain_to_org_map'].get(subject_sld)
+                if org_id:
+                    orgs_owning_subjects.add(org_id)
+
+                # Reminder: It is possible for a cert to contain subjects for
+                # *BOTH* CFO Act and Non-CFO Act orgs
+                #
+                # Assumption: Every org in this Scorecard is a Federal org and
+                # each one is either a "CFO Act" org or a "Non-CFO Act" org
+                if org_id in self.__cfo_act_orgs:
+                    cert['cfo_act_org'] = True
+                else:
+                    cert['non_cfo_act_org'] = True
+
+            # Is cert unexpired?
+            if cert['not_after'] > self.__generated_time:
+                for org in orgs_owning_subjects:
+                    results[org]['unexpired_certs_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'unexpired_certs_count')
+
+            # Was cert issued in this fiscal year?
+            if cert['sct_or_not_before'] > current_fy_start:
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_current_fy_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_current_fy_count')
+
+            # Was cert issued in the past 30 days?
+            if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=30):
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_past_30_days_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_30_days_count')
+
+            # Was cert issued in the past 7 days?
+            if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=7):
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_past_7_days_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_7_days_count')
+
+        return results
+
     def __run_cert_scan_queries(self, cybex_orgs):
         '''
         Fetch certificates that contain a subject that matches a domain
@@ -632,6 +707,8 @@ class ScorecardGenerator(object):
             'subjects': True,
             'sct_or_not_before': True
         })
+
+        self.__results['cert_scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
 
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
