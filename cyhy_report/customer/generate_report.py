@@ -1788,7 +1788,10 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_mustache_json(self, filename):
         ss0 = self.__snapshots[0]
-        result = {'ss0':ss0}
+        result = {
+            'ss0': ss0,
+            'certs': self.__results['certs']
+        }
         result['draft'] = self.__draft
         calc = dict() # calculated vaules for report
 
