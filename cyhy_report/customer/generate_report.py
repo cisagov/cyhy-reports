@@ -512,20 +512,15 @@ class ReportGenerator(object):
         #
         if self.__results['owner_is_federal_executive']:
             certs = {}
-            
-            today = datetime.datetime.utcnow()
+
+            today = self.__generated_time
             seven_days = datetime.timedelta(days=7)
             seven_days_ago = today - seven_days
             seven_days_from_today = today + seven_days
             thirty_days = datetime.timedelta(days=30)
             thirty_days_ago = today - thirty_days
             thirty_days_from_today = today + thirty_days
-            # If it's already October 1 or later then the FY started
-            # this year.  Otherwise it started last year.
-            start_of_current_fy = today.replace(today.year, 10, 1,
-                                                0, 0, 0, 0)
-            if start_of_current_fy > today:
-                start_of_current_fy = start_of_current_fy.replace(today.year - 1)
+            start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
 
             owner = self.__results['owner']
             owner_domains = self.__scan_db.domains.find({
