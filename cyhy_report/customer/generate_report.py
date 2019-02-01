@@ -523,11 +523,11 @@ class ReportGenerator(object):
             start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
 
             owner = self.__results['owner']
-            self.__results['domains'] = self.__scan_db.domains.find({
+            self.__results['domains'] = list(self.__scan_db.domains.find({
                 'agency.id': owner
             }, {
                 '_id': True
-            })
+            }))
             owner_domains_regexes = [
                 r'^(?:.*\.)?{}'.format(d['_id'].replace('.', '\.'))
                 for d in self.__results['domains']
@@ -1603,7 +1603,7 @@ class ReportGenerator(object):
                 writer = DictWriter(f, fields, extrasaction='raise')
                 writer.writeheader()
                 for d in data:
-                    writer.writerow({'Base Domain': d})
+                    writer.writerow({'Base Domain': d['_id']})
 
     def __generate_findings_attachment(self):
         # remove ip_int column if we are trying to be anonymous
