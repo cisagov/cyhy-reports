@@ -620,9 +620,14 @@ class ScorecardGenerator(object):
         than one organization).
         '''
         results = defaultdict(lambda: defaultdict(lambda: 0))
-        # Initialize results with every org in our domain_to_org_map
+        # Initialize results with every org in our domain_to_org_map so we
+        # can count them as being 'scanned' for certificates
         for org in set(self.__results['domain_to_org_map'].values()):
-            results[org] = defaultdict(lambda: 0)
+            for metric in ['unexpired_certs_count',
+                           'certs_issued_current_fy_count',
+                           'certs_issued_past_30_days_count',
+                           'certs_issued_past_7_days_count']:
+                           results[org][metric] = 0
 
         for cert in certificates:
             cert['cfo_act_org'] = False
