@@ -712,7 +712,7 @@ class ScorecardGenerator(object):
             'sct_or_not_before': True
         })
 
-        self.__results['cert_scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
+        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
 
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
