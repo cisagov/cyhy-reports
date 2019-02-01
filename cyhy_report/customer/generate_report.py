@@ -1570,7 +1570,7 @@ class ReportGenerator(object):
 
                     row = {
                         'Date Cert Appeared in Logs': d['sct_or_not_before'],
-                        'Subjects': '"{}"'.format(d['subjects'].join(',')),
+                        'Subjects': '"{}"'.format(','.join(d['subjects'])),
                         'Issuer': d['issuer'],
                         'Not Valid Before': d['not_before'],
                         'Not Valid After': not_after,
