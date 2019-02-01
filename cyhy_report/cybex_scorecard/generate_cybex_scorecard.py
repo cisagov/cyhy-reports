@@ -751,6 +751,7 @@ class ScorecardGenerator(object):
         self.__run_trustymail_queries(cybex_orgs)
         self.__run_https_scan_queries(cybex_orgs)
         self.__run_sslyze_scan_queries(cybex_orgs)
+        self.__run_cert_scan_queries(cybex_orgs)
 
     def __populate_scorecard_doc(self):
         # Go through each request doc and check if the org has a current tally doc
