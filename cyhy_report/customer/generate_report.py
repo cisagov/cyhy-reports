@@ -1509,6 +1509,7 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_attachments(self):
         self.__generate_certificate_attachment()
+        self.__generate_domains_attachment()
         self.__generate_findings_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
@@ -1566,6 +1567,25 @@ class ReportGenerator(object):
                         'Certificate': d['pem']
                     }
                     writer.writerow(row)
+
+    def __generate_domains_attachment(self):
+        # No need to do anything if no domains data was collected.  In
+        # that case this isn't a federal executive agency and hence
+        # the attachment won't be used
+        if 'domains' in self.__results:
+            fields = ('Base Domain')
+
+            data = self.__results['domains']
+
+            with open('domains.csv', 'wb') as f:
+                # We're carefully controlling the fields, so if an
+                # unknown field appears it indicates an error
+                # (probably a typo).  That's why we're using
+                # extrasaction='raise' here.
+                writer = DictWriter(f, fields, extrasaction='raise')
+                writer.writeheader()
+                for d in data:
+                    writer.writerow({'Base Domain': d})
 
     def __generate_findings_attachment(self):
         # remove ip_int column if we are trying to be anonymous
