@@ -517,8 +517,6 @@ class ReportGenerator(object):
             thirty_days = datetime.timedelta(days=30)
             thirty_days_ago = today - thirty_days
             thirty_days_from_today = today + thirty_days
-            start_of_govt_shutdown = today.replace(2018, 12, 22,
-                                                   0, 0, 0, 0)
             # If it's already October 1 or later then the FY started
             # this year.  Otherwise it started last year.
             start_of_current_fy = today.replace(today.year, 10, 1,
@@ -556,16 +554,6 @@ class ReportGenerator(object):
             certs['certs_issued_this_fy_count'] = self.__scan_db.cert.find({
                 'sct_or_not_before': {
                     '$gte': start_of_current_fy
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs issued for this agency since
-            # the start of the 2018-2019 government shutdown
-            certs['certs_issued_since_government_shutdown_count'] = self.__scan_db.cert.find({
-                'sct_or_not_before': {
-                    '$gte': start_of_govt_shutdown
                 },
                 'subjects': owner_domains_regex
             }, {
