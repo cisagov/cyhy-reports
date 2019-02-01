@@ -1565,8 +1565,8 @@ class ReportGenerator(object):
                 writer.writeheader()
                 for d in data:
                     not_after = d['not_after']
-                    expired = expired
-                    expiring_in_next_thirty_days = (not expired) and (not_after < thirty_days_from_today)
+                    expired = not_after <= today
+                    expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
 
                     row = {
                         'Date Cert Appeared in Logs': d['sct_or_not_before'],
