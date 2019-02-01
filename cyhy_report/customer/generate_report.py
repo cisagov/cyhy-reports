@@ -522,7 +522,7 @@ class ReportGenerator(object):
             thirty_days_from_today = today + thirty_days
             start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
 
-            owner = self.__results['owner']
+            owner = self.__results['owner']['_id']
             owner_domains_cursor = self.__scan_db.domains.find({
                 'agency.id': owner
             }, {
