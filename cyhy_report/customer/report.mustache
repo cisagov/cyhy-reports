@@ -666,8 +666,11 @@ systems presented by DNS infrastructure tampering, NCATS is supporting
 the directive by providing the following information to enable
 agencies to detect fraudulently-requested certificates.  Per the
 directive, agencies shall monitor CT log data for certificates issued
-that they did not request.  More detailed information on the
-certificates currently found on agency domains can be found in the
+that they did not request.  To assemble the data for this section of
+the report, NCATS searches CT logs for certificates issued to known
+agency second level domains and all subdomains under them.  More
+detailed information on the certificates currently found on agency
+domains can be found in the
 \hyperref[app:attachments]{\texttt{certificates.csv}} attachment.
 
 We recommend focusing on validating that newly-added certificates were
