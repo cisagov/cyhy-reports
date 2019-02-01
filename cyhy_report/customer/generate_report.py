@@ -547,7 +547,7 @@ class ReportGenerator(object):
                     'not_after': {
                         '$gte': thirty_days_ago,
                     },
-                    'subject': owner_domains_regex
+                    'subjects': owner_domains_regex
                 })
             )
 
@@ -557,7 +557,7 @@ class ReportGenerator(object):
                 'sct_or_not_before': {
                     '$gte': start_of_current_fy
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -567,7 +567,7 @@ class ReportGenerator(object):
                 'sct_or_not_before': {
                     '$gte': start_of_govt_shutdown
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -577,7 +577,7 @@ class ReportGenerator(object):
                 'sct_or_not_before': {
                     '$gte': thirty_days_ago
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -587,7 +587,7 @@ class ReportGenerator(object):
                 'sct_or_not_before': {
                     '$gte': seven_days_ago
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -598,7 +598,7 @@ class ReportGenerator(object):
                 'not_after': {
                     '$gte': today
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -610,7 +610,7 @@ class ReportGenerator(object):
                     '$gte': seven_days_ago,
                     '$lte': today
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -621,7 +621,7 @@ class ReportGenerator(object):
                     '$gte': today,
                     '$lte': seven_days_from_today
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -632,7 +632,7 @@ class ReportGenerator(object):
                     '$gte': thirty_days_ago,
                     '$lte': today
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -643,7 +643,7 @@ class ReportGenerator(object):
                     '$gte': today,
                     '$lte': thirty_days_from_today
                 },
-                'subject': owner_domains_regex
+                'subjects': owner_domains_regex
             }, {
                 '_id': True
             }).count()
@@ -656,7 +656,7 @@ class ReportGenerator(object):
                             'not_after': {
                                 '$gt': today
                             },
-                            'subject': owner_domains_regex
+                            'subjects': owner_domains_regex
                         }
                     },
 	            {
