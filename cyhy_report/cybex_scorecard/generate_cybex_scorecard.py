@@ -599,6 +599,40 @@ class ScorecardGenerator(object):
             re.IGNORECASE)
 
         return domains_regex
+    def __run_cert_scan_queries(self, cybex_orgs):
+        '''
+        Fetch certificates that contain a subject that matches a domain
+        belonging to any of the cybex_orgs AND that meet ANY of the
+        following conditions:
+           - Certificate is not expired
+           - Certificate was issued in the current fiscal year
+           - Certificate was issued in the past 30 days
+        '''
+
+        # Store domain_to_org_map in self.__results for later use
+        self.__results['domain_to_org_map'] = self.__create_domain_to_org_map(cybex_orgs)
+
+        # Build the regex of domains that will be used to capture the certs
+        # for every org in cybex_orgs
+        domains_regex = self.__create_domains_regex(self.__results['domain_to_org_map'])
+
+        current_fy_start = report_dates(now=self.__generated_time)['fy_start']
+
+        relevant_certs = self.__scan_db.certs.find({
+            'subjects': domains_regex,
+            '$or': [
+                {'not_after': {'$gt': self.__generated_time}},
+                {'sct_or_not_before': {'$gte': current_fy_start}},
+                {'sct_or_not_before': {'$gte': self.__generated_time -
+                                               timedelta(days=30)}}
+            ]
+        }, {
+            '_id': False,
+            'not_after': True,
+            'subjects': True,
+            'sct_or_not_before': True
+        })
+
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
         self.__requests = list(self.__cyhy_db.RequestDoc.find({'report_types':REPORT_TYPE.CYBEX}))
