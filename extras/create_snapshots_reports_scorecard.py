@@ -104,9 +104,9 @@ def sample_report(cyhy_db_section, scan_db_section, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info('Creating SAMPLE report...')
     if nolog:
-        p = subprocess.Popen(['cyhy-report','--nolog','--cyhy-section',cyhy_db_section,'--scan-section',scan_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--nolog','--cyhy-section',cyhy_db_section,'--scan-section',scan_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        p = subprocess.Popen(['cyhy-report','--cyhy-section',cyhy_db_section,'--scan-section',scan_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--cyhy-section',cyhy_db_section,'--scan-section',scan_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     data, err = p.communicate()
     return_code = p.returncode
     
