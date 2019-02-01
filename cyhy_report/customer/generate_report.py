@@ -523,14 +523,17 @@ class ReportGenerator(object):
             start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
 
             owner = self.__results['owner']
-            self.__results['domains'] = list(self.__scan_db.domains.find({
+            owner_domains_cursor = self.__scan_db.domains.find({
                 'agency.id': owner
             }, {
                 '_id': True
-            }))
+            })
+            self.__results['second_level_domains'] = [
+                d['_id'] for d in owner_domains_cursor
+            ]
             owner_domains_regexes = [
-                r'^(?:.*\.)?{}'.format(d['_id'].replace('.', '\.'))
-                for d in self.__results['domains']
+                r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
+                for d in self.__results['second_level_domains']
             ]
             owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
                                              re.IGNORECASE)
@@ -1587,23 +1590,16 @@ class ReportGenerator(object):
                     writer.writerow(row)
 
     def __generate_domains_attachment(self):
-        # No need to do anything if no domains data was collected.  In
-        # that case this isn't a federal executive agency and hence
-        # the attachment won't be used
-        if 'domains' in self.__results:
-            fields = ['Base Domain']
-
-            data = self.__results['domains']
+        # No need to do anything if no second level domains data was
+        # collected.  In that case this isn't a federal executive
+        # agency and hence the attachment won't be used
+        if 'second_level_domains' in self.__results:
+            data = self.__results['second_level_domains']
 
             with open('domains.csv', 'wb') as f:
-                # We're carefully controlling the fields, so if an
-                # unknown field appears it indicates an error
-                # (probably a typo).  That's why we're using
-                # extrasaction='raise' here.
-                writer = DictWriter(f, fields, extrasaction='raise')
-                writer.writeheader()
+                writer = csv.writer(f)
                 for d in data:
-                    writer.writerow({'Base Domain': d['_id']})
+                    writer.writerow([d])
 
     def __generate_findings_attachment(self):
         # remove ip_int column if we are trying to be anonymous
