@@ -1564,7 +1564,7 @@ class ReportGenerator(object):
                 writer = DictWriter(f, fields, extrasaction='raise')
                 writer.writeheader()
                 for d in data:
-                    not_after = d['not_after']
+                    not_after = d['not_after'].replace(tzinfo=today.tzinfo)
                     expired = not_after <= today
                     expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
 
@@ -1572,7 +1572,7 @@ class ReportGenerator(object):
                         'Date Cert Appeared in Logs': d['sct_or_not_before'],
                         'Subjects': '"{}"'.format(','.join(d['subjects'])),
                         'Issuer': d['issuer'],
-                        'Not Valid Before': d['not_before'],
+                        'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
                         'Not Valid After': not_after,
                         'Expired': expired,
                         'Expiring in Next 30 Days': expiring_in_next_thirty_days,
