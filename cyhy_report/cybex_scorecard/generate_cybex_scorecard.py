@@ -570,6 +570,35 @@ class ScorecardGenerator(object):
                     {'$sort':{'_id':1}}
                     ], cursor={}))
 
+    def __create_domain_to_org_map(self, org_list):
+        '''
+        Map each domain (owned by an org in org_list) to the org that owns it
+        '''
+
+        domains = self.__scan_db.domains.find({
+            'agency.id': {'$in': org_list}
+        }, {
+            '_id': True,
+            'agency.id': True
+        })
+
+        return {d['_id']: d['agency']['id'] for d in domains}
+
+    def __create_domains_regex(self, domain_to_org_map):
+        '''
+        Create a regex that will match any domain or subdomain found
+        in domain_to_org_map
+        '''
+        domains_regexes = [
+            r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
+            for d in domain_to_org_map.keys()
+        ]
+
+        domains_regex = re.compile('|'.join([
+            d for d in domains_regexes]),
+            re.IGNORECASE)
+
+        return domains_regex
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
         self.__requests = list(self.__cyhy_db.RequestDoc.find({'report_types':REPORT_TYPE.CYBEX}))
