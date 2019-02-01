@@ -100,13 +100,13 @@ def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_s
 #        logging.info('Failed ELECTION report')
 #        logging.info('Stderr report detail: %s%s', data, err)
 
-def sample_report(cyhy_db_section, nolog):
+def sample_report(cyhy_db_section, scan_db_section, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info('Creating SAMPLE report...')
     if nolog:
-        p = subprocess.Popen(['cyhy-report','--nolog','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--nolog','--cyhy-section',cyhy_db_section,'--scan-section',scan_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        p = subprocess.Popen(['cyhy-report','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--cyhy-section',cyhy_db_section,'--scan-section',scan_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     data, err = p.communicate()
     return_code = p.returncode
     
@@ -376,7 +376,7 @@ def main():
 
         #gen_election_report(cyhy_db_section)
 
-        sample_report(cyhy_db_section, nolog)  # Create the sample (anonymized) report
+        sample_report(cyhy_db_section, scan_db_section, nolog)  # Create the sample (anonymized) report
         reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, scan_db_section, use_docker, nolog)
         pull_cybex_ticket_csvs(db)
     finally:
