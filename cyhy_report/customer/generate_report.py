@@ -1551,7 +1551,7 @@ class ReportGenerator(object):
                 'Certificate'
             )
 
-            today = datetime.datetime.utcnow().date()
+            today = datetime.datetime.utcnow()
             thirty_days = datetime.timedelta(days=30)
             thirty_days_from_today = today + thirty_days
             data = self.__results['certs']['unexpired_and_recently_expired_certs']
