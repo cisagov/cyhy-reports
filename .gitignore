@@ -3,3 +3,4 @@
 ._*
 *.egg-info
 .ipynb_checkpoints
+.python-version
