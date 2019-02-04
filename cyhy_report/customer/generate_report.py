@@ -134,10 +134,10 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, scan_db, owner, debug=False,
+    def __init__(self, cyhy_db, scan_db, owner, debug=False,
                  snapshot_id=None, title_date=None, final=False,
                  anonymize=False, encrypt_key=None, log_report=True):
-        self.__db = db
+        self.__cyhy_db = cyhy_db
         self.__scan_db = scan_db
         self.__owner = owner
         self.__snapshots = None
@@ -159,7 +159,7 @@ class ReportGenerator(object):
     def __fetch_owner_snapshots(self):
         '''loads snapshots sorted with the most recent first'''
         self.__snapshots = [s for s in
-            self.__db.SnapshotDoc.find({'owner':self.__owner}).sort([('end_time',-1)]).limit(SNAPSHOT_HISTORY_LIMIT)]
+            self.__cyhy_db.SnapshotDoc.find({'owner':self.__owner}).sort([('end_time',-1)]).limit(SNAPSHOT_HISTORY_LIMIT)]
         # if this is a historical report find the correct starting snapshot
         if self.__snapshot_id:
             while self.__snapshot_id != self.__snapshots[0]['_id']:
@@ -172,7 +172,7 @@ class ReportGenerator(object):
     def __fetch_latest_snapshots(self):
         '''returns latest snapshots for all owners'''
         self.__latest_snapshots = [s for s in
-            self.__db.SnapshotDoc.find({'latest':True})]
+            self.__cyhy_db.SnapshotDoc.find({'latest':True})]
 
     def generate_report(self):
         # get latest snapshots
@@ -301,7 +301,7 @@ class ReportGenerator(object):
     def __load_tickets(self, snapshot_oids):
         '''load tickets into memory, and merge some of their latest vulnerability fields.
         These tickets should not be saved back to the database as they are modified in evil ways.'''
-        tickets = list(self.__db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
         for t in tickets:
             t.connection = None # neuter this monstrosity so it can't be saved (easily)
             try:
@@ -323,7 +323,7 @@ class ReportGenerator(object):
         '''load closed tickets that were detected between start_date and end_date'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all tickets that closed after start_date (could potentially have been detected at some point after start_date)
-        tickets = list(self.__db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
         tix_detected_in_range = list()
         for t in tickets:
             t['last_detected'] = t.last_detection_date
@@ -339,7 +339,7 @@ class ReportGenerator(object):
         '''load false_positive tickets'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all false_positive tickets
-        tickets = list(self.__db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
         for t in tickets:
             t.connection = None                 # neuter ticket so it can't be saved (easily)
             t.update(t['details'])              # flatten structure by copying details to ticket root
@@ -357,7 +357,7 @@ class ReportGenerator(object):
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
 
         # Calculate Buckets
-        tix = self.__db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
+        tix = self.__cyhy_db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
                                 '$or':[{'time_closed':{'$gte':start_date}}, {'time_closed':None}]},
                                 {'_id':False, 'time_opened':True, 'time_closed':True})
         tix = list(tix)
@@ -429,7 +429,7 @@ class ReportGenerator(object):
 
         # fetch descendant snapshots of self.__snapshots[0] (if any)
         if self.__snapshots[0].get('descendants_included'):
-            self.__results['ss0_descendant_snapshots'] = [s for s in self.__db.SnapshotDoc.find({'parents':ss0_snapshot_oid, '_id':{'$ne':ss0_snapshot_oid}}).sort([('owner',1)])]
+            self.__results['ss0_descendant_snapshots'] = [s for s in self.__cyhy_db.SnapshotDoc.find({'parents':ss0_snapshot_oid, '_id':{'$ne':ss0_snapshot_oid}}).sort([('owner',1)])]
 
         self.__results['tickets_0'] = self.__load_tickets([ss0_snapshot_oid])
         self.__results['false_positive_tickets'] = self.__load_false_positive_tickets()
@@ -443,37 +443,37 @@ class ReportGenerator(object):
             self.__results['tickets_1'] = self.__load_tickets([ss1_snapshot_oid])
             self.__results['recently_detected_closed_tickets'] = self.__load_detected_closed_tickets(self.__snapshots[1]['end_time'], self.__generated_time)
 
-        self.__results['owner'] = self.__db.requests.find_one({'_id':self.__owner})
-        if self.__db.RequestDoc.find_one('EXECUTIVE'):
-            self.__results['owner_is_federal_executive'] = self.__owner in self.__db.RequestDoc.get_all_descendants('EXECUTIVE')
+        self.__results['owner'] = self.__cyhy_db.requests.find_one({'_id':self.__owner})
+        if self.__cyhy_db.RequestDoc.find_one('EXECUTIVE'):
+            self.__results['owner_is_federal_executive'] = self.__owner in self.__cyhy_db.RequestDoc.get_all_descendants('EXECUTIVE')
         else:
             self.__results['owner_is_federal_executive'] = False
 
-        results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__db)
+        results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db)
         database.id_expand(results)
         self.__results['operating_system_count'] = results
 
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
-        results = database.run_pipeline_cursor(queries.ip_geoloc_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.ip_geoloc_pl(ss0_owners), self.__cyhy_db)
         database.id_expand(results)
         self.__results['ip_geoloc'] = results
 
-        results = database.run_pipeline_cursor(queries.services_attachment_pl([ss0_snapshot_oid]), self.__db)
+        results = database.run_pipeline_cursor(queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db)
         self.__results['services_attachment'] = results
 
-        ss0_host_scans = list(self.__db.host_scans.aggregate([{'$match':{'snapshots':ss0_snapshot_oid}},
+        ss0_host_scans = list(self.__cyhy_db.host_scans.aggregate([{'$match':{'snapshots':ss0_snapshot_oid}},
                                                               {'$project':{'_id':0, 'owner':1, 'ip_int':1, 'ip':1, 'name':1, 'hostname':1}},
                                                               {'$sort':{'ip_int':1}}], cursor={}, allowDiskUse=True))
 
-        active_host_ip_ints = set(i['_id'] for i in self.__db.hosts.find({'state.up':True,
+        active_host_ip_ints = set(i['_id'] for i in self.__cyhy_db.hosts.find({'state.up':True,
                                                                           'owner':{'$in':ss0_owners}},
                                                                           {'_id':1}))
         self.__results['hosts_attachment'] = [i for i in ss0_host_scans if i['ip_int'] in active_host_ip_ints]
 
-        results = self.__db.snapshots.find({'latest':True},{'_id':0, 'owner':1, 'cvss_average_all':1, 'cvss_average_vulnerable':1})
+        results = self.__cyhy_db.snapshots.find({'latest':True},{'_id':0, 'owner':1, 'cvss_average_all':1, 'cvss_average_vulnerable':1})
         self.__results['all_cvss_scores'] = [i for i in results]
 
-        results = database.run_pipeline_cursor(queries.host_latest_scan_time_span_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.host_latest_scan_time_span_pl(ss0_owners), self.__cyhy_db)
         if results:
             if results[0]['start_time'] < self.__snapshots[0]['start_time']:
                 self.__results['address_scan_start_date'] = results[0]['start_time']
@@ -484,14 +484,14 @@ class ReportGenerator(object):
             self.__results['address_scan_start_date'] = self.__snapshots[0]['start_time']
             self.__results['address_scan_end_date'] = self.__snapshots[0]['end_time']
 
-        results = database.run_pipeline_cursor(queries.host_latest_vulnscan_time_span_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.host_latest_vulnscan_time_span_pl(ss0_owners), self.__cyhy_db)
         if results:
             self.__results['vuln_scan_start_date'] = results[0]['start_time']
             self.__results['vuln_scan_end_date'] = results[0]['end_time']
         else:
             self.__results['vuln_scan_start_date'] = self.__results['vuln_scan_end_date'] = None
 
-        self.__results['earliest_snapshot_start_time'] = list(self.__db.SnapshotDoc.collection.find({'owner':{'$in':ss0_owners}}, {'start_time':1}).sort([('start_time',1)]).limit(1))[0]['start_time']
+        self.__results['earliest_snapshot_start_time'] = list(self.__cyhy_db.SnapshotDoc.collection.find({'owner':{'$in':ss0_owners}}, {'start_time':1}).sort([('start_time',1)]).limit(1))[0]['start_time']
 
         critical_ticket_date_cutoff = self.__generated_time - datetime.timedelta(days=CRITICAL_AGE_OVER_TIME_CUTOFF_DAYS)
         # If earliest snapshot start_time is more recent than critical_ticket_date_cutoff, use it instead
@@ -2069,7 +2069,7 @@ class ReportGenerator(object):
             pdf_writer.write(f)
 
     def __log_report(self):
-        report = self.__db.ReportDoc()
+        report = self.__cyhy_db.ReportDoc()
         report['_id'] = self.__report_oid
         report['owner'] = self.__owner
         report['generated_time'] = self.__generated_time
@@ -2079,7 +2079,7 @@ class ReportGenerator(object):
 
 def main():
     args = docopt(__doc__, version='v0.0.1')
-    db = database.db_from_config(args['--cyhy-section'])
+    cyhy_db = database.db_from_config(args['--cyhy-section'])
     scan_db = database.db_from_config(args['--scan-section'])
 
     overview_data = []
@@ -2101,7 +2101,7 @@ def main():
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, scan_db, owner,
+        generator = ReportGenerator(cyhy_db, scan_db, owner,
                                     debug=args['--debug'],
                                     snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
