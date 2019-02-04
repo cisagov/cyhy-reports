@@ -1565,6 +1565,9 @@ class ScorecardGenerator(object):
     ###############################################################################
     def __generate_mustache_json(self, filename):
         result = {'all_orgs_alpha':self.__scorecard_doc['scores']}
+        result['orgs_with_recently_issued_certs'] = self.__orgs_with_recently_issued_certs
+        result['orgs_with_no_recently_issued_certs'] = self.__orgs_with_no_recently_issued_certs
+        result['orgs_with_no_known_domains'] = self.__orgs_with_no_known_domains
         result['orgs_with_criticals'] = self.__orgs_with_criticals
         result['orgs_without_criticals'] = self.__orgs_without_criticals
         result['orgs_not_vuln_scanned'] = self.__orgs_not_vuln_scanned
