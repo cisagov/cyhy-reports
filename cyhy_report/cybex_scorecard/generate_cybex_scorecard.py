@@ -1655,7 +1655,10 @@ class ScorecardGenerator(object):
 
 def generate_empty_scorecard_json():
     current_time = utcnow()
-    result = {'orgs_with_criticals':[]}
+    result = { 'orgs_with_recently_issued_certs': [] }
+    result['orgs_with_no_recently_issued_certs'] = []
+    result['orgs_with_no_known_domains'] = []
+    result['orgs_with_criticals'] = []
     result['orgs_without_criticals'] = []
     result['orgs_not_vuln_scanned'] = []
     result['all_orgs_alpha'] = []
