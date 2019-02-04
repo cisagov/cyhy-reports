@@ -99,6 +99,7 @@ CYBEX_WEB_CHART_WIN_HEIGHT = '325'
 CRITICAL_AGE_GRAPH_CSV_URL = CYBEX_WEB_SERVER + '/cybex/?c1'
 CRITICAL_AGE_GRAPH_CSV_FILE = 'cybex-age-of-active-critical-vulns.csv'
 
+ED1901_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-certs-by-agency.csv'
 EMAIL_SECURITY_SUMMARY_CSV_FILE = 'cybex-email-security-summary.csv'
 BOD_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-bod-results-by-agency.csv'
 WEB_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-web-security-results-by-agency.csv'
@@ -1366,11 +1367,27 @@ class ScorecardGenerator(object):
     #  Attachment Generation
     ###############################################################################
     def __generate_attachments(self):
+        self.__generate_ed1901_results_by_agency_attachment()
         self.__generate_email_security_summary_attachment()
         self.__generate_bod_results_by_agency_attachment()
         self.__generate_web_security_results_by_agency_attachment()
         self.__generate_email_security_results_by_agency_attachment()
         self.__generate_cybex_graph_csv()
+
+    def __generate_ed1901_results_by_agency_attachment(self):
+        header_fields = ('acronym', 'name', 'cfo_act', 'unexpired_certificates', 'new_certificates_current_fiscal_year', 'new_certificates_past_30_days', 'new_certificates_past_7_days')
+        data_fields = ('acronym', 'name', 'cfo_act_org', 'unexpired_certs_count', 'certs_issued_current_fy_count', 'certs_issued_past_30_days_count', 'certs_issued_past_7_days_count')
+        with open(ED1901_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction='ignore')
+            header_writer.writeheader()
+            for org in copy.deepcopy(self.__scorecard_doc['scores']):
+                for cert_scan_key in ('unexpired_certs_count', 'certs_issued_current_fy_count', 'certs_issued_past_30_days_count', 'certs_issued_past_7_days_count'):
+                    if org['cert-scan']['scanned']:
+                        org[cert_scan_key] = org['cert-scan']['metrics'].get(cert_scan_key)
+                    else:
+                        org[cert_scan_key] = 'N/A'
+                data_writer.writerow(org)
 
     def __generate_email_security_summary_attachment(self):
         trustymail_dmarc_summary = sorted(self.__results['trustymail_dmarc_summary'], key=lambda x:x['_id'])
