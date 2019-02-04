@@ -1016,10 +1016,11 @@ class ScorecardGenerator(object):
 
     def __calculate_federal_totals(self):
         # Build Federal/CFO Act/Non-CFO Act totals
-        # NOTE: No need to do this for cert-scan metrics because it is done
-        # in __run_cert_scan_queries() due to it being a special case
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
             self.__results[total_id] = dict()
+
+            # Copy previously-calculated cert-scan totals
+            self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
 
             # initialize vuln-scan metrics to 0
             self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-14_days':0, 'open_criticals_14-21_days':0, 'open_criticals_21-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'addresses':0, 'active_hosts':0}}
@@ -1035,7 +1036,8 @@ class ScorecardGenerator(object):
             # initialize sslyze-scan metrics to 0
             self.__results[total_id]['sslyze-scan'] = {'live_domains': {'domain_count':0, 'live_no_weak_crypto_count':0, 'live_has_weak_crypto_count':0}}
 
-        # Accumulate all metrics into each totals dict
+        # Accumulate all metrics (except for previously-handled cert-scan
+        # metrics) into each totals dict
         for org in self.__scorecard_doc['scores']:
             for (scanner, scan_subtype, field) in [('vuln-scan', 'metrics', 'open_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_on_previous_scorecard'),
