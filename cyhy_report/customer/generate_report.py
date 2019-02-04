@@ -552,9 +552,9 @@ class ReportGenerator(object):
             owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
                                              re.IGNORECASE)
 
-            # Get all certs for this agency that are unexpired or
-            # expired in the last 30 days.  This data will be used to
-            # generate the CSV attachment.
+            # Get all certs for this organization that are unexpired
+            # or expired in the last 30 days.  This data will be used
+            # to generate the CSV attachment.
             certs['unexpired_and_recently_expired_certs'] = list(
                 self.__scan_db.certs.find({
                     'not_after': {
@@ -564,8 +564,8 @@ class ReportGenerator(object):
                 })
             )
 
-            # Get a count of all certs issued for this agency during
-            # the start of the current fiscal year
+            # Get a count of all certs issued for this organization
+            # during the start of the current fiscal year
             certs['certs_issued_this_fy_count'] = self.__scan_db.certs.find({
                 'sct_or_not_before': {
                     '$gte': start_of_current_fy
@@ -574,8 +574,8 @@ class ReportGenerator(object):
             }, {
                 '_id': True
             }).count()
-            # Get a count of all certs issued for this agency in the
-            # last 30 days
+            # Get a count of all certs issued for this organization in
+            # the last 30 days
             certs['certs_issued_last_thirty_days_count'] = self.__scan_db.certs.find({
                 'sct_or_not_before': {
                     '$gte': thirty_days_ago
@@ -584,8 +584,8 @@ class ReportGenerator(object):
             }, {
                 '_id': True
             }).count()
-            # Get a count of all certs issued for this agency in the
-            # last 7 days
+            # Get a count of all certs issued for this organization in
+            # the last 7 days
             certs['certs_issued_last_seven_days_count'] = self.__scan_db.certs.find({
                 'sct_or_not_before': {
                     '$gte': seven_days_ago
@@ -595,7 +595,7 @@ class ReportGenerator(object):
                 '_id': True
             }).count()
 
-            # Get a count of all certs for this agency that are
+            # Get a count of all certs for this organization that are
             # unexpired
             certs['unexpired_certs_count'] = self.__scan_db.certs.find({
                 'not_after': {
@@ -606,8 +606,8 @@ class ReportGenerator(object):
                 '_id': True
             }).count()
 
-            # Get a count of all certs for this agency that expired in
-            # the last 7 days
+            # Get a count of all certs for this organization that
+            # expired in the last 7 days
             certs['certs_expired_last_seven_days_count'] = self.__scan_db.certs.find({
                 'not_after': {
                     '$gte': seven_days_ago,
@@ -617,8 +617,8 @@ class ReportGenerator(object):
             }, {
                 '_id': True
             }).count()
-            # Get a count of all certs for this agency that expire in
-            # the next 7 days
+            # Get a count of all certs for this organization that
+            # expire in the next 7 days
             certs['certs_expire_next_seven_days_count'] = self.__scan_db.certs.find({
                 'not_after': {
                     '$gte': today,
@@ -628,8 +628,8 @@ class ReportGenerator(object):
             }, {
                 '_id': True
             }).count()
-            # Get a count of all certs for this agency that expired in
-            # the last 30 days
+            # Get a count of all certs for this organization that
+            # expired in the last 30 days
             certs['certs_expired_last_thirty_days_count'] = self.__scan_db.certs.find({
                 'not_after': {
                     '$gte': thirty_days_ago,
@@ -639,8 +639,8 @@ class ReportGenerator(object):
             }, {
                 '_id': True
             }).count()
-            # Get a count of all certs for this agency that expire in
-            # the next 30 days
+            # Get a count of all certs for this organization that
+            # expire in the next 30 days
             certs['certs_expire_next_thirty_days_count'] = self.__scan_db.certs.find({
                 'not_after': {
                     '$gte': today,
@@ -651,7 +651,8 @@ class ReportGenerator(object):
                 '_id': True
             }).count()
 
-            # Aggregate the unexpired certs for this agency by issuer
+            # Aggregate the unexpired certs for this organization by
+            # issuer
             certs['ca_aggregation'] = list(
                 self.__scan_db.certs.aggregate([
                     {
@@ -1606,7 +1607,7 @@ class ReportGenerator(object):
     def __generate_domains_attachment(self):
         # No need to do anything if no second level domains data was
         # collected.  In that case this isn't a federal executive
-        # agency and hence the attachment won't be used
+        # agency and hence the attachment won't be used.
         if 'second_level_domains' in self.__results:
             data = self.__results['second_level_domains']
 
