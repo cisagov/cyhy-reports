@@ -550,6 +550,39 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 
 \newpage
 \begin{landscape}
+\hiddensection{ED 19-01 Results by Agency}
+\label{sec:ed-19-01-results-by-agency}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{ED 19-01 Results by Agency}}}
+
+{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+  \item \textbf{Unexpired Certificates:} The number of unexpired certificates that are listed in \href{https://www.certificate-transparency.org/}{\underline{Certificate Transparency}} logs.
+  \item \textbf{New Certificates (Current Fiscal Year):} The number of known certificates for Federal domains and subdomains which were issued this fiscal year.
+  \item \textbf{New Certificates (Past 30 Days):} The number of known certificates for Federal domains and subdomains which were issued within the past 30 days.
+  \item \textbf{New Certificates (Past 7 Days):} The number of known certificates for Federal domains and subdomains which were issued within the past 7 days.
+\end{itemize}
+
+\vspace*{3mm}
+The table below is sorted in descending order on the ``New Certificates (Past 7 Days)" field. The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section \\(``cybex-certs-by-agency.csv").
+\rowcolors{10}{row-light-blue}{white}
+\setlength{\tabcolsep}{7pt}
+\begin{longtable}{>{\raggedright}p{4.0in}||rrrr}
+  \toprule
+      & \textbf{Unexpired}    & \textbf{New Certificates}      & \textbf{New Certificates} & \textbf{New Certificates}  \\
+      & \textbf{Certificates} & \textbf{(Current Fiscal Year)} & \textbf{(Past 30 Days)}   & \textbf{(Past 7 Days)} \\
+  \midrule \endhead\label{tab:cert-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} & \textbf{\numprint{<<&federal_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&cfo_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \hhline{=====}
+  <<#all_orgs_ed1901_cert>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & <<#cert-scan.scanned>>\numprint{<<&cert-scan.metrics.unexpired_certs_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_current_fy_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_past_30_days_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_past_7_days_count>>}<</cert-scan.scanned>><<^cert-scan.scanned>>\multicolumn{4}{c}{Not currently scanned for certificates - no known domains exist}<</cert-scan.scanned>>\\
+  <</all_orgs_ed1901_cert>>
+  \bottomrule
+\end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
 \hiddensection{BOD Results By Agency}
 \label{sec:bod-results-by-agency}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{BOD Results by Agency}}}
