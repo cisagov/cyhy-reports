@@ -377,6 +377,63 @@ If there are questions, comments, or concerns about this scorecard, please conta
 \newpage
 \begin{landscape}
 \BgThispage
+\hiddensection{ED 19-01 Status}
+\label{sec:ed-19-01-status}
+\begin{center}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{<<&scorecard_name>> Cyber Exposure Scorecard\ \textemdash \ \usvardate\formatdate<<&title_date_tex>>\\
+ED 19-01 \textemdash \ New Certificates}}}
+\end{center}
+
+%\vspace*{-7mm}
+\begin{multicols*}{3}
+	\raggedcolumns
+	\begin{spacing}{0.85}
+		\setlength{\parskip}{0pt}
+		{\RaggedRight\color{sc-high}
+		\textbf{ISSUED NEW CERTIFICATES IN PAST 7 DAYS \fontencoding{U}\fontfamily{futs}\selectfont\char 66}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\fontencoding{U}\fontfamily{futs}\selectfont\char 66}]
+		<<#orgs_with_recently_issued_certs>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_recently_issued_certs>>
+		<<^orgs_with_recently_issued_certs>>\item[] \textit{No agencies are in this category}<</orgs_with_recently_issued_certs>>
+		\end{itemize}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-low}
+		\textbf{NO NEW CERTIFICATES IN PAST 7 DAYS \cmark}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\cmark}]
+		<<#orgs_with_no_recently_issued_certs>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_no_recently_issued_certs>>
+		<<^orgs_with_no_recently_issued_certs>>\item[] \textit{No agencies are in this category}<</orgs_with_no_recently_issued_certs>>
+		\end{itemize}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-nope}
+		\textbf{NO KNOWN DOMAINS EXIST $\varobslash$}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{$\varobslash$}]
+		<<#orgs_with_no_known_domains>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_no_known_domains>>
+		<<^orgs_with_no_known_domains>>\item[] \textit{No agencies are in this category}<</orgs_with_no_known_domains>>
+		\end{itemize}
+		} % end \RaggedRight
+	\end{spacing}
+\end{multicols*}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\BgThispage
 \hiddensection{BOD 15-01 Status}
 \label{sec:bod-15-01-status}
 \begin{center}
