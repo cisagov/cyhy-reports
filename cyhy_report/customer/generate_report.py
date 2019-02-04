@@ -18,11 +18,15 @@ Options:
   -o --overview=FILENAME         Create an overview of all reports
   -p --previous=SNAPSHOT_ID      Generate a previous report.
   --version                      Show version.
-  -s --section=SECTION           Configuration section to use.
+  --cyhy-section=SECTION         Configuration section to use to access the
+                                 cyhy database.
+  --scan-section=SECTION         Configuration section to use to access the
+                                 scan database.
   -t --title-date=YYYYMMDD       Change the title page date.
 '''
 
 # standard python libraries
+import csv
 import sys
 import os
 import copy
@@ -54,7 +58,7 @@ from pyPdf import PdfFileWriter, PdfFileReader
 # intra-project modules
 from cyhy.core import *
 from cyhy.util import *
-from cyhy.db import database, CHDatabase
+from cyhy.db import database
 import queries
 import graphs
 
@@ -119,6 +123,7 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
+
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
     return a DataFrame with columns if requested.'''
@@ -129,8 +134,11 @@ def SafeDataFrame(data=None, *args, **kwargs):
 #import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
-    def __init__(self, db, owner, debug=False, snapshot_id=None, title_date=None, final=False, anonymize=False, encrypt_key=None, log_report=True):
-        self.__db = db
+    def __init__(self, cyhy_db, scan_db, owner, debug=False,
+                 snapshot_id=None, title_date=None, final=False,
+                 anonymize=False, encrypt_key=None, log_report=True):
+        self.__cyhy_db = cyhy_db
+        self.__scan_db = scan_db
         self.__owner = owner
         self.__snapshots = None
         self.__no_history = None # True if only one snapshot
@@ -151,7 +159,7 @@ class ReportGenerator(object):
     def __fetch_owner_snapshots(self):
         '''loads snapshots sorted with the most recent first'''
         self.__snapshots = [s for s in
-            self.__db.SnapshotDoc.find({'owner':self.__owner}).sort([('end_time',-1)]).limit(SNAPSHOT_HISTORY_LIMIT)]
+            self.__cyhy_db.SnapshotDoc.find({'owner':self.__owner}).sort([('end_time',-1)]).limit(SNAPSHOT_HISTORY_LIMIT)]
         # if this is a historical report find the correct starting snapshot
         if self.__snapshot_id:
             while self.__snapshot_id != self.__snapshots[0]['_id']:
@@ -164,7 +172,7 @@ class ReportGenerator(object):
     def __fetch_latest_snapshots(self):
         '''returns latest snapshots for all owners'''
         self.__latest_snapshots = [s for s in
-            self.__db.SnapshotDoc.find({'latest':True})]
+            self.__cyhy_db.SnapshotDoc.find({'latest':True})]
 
     def generate_report(self):
         # get latest snapshots
@@ -208,6 +216,14 @@ class ReportGenerator(object):
             self.__results = self.__anonymize_structure(self.__results)
             self.__results['owner']['agency']['name'] = 'Sample Organization'
             self.__results['owner']['agency']['acronym'] = 'SAMPLE'
+            # Anonymize the ED 19-01 data, if present
+            if 'second_level_domains' in self.__results:
+                self.__results['second_level_domains'] = ['example.com']
+            if 'certs' in self.__results:
+                for d in self.__results['certs']['unexpired_and_recently_expired_certs']:
+                    d['subjects'] = ['sample.com']
+                    d['pem'] = 'REDACTED'
+
             tech_poc_count = distro_poc_count = 1
             for contact in self.__results['owner']['agency']['contacts']:
                 if contact['type'] == POC_TYPE.TECHNICAL:
@@ -285,7 +301,7 @@ class ReportGenerator(object):
     def __load_tickets(self, snapshot_oids):
         '''load tickets into memory, and merge some of their latest vulnerability fields.
         These tickets should not be saved back to the database as they are modified in evil ways.'''
-        tickets = list(self.__db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
         for t in tickets:
             t.connection = None # neuter this monstrosity so it can't be saved (easily)
             try:
@@ -307,7 +323,7 @@ class ReportGenerator(object):
         '''load closed tickets that were detected between start_date and end_date'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all tickets that closed after start_date (could potentially have been detected at some point after start_date)
-        tickets = list(self.__db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
         tix_detected_in_range = list()
         for t in tickets:
             t['last_detected'] = t.last_detection_date
@@ -323,7 +339,7 @@ class ReportGenerator(object):
         '''load false_positive tickets'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all false_positive tickets
-        tickets = list(self.__db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
         for t in tickets:
             t.connection = None                 # neuter ticket so it can't be saved (easily)
             t.update(t['details'])              # flatten structure by copying details to ticket root
@@ -341,7 +357,7 @@ class ReportGenerator(object):
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
 
         # Calculate Buckets
-        tix = self.__db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
+        tix = self.__cyhy_db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
                                 '$or':[{'time_closed':{'$gte':start_date}}, {'time_closed':None}]},
                                 {'_id':False, 'time_opened':True, 'time_closed':True})
         tix = list(tix)
@@ -413,7 +429,7 @@ class ReportGenerator(object):
 
         # fetch descendant snapshots of self.__snapshots[0] (if any)
         if self.__snapshots[0].get('descendants_included'):
-            self.__results['ss0_descendant_snapshots'] = [s for s in self.__db.SnapshotDoc.find({'parents':ss0_snapshot_oid, '_id':{'$ne':ss0_snapshot_oid}}).sort([('owner',1)])]
+            self.__results['ss0_descendant_snapshots'] = [s for s in self.__cyhy_db.SnapshotDoc.find({'parents':ss0_snapshot_oid, '_id':{'$ne':ss0_snapshot_oid}}).sort([('owner',1)])]
 
         self.__results['tickets_0'] = self.__load_tickets([ss0_snapshot_oid])
         self.__results['false_positive_tickets'] = self.__load_false_positive_tickets()
@@ -427,37 +443,37 @@ class ReportGenerator(object):
             self.__results['tickets_1'] = self.__load_tickets([ss1_snapshot_oid])
             self.__results['recently_detected_closed_tickets'] = self.__load_detected_closed_tickets(self.__snapshots[1]['end_time'], self.__generated_time)
 
-        self.__results['owner'] = self.__db.requests.find_one({'_id':self.__owner})
-        if self.__db.RequestDoc.find_one('EXECUTIVE'):
-            self.__results['owner_is_federal_executive'] = self.__owner in self.__db.RequestDoc.get_all_descendants('EXECUTIVE')
+        self.__results['owner'] = self.__cyhy_db.requests.find_one({'_id':self.__owner})
+        if self.__cyhy_db.RequestDoc.find_one('EXECUTIVE'):
+            self.__results['owner_is_federal_executive'] = self.__owner in self.__cyhy_db.RequestDoc.get_all_descendants('EXECUTIVE')
         else:
             self.__results['owner_is_federal_executive'] = False
 
-        results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__db)
+        results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db)
         database.id_expand(results)
         self.__results['operating_system_count'] = results
 
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
-        results = database.run_pipeline_cursor(queries.ip_geoloc_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.ip_geoloc_pl(ss0_owners), self.__cyhy_db)
         database.id_expand(results)
         self.__results['ip_geoloc'] = results
 
-        results = database.run_pipeline_cursor(queries.services_attachment_pl([ss0_snapshot_oid]), self.__db)
+        results = database.run_pipeline_cursor(queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db)
         self.__results['services_attachment'] = results
 
-        ss0_host_scans = list(self.__db.host_scans.aggregate([{'$match':{'snapshots':ss0_snapshot_oid}},
+        ss0_host_scans = list(self.__cyhy_db.host_scans.aggregate([{'$match':{'snapshots':ss0_snapshot_oid}},
                                                               {'$project':{'_id':0, 'owner':1, 'ip_int':1, 'ip':1, 'name':1, 'hostname':1}},
                                                               {'$sort':{'ip_int':1}}], cursor={}, allowDiskUse=True))
 
-        active_host_ip_ints = set(i['_id'] for i in self.__db.hosts.find({'state.up':True,
+        active_host_ip_ints = set(i['_id'] for i in self.__cyhy_db.hosts.find({'state.up':True,
                                                                           'owner':{'$in':ss0_owners}},
                                                                           {'_id':1}))
         self.__results['hosts_attachment'] = [i for i in ss0_host_scans if i['ip_int'] in active_host_ip_ints]
 
-        results = self.__db.snapshots.find({'latest':True},{'_id':0, 'owner':1, 'cvss_average_all':1, 'cvss_average_vulnerable':1})
+        results = self.__cyhy_db.snapshots.find({'latest':True},{'_id':0, 'owner':1, 'cvss_average_all':1, 'cvss_average_vulnerable':1})
         self.__results['all_cvss_scores'] = [i for i in results]
 
-        results = database.run_pipeline_cursor(queries.host_latest_scan_time_span_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.host_latest_scan_time_span_pl(ss0_owners), self.__cyhy_db)
         if results:
             if results[0]['start_time'] < self.__snapshots[0]['start_time']:
                 self.__results['address_scan_start_date'] = results[0]['start_time']
@@ -468,14 +484,14 @@ class ReportGenerator(object):
             self.__results['address_scan_start_date'] = self.__snapshots[0]['start_time']
             self.__results['address_scan_end_date'] = self.__snapshots[0]['end_time']
 
-        results = database.run_pipeline_cursor(queries.host_latest_vulnscan_time_span_pl(ss0_owners), self.__db)
+        results = database.run_pipeline_cursor(queries.host_latest_vulnscan_time_span_pl(ss0_owners), self.__cyhy_db)
         if results:
             self.__results['vuln_scan_start_date'] = results[0]['start_time']
             self.__results['vuln_scan_end_date'] = results[0]['end_time']
         else:
             self.__results['vuln_scan_start_date'] = self.__results['vuln_scan_end_date'] = None
 
-        self.__results['earliest_snapshot_start_time'] = list(self.__db.SnapshotDoc.collection.find({'owner':{'$in':ss0_owners}}, {'start_time':1}).sort([('start_time',1)]).limit(1))[0]['start_time']
+        self.__results['earliest_snapshot_start_time'] = list(self.__cyhy_db.SnapshotDoc.collection.find({'owner':{'$in':ss0_owners}}, {'start_time':1}).sort([('start_time',1)]).limit(1))[0]['start_time']
 
         critical_ticket_date_cutoff = self.__generated_time - datetime.timedelta(days=CRITICAL_AGE_OVER_TIME_CUTOFF_DAYS)
         # If earliest snapshot start_time is more recent than critical_ticket_date_cutoff, use it instead
@@ -498,6 +514,174 @@ class ReportGenerator(object):
                     snap['owner'] = 'SUB_ORG'
 
                 self.__results['ss0_descendant_data'].append({'owner':snap['owner'], 'address_count':address_count, 'addresses_scanned':snap['addresses_scanned'], 'addresses_scanned_percent':addresses_scanned_percent, 'host_count':snap['host_count'], 'vulnerable_host_count':snap['vulnerable_host_count'], 'vuln_host_percent':vuln_host_percent, 'vulnerabilities':snap['vulnerabilities'], 'port_count':snap['port_count'], 'tix_days_to_close':tix_days_to_close, 'tix_days_open':tix_days_open})
+
+        #
+        # Run ED 19-01 queries
+        #
+        if self.__results['owner_is_federal_executive']:
+            certs = {}
+
+            today = self.__generated_time
+            seven_days = datetime.timedelta(days=7)
+            seven_days_ago = today - seven_days
+            seven_days_from_today = today + seven_days
+            thirty_days = datetime.timedelta(days=30)
+            thirty_days_ago = today - thirty_days
+            thirty_days_from_today = today + thirty_days
+            start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
+
+            owner = self.__results['owner']['_id']
+            owner_domains_cursor = self.__scan_db.domains.find({
+                'agency.id': owner
+            }, {
+                '_id': True
+            })
+            self.__results['second_level_domains'] = [
+                d['_id'] for d in owner_domains_cursor
+            ]
+            # For a given domain, say sample.com, the regex looks like
+            # ^(?:.*\.)?sample.com.  This regex will match on
+            # sample.com or anything that ends in .sample.com.  (The
+            # (?:...) bit is a non-capturing grouping, which we use
+            # since we want to group that piece together but we don't
+            # need to refer back later to what was actually grouped.)
+            owner_domains_regexes = [
+                r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
+                for d in self.__results['second_level_domains']
+            ]
+            owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
+                                             re.IGNORECASE)
+
+            # Get all certs for this organization that are unexpired
+            # or expired in the last 30 days.  This data will be used
+            # to generate the CSV attachment.
+            certs['unexpired_and_recently_expired_certs'] = list(
+                self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': thirty_days_ago,
+                    },
+                    'subjects': owner_domains_regex
+                })
+            )
+
+            # Get a count of all certs issued for this organization
+            # during the start of the current fiscal year
+            certs['certs_issued_this_fy_count'] = self.__scan_db.certs.find({
+                'sct_or_not_before': {
+                    '$gte': start_of_current_fy
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+            # Get a count of all certs issued for this organization in
+            # the last 30 days
+            certs['certs_issued_last_thirty_days_count'] = self.__scan_db.certs.find({
+                'sct_or_not_before': {
+                    '$gte': thirty_days_ago
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+            # Get a count of all certs issued for this organization in
+            # the last 7 days
+            certs['certs_issued_last_seven_days_count'] = self.__scan_db.certs.find({
+                'sct_or_not_before': {
+                    '$gte': seven_days_ago
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+
+            # Get a count of all certs for this organization that are
+            # unexpired
+            certs['unexpired_certs_count'] = self.__scan_db.certs.find({
+                'not_after': {
+                    '$gte': today
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+
+            # Get a count of all certs for this organization that
+            # expired in the last 7 days
+            certs['certs_expired_last_seven_days_count'] = self.__scan_db.certs.find({
+                'not_after': {
+                    '$gte': seven_days_ago,
+                    '$lte': today
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+            # Get a count of all certs for this organization that
+            # expire in the next 7 days
+            certs['certs_expire_next_seven_days_count'] = self.__scan_db.certs.find({
+                'not_after': {
+                    '$gte': today,
+                    '$lte': seven_days_from_today
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+            # Get a count of all certs for this organization that
+            # expired in the last 30 days
+            certs['certs_expired_last_thirty_days_count'] = self.__scan_db.certs.find({
+                'not_after': {
+                    '$gte': thirty_days_ago,
+                    '$lte': today
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+            # Get a count of all certs for this organization that
+            # expire in the next 30 days
+            certs['certs_expire_next_thirty_days_count'] = self.__scan_db.certs.find({
+                'not_after': {
+                    '$gte': today,
+                    '$lte': thirty_days_from_today
+                },
+                'subjects': owner_domains_regex
+            }, {
+                '_id': True
+            }).count()
+
+            # Aggregate the unexpired certs for this organization by
+            # issuer
+            certs['ca_aggregation'] = list(
+                self.__scan_db.certs.aggregate([
+                    {
+                        '$match': {
+                            'not_after': {
+                                '$gte': today
+                            },
+                            'subjects': owner_domains_regex
+                        }
+                    },
+	            {
+                        '$group': {
+                            '_id': {
+                                'issuer': '$issuer'
+                            },
+                            'count': {
+                                '$sum': 1
+                            }
+                        }
+                    },
+	            {
+                        '$sort': {
+                            'count': -1
+                        }
+                    }
+	        ], cursor={})
+            )
+
+            self.__results['certs'] = certs
 
     ###############################################################################
     # Figure Generation
@@ -1342,6 +1526,8 @@ class ReportGenerator(object):
     #  Attachment Generation
     ###############################################################################
     def __generate_attachments(self):
+        self.__generate_certificate_attachment()
+        self.__generate_domains_attachment()
         self.__generate_findings_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
@@ -1352,6 +1538,83 @@ class ReportGenerator(object):
         self.__generate_sub_org_summary_attachment()
         self.__generate_days_to_mitigate_attachment()
         self.__generate_days_currently_active_attachment()
+
+    def __generate_certificate_attachment(self):
+        # No need to do anything if no certs data was collected.  In
+        # that case this isn't a federal executive agency and hence
+        # the attachment won't be used
+        if 'certs' in self.__results:
+            fields = (
+                'Date Cert Appeared in Logs',
+                'Subjects',
+                'Issuer',
+                'Not Valid Before',
+                'Not Valid After',
+                'Expired',
+                'Expiring in Next 7 Days',
+                'Expiring in Next 30 Days',
+                'Days Until Expiration',
+                'Issued in Last 7 Days',
+                'Issued in Last 30 Days',
+                'Issued Current Fiscal Year',
+                'Certificate'
+            )
+
+            today = self.__generated_time
+            seven_days = datetime.timedelta(days=7)
+            seven_days_ago = today - seven_days
+            seven_days_from_today = today + seven_days
+            thirty_days = datetime.timedelta(days=30)
+            thirty_days_ago = today - thirty_days
+            thirty_days_from_today = today + thirty_days
+            start_of_current_fy = report_dates(now=self.__generated_time)['fy_start']
+            data = self.__results['certs']['unexpired_and_recently_expired_certs']
+
+            with open('certificates.csv', 'wb') as f:
+                # We're carefully controlling the fields, so if an
+                # unknown field appears it indicates an error
+                # (probably a typo).  That's why we're using
+                # extrasaction='raise' here.
+                writer = DictWriter(f, fields, extrasaction='raise')
+                writer.writeheader()
+                for d in data:
+                    not_after = d['not_after'].replace(tzinfo=today.tzinfo)
+                    expired = not_after <= today
+                    expiring_in_next_seven_days = (not expired) and (not_after <= seven_days_from_today)
+                    expiring_in_next_thirty_days = (not expired) and (not_after <= thirty_days_from_today)
+                    issued = d['sct_or_not_before'].replace(tzinfo=today.tzinfo)
+                    issued_this_fy = issued >= start_of_current_fy
+                    issued_last_thirty_days = issued >= thirty_days_ago
+                    issued_last_seven_days = issued >= seven_days_ago
+
+                    row = {
+                        'Date Cert Appeared in Logs': issued,
+                        'Subjects': ','.join(d['subjects']),
+                        'Issuer': d['issuer'],
+                        'Not Valid Before': d['not_before'].replace(tzinfo=today.tzinfo),
+                        'Not Valid After': not_after,
+                        'Expired': expired,
+                        'Expiring in Next 7 Days': expiring_in_next_seven_days,
+                        'Expiring in Next 30 Days': expiring_in_next_thirty_days,
+                        'Days Until Expiration': (not_after - today).days,
+                        'Issued Current Fiscal Year': issued_this_fy,
+                        'Issued in Last 30 Days': issued_last_thirty_days,
+                        'Issued in Last 7 Days': issued_last_seven_days,
+                        'Certificate': d['pem']
+                    }
+                    writer.writerow(row)
+
+    def __generate_domains_attachment(self):
+        # No need to do anything if no second level domains data was
+        # collected.  In that case this isn't a federal executive
+        # agency and hence the attachment won't be used.
+        if 'second_level_domains' in self.__results:
+            data = self.__results['second_level_domains']
+
+            with open('domains.csv', 'wb') as f:
+                writer = csv.writer(f)
+                for d in data:
+                    writer.writerow([d])
 
     def __generate_findings_attachment(self):
         # remove ip_int column if we are trying to be anonymous
@@ -1565,7 +1828,13 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_mustache_json(self, filename):
         ss0 = self.__snapshots[0]
-        result = {'ss0':ss0}
+        result = {
+            'ss0': ss0
+        }
+
+        if 'certs' in self.__results:
+            result['certs'] = self.__results['certs']
+
         result['draft'] = self.__draft
         calc = dict() # calculated vaules for report
 
@@ -1800,7 +2069,7 @@ class ReportGenerator(object):
             pdf_writer.write(f)
 
     def __log_report(self):
-        report = self.__db.ReportDoc()
+        report = self.__cyhy_db.ReportDoc()
         report['_id'] = self.__report_oid
         report['owner'] = self.__owner
         report['generated_time'] = self.__generated_time
@@ -1810,8 +2079,8 @@ class ReportGenerator(object):
 
 def main():
     args = docopt(__doc__, version='v0.0.1')
-    db = database.db_from_config(args['--section'])
-    ch_db = CHDatabase(db)
+    cyhy_db = database.db_from_config(args['--cyhy-section'])
+    scan_db = database.db_from_config(args['--scan-section'])
 
     overview_data = []
 
@@ -1827,14 +2096,17 @@ def main():
             title_date = None
 
         if args['--encrypt']:
-            report_key = Config(args['--section']).report_key
+            report_key = Config(args['--cyhy-section']).report_key
         else:
             report_key = None
 
         print 'Generating report for %s ...' % (owner),
-        generator = ReportGenerator(db, owner, debug=args['--debug'], snapshot_id=snapshot_id,
+        generator = ReportGenerator(cyhy_db, scan_db, owner,
+                                    debug=args['--debug'],
+                                    snapshot_id=snapshot_id,
                                     title_date=title_date, final=args['--final'],
-                                    anonymize=args['--anonymize'], encrypt_key=report_key,
+                                    anonymize=args['--anonymize'],
+                                    encrypt_key=report_key,
                                     log_report=not args['--nolog'])
         was_encrypted, results = generator.generate_report()
 

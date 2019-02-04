@@ -100,13 +100,13 @@ def gen_weekly_scorecard(previous_scorecard_filename, cyhy_db_section, scan_db_s
 #        logging.info('Failed ELECTION report')
 #        logging.info('Stderr report detail: %s%s', data, err)
 
-def sample_report(cyhy_db_section, nolog):
+def sample_report(cyhy_db_section, scan_db_section, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info('Creating SAMPLE report...')
     if nolog:
-        p = subprocess.Popen(['cyhy-report','--nolog','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--nolog','--cyhy-section',cyhy_db_section,'--scan-section',scan_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        p = subprocess.Popen(['cyhy-report','-s',cyhy_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['cyhy-report','--cyhy-section',cyhy_db_section,'--scan-section',scan_db_section,'-a','DHS'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     data, err = p.communicate()
     return_code = p.returncode
     
@@ -165,20 +165,20 @@ def chunks(l, n):
         # Create an index range for l of n items:
         yield l[i:i+n]
 
-def create_reports(customer_list, cyhy_db_section, use_docker, nolog):
+def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, nolog):
     for i in customer_list:
         report_time = time.time()
         logging.info('%s Starting report for: %s', threading.current_thread().name, i)
         if use_docker == 1:
             if nolog:
-                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '--nolog', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '--nolog', '--cyhy-section', cyhy_db_section, '--scan-section', scan_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
-                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(['docker', 'run', '--rm', '--volume', '/etc/cyhy:/etc/cyhy', '--volume', '{}:/home/cyhy'.format(CYHY_REPORT_DIR), '{}/cyhy-reports:stable'.format(NCATS_DHUB_URL), 'cyhy-report', '--cyhy-section', cyhy_db_section, '--scan-section', scan_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
             if nolog:
-                p = subprocess.Popen(['cyhy-report', '--nolog', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(['cyhy-report', '--nolog', '--cyhy-section', cyhy_db_section, '--scan-section', scan_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
-                p = subprocess.Popen(['cyhy-report', '-s', cyhy_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.Popen(['cyhy-report', '--cyhy-section', cyhy_db_section, '--scan-section', scan_db_section, '-f', '-e', i], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         data, err = p.communicate()
         report_time = time.time() - report_time
         longest_reports.append((i,report_time))
@@ -191,7 +191,7 @@ def create_reports(customer_list, cyhy_db_section, use_docker, nolog):
             logging.info('%s Stderr report detail: %s%s', threading.current_thread().name, data, err)
             reports_failed.append(i)
 
-def gen_weekly_reports(db, successful_snaps, cyhy_db_section, use_docker, nolog):
+def gen_weekly_reports(db, successful_snaps, cyhy_db_section, scan_db_section, use_docker, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start = time.time()
     # Create a list that from the results of the function chunks:
@@ -199,7 +199,7 @@ def gen_weekly_reports(db, successful_snaps, cyhy_db_section, use_docker, nolog)
     thread_list = list(chunks(successful_snaps, int(math.ceil(float(len(successful_snaps))/float(REPORT_THREADS)))))
     for i in thread_list:
         try:
-           t = threading.Thread(target=create_reports, args=(i, cyhy_db_section, use_docker, nolog))
+           t = threading.Thread(target=create_reports, args=(i, cyhy_db_section, scan_db_section, use_docker, nolog))
            threads.append(t)
            t.start()
            time.sleep(0.5)
@@ -376,8 +376,8 @@ def main():
 
         #gen_election_report(cyhy_db_section)
 
-        sample_report(cyhy_db_section, nolog)  # Create the sample (anonymized) report
-        reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, use_docker, nolog)
+        sample_report(cyhy_db_section, scan_db_section, nolog)  # Create the sample (anonymized) report
+        reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, scan_db_section, use_docker, nolog)
         pull_cybex_ticket_csvs(db)
     finally:
         sync_all_tallies(db)
