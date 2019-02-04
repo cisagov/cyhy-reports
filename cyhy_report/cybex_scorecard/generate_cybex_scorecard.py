@@ -128,6 +128,9 @@ class ScorecardGenerator(object):
         self.__draft = not final
         self.__scorecard_doc = {'scores':[]}
         self.__cfo_act_orgs = []
+        self.__orgs_with_recently_issued_certs = []
+        self.__orgs_with_no_recently_issued_certs = []
+        self.__orgs_with_no_known_domains = []
         self.__orgs_with_criticals = []
         self.__orgs_without_criticals = []
         self.__orgs_not_vuln_scanned = []
@@ -954,6 +957,13 @@ class ScorecardGenerator(object):
                               'certs_issued_past_7_days_count']:
                     score['cert-scan']['metrics'][metric] = self.__results['cert-scan'][score['owner']][metric]
 
+                if score['cert-scan']['metrics']['certs_issued_past_7_days_count'] > 0:
+                    self.__orgs_with_recently_issued_certs.append(score)
+                else:
+                    self.__orgs_with_no_recently_issued_certs.append(score)
+            else:
+                self.__orgs_with_no_known_domains.append(score)
+
             # Pull vuln-scan results into the score
             for t in self.__tallies:
                 if t['_id'] == r['_id']:  # Found a current CyHy tally that matches this request (org)
@@ -1180,6 +1190,9 @@ class ScorecardGenerator(object):
 
         # sort org lists
         self.__scorecard_doc['scores'].sort(key=lambda x:x['acronym'])
+        self.__orgs_with_recently_issued_certs.sort(key=lambda x:x['acronym'])
+        self.__orgs_with_no_recently_issued_certs.sort(key=lambda x:x['acronym'])
+        self.__orgs_with_no_known_domains.sort(key=lambda x:x['acronym'])
         self.__orgs_with_criticals.sort(key=lambda x:x['acronym'])
         self.__orgs_without_criticals.sort(key=lambda x:x['acronym'])
         self.__orgs_not_vuln_scanned.sort(key=lambda x:x['acronym'])
