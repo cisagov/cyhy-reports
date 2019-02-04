@@ -222,7 +222,7 @@ class ReportGenerator(object):
             if 'certs' in self.__results:
                 for d in self.__results['certs']['unexpired_and_recently_expired_certs']:
                     d['subjects'] = ['sample.com']
-                    d['certificate'] = 'REDACTED'
+                    d['pem'] = 'REDACTED'
 
             tech_poc_count = distro_poc_count = 1
             for contact in self.__results['owner']['agency']['contacts']:
