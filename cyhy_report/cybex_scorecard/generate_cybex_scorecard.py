@@ -1570,6 +1570,7 @@ class ScorecardGenerator(object):
         result['orgs_with_recently_issued_certs'] = self.__orgs_with_recently_issued_certs
         result['orgs_with_no_recently_issued_certs'] = self.__orgs_with_no_recently_issued_certs
         result['orgs_with_no_known_domains'] = self.__orgs_with_no_known_domains
+        result['all_orgs_ed1901_cert'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['cert-scan']['metrics'].get('certs_issued_past_7_days_count'), x['cert-scan']['metrics'].get('certs_issued_past_30_days_count'), x['cert-scan']['metrics'].get('certs_issued_current_fy_count'), x['cert-scan']['metrics'].get('unexpired_certs_count'), x['cert-scan'].get('scanned')), reverse=True)
         result['orgs_with_criticals'] = self.__orgs_with_criticals
         result['orgs_without_criticals'] = self.__orgs_without_criticals
         result['orgs_not_vuln_scanned'] = self.__orgs_not_vuln_scanned
