@@ -539,6 +539,12 @@ class ReportGenerator(object):
             self.__results['second_level_domains'] = [
                 d['_id'] for d in owner_domains_cursor
             ]
+            # For a given domain, say sample.com, the regex looks like
+            # ^(?:.*\.)?sample.com.  This regex will match on
+            # sample.com or anything that ends in .sample.com.  (The
+            # (?:...) bit is a non-capturing grouping, which we use
+            # since we want to group that piece together but we don't
+            # need to refer back later to what was actually grouped.)
             owner_domains_regexes = [
                 r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
                 for d in self.__results['second_level_domains']
