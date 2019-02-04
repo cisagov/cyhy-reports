@@ -216,6 +216,14 @@ class ReportGenerator(object):
             self.__results = self.__anonymize_structure(self.__results)
             self.__results['owner']['agency']['name'] = 'Sample Organization'
             self.__results['owner']['agency']['acronym'] = 'SAMPLE'
+            # Anonymize the ED 19-01 data, if present
+            if 'second_level_domains' in self.__results:
+                self.__results['second_level_domains'] = ['example.com']
+            if 'certs' in self.__results:
+                for d in self.__results['certs']['unexpired_and_recently_expired_certs']:
+                    d['subjects'] = ['sample.com']
+                    d['certificate'] = 'REDACTED'
+
             tech_poc_count = distro_poc_count = 1
             for contact in self.__results['owner']['agency']['contacts']:
                 if contact['type'] == POC_TYPE.TECHNICAL:
