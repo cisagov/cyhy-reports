@@ -593,6 +593,13 @@ class ScorecardGenerator(object):
         Create a regex that will match any domain or subdomain found
         in domain_to_org_map
         '''
+
+        # For a given domain, say sample.com, the regex looks like
+        # ^(?:.*\.)?sample.com.  This regex will match on
+        # sample.com or anything that ends in .sample.com.  (The
+        # (?:...) bit is a non-capturing grouping, which we use
+        # since we want to group that piece together but we don't
+        # need to refer back later to what was actually grouped.)
         domains_regexes = [
             r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
             for d in domain_to_org_map.keys()
