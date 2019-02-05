@@ -539,147 +539,166 @@ class ReportGenerator(object):
             self.__results['second_level_domains'] = [
                 d['_id'] for d in owner_domains_cursor
             ]
-            # For a given domain, say sample.com, the regex looks like
-            # ^(?:.*\.)?sample.com.  This regex will match on
-            # sample.com or anything that ends in .sample.com.  (The
-            # (?:...) bit is a non-capturing grouping, which we use
-            # since we want to group that piece together but we don't
-            # need to refer back later to what was actually grouped.)
-            owner_domains_regexes = [
-                r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
-                for d in self.__results['second_level_domains']
-            ]
-            owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
-                                             re.IGNORECASE)
 
-            # Get all certs for this organization that are unexpired
-            # or expired in the last 30 days.  This data will be used
-            # to generate the CSV attachment.
-            certs['unexpired_and_recently_expired_certs'] = list(
-                self.__scan_db.certs.find({
-                    'not_after': {
-                        '$gte': thirty_days_ago,
+            # If the queries below run with an empty regex then they
+            # will match every certificate in the database, which is
+            # obviously incorrect.  Hence we need to handle the case
+            # where there are no SLDs separately.
+            if len(self.__results['second_level_domains']) == 0:
+                certs['unexpired_and_recently_expired_certs'] = []
+                certs['certs_issued_this_fy_count'] = 0
+                certs['certs_issued_last_thirty_days_count'] = 0
+                certs['certs_issued_last_seven_days_count'] = 0
+                certs['unexpired_certs_count'] = 0
+                certs['certs_expired_last_seven_days_count'] = 0
+                certs['certs_expire_next_seven_days_count'] = 0
+                certs['certs_expired_last_thirty_days_count'] = 0
+                certs['certs_expire_next_thirty_days_count'] = 0
+                certs['ca_aggregation'] = []
+            else:
+                # For a given domain, say sample.com, the regex looks
+                # like ^(?:.*\.)?sample.com.  This regex will match on
+                # sample.com or anything that ends in .sample.com.
+                # (The (?:...) bit is a non-capturing grouping, which
+                # we use since we want to group that piece together
+                # but we don't need to refer back later to what was
+                # actually grouped.)
+                owner_domains_regexes = [
+                    r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
+                    for d in self.__results['second_level_domains']
+                ]
+                owner_domains_regex = re.compile(r'|'.join(owner_domains_regexes),
+                                                 re.IGNORECASE)
+
+                # Get all certs for this organization that are
+                # unexpired or expired in the last 30 days.  This data
+                # will be used to generate the CSV attachment.
+                certs['unexpired_and_recently_expired_certs'] = list(
+                    self.__scan_db.certs.find({
+                        'not_after': {
+                            '$gte': thirty_days_ago,
+                        },
+                        'subjects': owner_domains_regex
+                    })
+                )
+
+                # Get a count of all certs issued for this
+                # organization since the start of the current fiscal
+                # year
+                certs['certs_issued_this_fy_count'] = self.__scan_db.certs.find({
+                    'sct_or_not_before': {
+                        '$gte': start_of_current_fy
                     },
                     'subjects': owner_domains_regex
-                })
-            )
-
-            # Get a count of all certs issued for this organization
-            # during the start of the current fiscal year
-            certs['certs_issued_this_fy_count'] = self.__scan_db.certs.find({
-                'sct_or_not_before': {
-                    '$gte': start_of_current_fy
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs issued for this organization in
-            # the last 30 days
-            certs['certs_issued_last_thirty_days_count'] = self.__scan_db.certs.find({
-                'sct_or_not_before': {
-                    '$gte': thirty_days_ago
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs issued for this organization in
-            # the last 7 days
-            certs['certs_issued_last_seven_days_count'] = self.__scan_db.certs.find({
-                'sct_or_not_before': {
-                    '$gte': seven_days_ago
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-
-            # Get a count of all certs for this organization that are
-            # unexpired
-            certs['unexpired_certs_count'] = self.__scan_db.certs.find({
-                'not_after': {
-                    '$gte': today
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-
-            # Get a count of all certs for this organization that
-            # expired in the last 7 days
-            certs['certs_expired_last_seven_days_count'] = self.__scan_db.certs.find({
-                'not_after': {
-                    '$gte': seven_days_ago,
-                    '$lte': today
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs for this organization that
-            # expire in the next 7 days
-            certs['certs_expire_next_seven_days_count'] = self.__scan_db.certs.find({
-                'not_after': {
-                    '$gte': today,
-                    '$lte': seven_days_from_today
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs for this organization that
-            # expired in the last 30 days
-            certs['certs_expired_last_thirty_days_count'] = self.__scan_db.certs.find({
-                'not_after': {
-                    '$gte': thirty_days_ago,
-                    '$lte': today
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-            # Get a count of all certs for this organization that
-            # expire in the next 30 days
-            certs['certs_expire_next_thirty_days_count'] = self.__scan_db.certs.find({
-                'not_after': {
-                    '$gte': today,
-                    '$lte': thirty_days_from_today
-                },
-                'subjects': owner_domains_regex
-            }, {
-                '_id': True
-            }).count()
-
-            # Aggregate the unexpired certs for this organization by
-            # issuer
-            certs['ca_aggregation'] = list(
-                self.__scan_db.certs.aggregate([
-                    {
-                        '$match': {
-                            'not_after': {
-                                '$gte': today
-                            },
-                            'subjects': owner_domains_regex
-                        }
+                }, {
+                    '_id': True
+                }).count()
+                # Get a count of all certs issued for this
+                # organization in the last 30 days
+                certs['certs_issued_last_thirty_days_count'] = self.__scan_db.certs.find({
+                    'sct_or_not_before': {
+                        '$gte': thirty_days_ago
                     },
-	            {
-                        '$group': {
-                            '_id': {
-                                'issuer': '$issuer'
-                            },
-                            'count': {
-                                '$sum': 1
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+                # Get a count of all certs issued for this
+                # organization in the last 7 days
+                certs['certs_issued_last_seven_days_count'] = self.__scan_db.certs.find({
+                    'sct_or_not_before': {
+                        '$gte': seven_days_ago
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+
+                # Get a count of all certs for this organization that
+                # are unexpired
+                certs['unexpired_certs_count'] = self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': today
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+
+                # Get a count of all certs for this organization that
+                # expired in the last 7 days
+                certs['certs_expired_last_seven_days_count'] = self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': seven_days_ago,
+                        '$lte': today
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+                # Get a count of all certs for this organization that
+                # expire in the next 7 days
+                certs['certs_expire_next_seven_days_count'] = self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': today,
+                        '$lte': seven_days_from_today
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+                # Get a count of all certs for this organization that
+                # expired in the last 30 days
+                certs['certs_expired_last_thirty_days_count'] = self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': thirty_days_ago,
+                        '$lte': today
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+                # Get a count of all certs for this organization that
+                # expire in the next 30 days
+                certs['certs_expire_next_thirty_days_count'] = self.__scan_db.certs.find({
+                    'not_after': {
+                        '$gte': today,
+                        '$lte': thirty_days_from_today
+                    },
+                    'subjects': owner_domains_regex
+                }, {
+                    '_id': True
+                }).count()
+
+                # Aggregate the unexpired certs for this organization
+                # by issuer
+                certs['ca_aggregation'] = list(
+                    self.__scan_db.certs.aggregate([
+                        {
+                            '$match': {
+                                'not_after': {
+                                    '$gte': today
+                                },
+                                'subjects': owner_domains_regex
+                            }
+                        },
+	                {
+                            '$group': {
+                                '_id': {
+                                    'issuer': '$issuer'
+                                },
+                                'count': {
+                                    '$sum': 1
+                                }
+                            }
+                        },
+	                {
+                            '$sort': {
+                                'count': -1
                             }
                         }
-                    },
-	            {
-                        '$sort': {
-                            'count': -1
-                        }
-                    }
-	        ], cursor={})
-            )
+	            ], cursor={})
+                )
 
             self.__results['certs'] = certs
 
