@@ -586,7 +586,7 @@ class ScorecardGenerator(object):
             'agency.id': True
         })
 
-        return {d['_id']: d['agency']['id'] for d in domains}
+        return {d['_id'].lower(): d['agency']['id'] for d in domains}
 
     def __create_domains_regex(self, domain_to_org_map):
         '''
@@ -645,16 +645,8 @@ class ScorecardGenerator(object):
             cert['non_cfo_act_org'] = False
             orgs_owning_subjects = set()
 
-            for subject in cert.get('subjects'):
-                # TODO: Change the following temporary special case after the
-                # certs collection has been modified to include a field
-                # containing the set of public suffixes for the subjects
-                # in each certificate
-                subject_sld = '.'.join(subject.split('.')[-2:])
-                if subject_sld == 'fed.us':
-                    subject_sld = '.'.join(subject.split('.')[-3:])
-
-                org_id = self.__results['domain_to_org_map'].get(subject_sld)
+            for subject in cert.get('trimmed_subjects'):
+                org_id = self.__results['domain_to_org_map'].get(subject.lower())
                 if org_id:
                     orgs_owning_subjects.add(org_id)
 
@@ -713,8 +705,16 @@ class ScorecardGenerator(object):
 
         current_fy_start = report_dates(now=self.__generated_time)['fy_start']
 
+        # TODO: When trimmed_subjects is guaranteed to be all lowercase
+        # (see https://github.com/dhs-ncats/cyhy-ct-logs/issues/3), replace
+        # domains_regex with:
+        #   cybex_domains = self.__results['domain_to_org_map'].keys()
+        #   relevant_certs = self.__scan_db.certs.find({
+        #       'trimmed_subjects': {
+        #           '$in': valid_domains
+        #       }, ...
         relevant_certs = self.__scan_db.certs.find({
-            'subjects': domains_regex,
+            'trimmed_subjects': domains_regex,
             '$or': [
                 {'not_after': {'$gt': self.__generated_time}},
                 {'sct_or_not_before': {'$gte': current_fy_start}},
@@ -724,7 +724,7 @@ class ScorecardGenerator(object):
         }, {
             '_id': False,
             'not_after': True,
-            'subjects': True,
+            'trimmed_subjects': True,
             'sct_or_not_before': True
         })
 
