@@ -705,13 +705,13 @@ class ScorecardGenerator(object):
 
         current_fy_start = report_dates(now=self.__generated_time)['fy_start']
 
-        # TODO: When trimmed_subjects is guaranteed to be all lowercase
+        # TODO: When trimmed_subjects are guaranteed to be all lowercase
         # (see https://github.com/dhs-ncats/cyhy-ct-logs/issues/3), replace
         # domains_regex with:
         #   cybex_domains = self.__results['domain_to_org_map'].keys()
         #   relevant_certs = self.__scan_db.certs.find({
         #       'trimmed_subjects': {
-        #           '$in': valid_domains
+        #           '$in': cybex_domains
         #       }, ...
         relevant_certs = self.__scan_db.certs.find({
             'trimmed_subjects': domains_regex,
