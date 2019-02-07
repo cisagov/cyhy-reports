@@ -588,29 +588,6 @@ class ScorecardGenerator(object):
 
         return {d['_id'].lower(): d['agency']['id'] for d in domains}
 
-    def __create_domains_regex(self, domain_to_org_map):
-        '''
-        Create a regex that will match any domain or subdomain found
-        in domain_to_org_map
-        '''
-
-        # For a given domain, say sample.com, the regex looks like
-        # ^(?:.*\.)?sample.com.  This regex will match on
-        # sample.com or anything that ends in .sample.com.  (The
-        # (?:...) bit is a non-capturing grouping, which we use
-        # since we want to group that piece together but we don't
-        # need to refer back later to what was actually grouped.)
-        domains_regexes = [
-            r'^(?:.*\.)?{}'.format(d.replace('.', '\.'))
-            for d in domain_to_org_map.keys()
-        ]
-
-        domains_regex = re.compile('|'.join([
-            d for d in domains_regexes]),
-            re.IGNORECASE)
-
-        return domains_regex
-
     def __accumulate_federal_cert_totals(self, results, certificate,
                                          field_to_accumulate):
         results['federal_totals'][field_to_accumulate] += 1
@@ -699,22 +676,16 @@ class ScorecardGenerator(object):
         # Store domain_to_org_map in self.__results for later use
         self.__results['domain_to_org_map'] = self.__create_domain_to_org_map(cybex_orgs)
 
-        # Build the regex of domains that will be used to capture the certs
+        # Create list of domains that will be used to capture the certs
         # for every org in cybex_orgs
-        domains_regex = self.__create_domains_regex(self.__results['domain_to_org_map'])
+        cybex_domains = self.__results['domain_to_org_map'].keys()
 
         current_fy_start = report_dates(now=self.__generated_time)['fy_start']
 
-        # TODO: When trimmed_subjects are guaranteed to be all lowercase
-        # (see https://github.com/dhs-ncats/cyhy-ct-logs/issues/3), replace
-        # domains_regex with:
-        #   cybex_domains = self.__results['domain_to_org_map'].keys()
-        #   relevant_certs = self.__scan_db.certs.find({
-        #       'trimmed_subjects': {
-        #           '$in': cybex_domains
-        #       }, ...
         relevant_certs = self.__scan_db.certs.find({
-            'trimmed_subjects': domains_regex,
+            'trimmed_subjects': {
+                '$in': cybex_domains
+            },
             '$or': [
                 {'not_after': {'$gt': self.__generated_time}},
                 {'sct_or_not_before': {'$gte': current_fy_start}},
