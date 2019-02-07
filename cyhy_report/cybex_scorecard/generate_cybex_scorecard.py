@@ -99,6 +99,7 @@ CYBEX_WEB_CHART_WIN_HEIGHT = '325'
 CRITICAL_AGE_GRAPH_CSV_URL = CYBEX_WEB_SERVER + '/cybex/?c1'
 CRITICAL_AGE_GRAPH_CSV_FILE = 'cybex-age-of-active-critical-vulns.csv'
 
+ED1901_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-certs-by-agency.csv'
 EMAIL_SECURITY_SUMMARY_CSV_FILE = 'cybex-email-security-summary.csv'
 BOD_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-bod-results-by-agency.csv'
 WEB_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-web-security-results-by-agency.csv'
@@ -128,6 +129,9 @@ class ScorecardGenerator(object):
         self.__draft = not final
         self.__scorecard_doc = {'scores':[]}
         self.__cfo_act_orgs = []
+        self.__orgs_with_recently_issued_certs = []
+        self.__orgs_with_no_recently_issued_certs = []
+        self.__orgs_with_no_known_domains = []
         self.__orgs_with_criticals = []
         self.__orgs_without_criticals = []
         self.__orgs_not_vuln_scanned = []
@@ -570,6 +574,133 @@ class ScorecardGenerator(object):
                     {'$sort':{'_id':1}}
                     ], cursor={}))
 
+    def __create_domain_to_org_map(self, org_list):
+        '''
+        Map each domain (owned by an org in org_list) to the org that owns it
+        '''
+
+        domains = self.__scan_db.domains.find({
+            'agency.id': {'$in': org_list}
+        }, {
+            '_id': True,
+            'agency.id': True
+        })
+
+        return {d['_id'].lower(): d['agency']['id'] for d in domains}
+
+    def __accumulate_federal_cert_totals(self, results, certificate,
+                                         field_to_accumulate):
+        results['federal_totals'][field_to_accumulate] += 1
+
+        if certificate['cfo_act_org'] == True:
+            results['cfo_totals'][field_to_accumulate] += 1
+
+        if certificate['non_cfo_act_org'] == True:
+            results['non_cfo_totals'][field_to_accumulate] += 1
+
+        return results
+
+    def __create_cert_summary_by_org(self, certificates, current_fy_start):
+        '''
+        Build certificate summary results for each organization, as well as
+        accumulate Federal/CFO/Non-CFO totals (they cannot simply be added up
+        at the end, due to the possibility of a single cert applying to more
+        than one organization).
+        '''
+        results = defaultdict(lambda: defaultdict(lambda: 0))
+        # Initialize results with every org in our domain_to_org_map so we
+        # can count them as being 'scanned' for certificates
+        for org in set(self.__results['domain_to_org_map'].values()):
+            for metric in ['unexpired_certs_count',
+                           'certs_issued_current_fy_count',
+                           'certs_issued_past_30_days_count',
+                           'certs_issued_past_7_days_count']:
+                           results[org][metric] = 0
+
+        for cert in certificates:
+            cert['cfo_act_org'] = False
+            cert['non_cfo_act_org'] = False
+            orgs_owning_subjects = set()
+
+            for subject in cert.get('trimmed_subjects'):
+                org_id = self.__results['domain_to_org_map'].get(subject.lower())
+                if org_id:
+                    orgs_owning_subjects.add(org_id)
+
+                # Reminder: It is possible for a cert to contain subjects for
+                # *BOTH* CFO Act and Non-CFO Act orgs
+                #
+                # Assumption: Every org in this Scorecard is a Federal org and
+                # each one is either a "CFO Act" org or a "Non-CFO Act" org
+                if org_id in self.__cfo_act_orgs:
+                    cert['cfo_act_org'] = True
+                else:
+                    cert['non_cfo_act_org'] = True
+
+            # Is cert unexpired?
+            if cert['not_after'] > self.__generated_time:
+                for org in orgs_owning_subjects:
+                    results[org]['unexpired_certs_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'unexpired_certs_count')
+
+            # Was cert issued in this fiscal year?
+            if cert['sct_or_not_before'] > current_fy_start:
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_current_fy_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_current_fy_count')
+
+            # Was cert issued in the past 30 days?
+            if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=30):
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_past_30_days_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_30_days_count')
+
+            # Was cert issued in the past 7 days?
+            if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=7):
+                for org in orgs_owning_subjects:
+                    results[org]['certs_issued_past_7_days_count'] += 1
+                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_7_days_count')
+
+        return results
+
+    def __run_cert_scan_queries(self, cybex_orgs):
+        '''
+        Fetch certificates that contain a subject that matches a domain
+        belonging to any of the cybex_orgs AND that meet ANY of the
+        following conditions:
+           - Certificate is not expired
+           - Certificate was issued in the current fiscal year
+           - Certificate was issued in the past 30 days
+        '''
+
+        # Store domain_to_org_map in self.__results for later use
+        self.__results['domain_to_org_map'] = self.__create_domain_to_org_map(cybex_orgs)
+
+        # Create list of domains that will be used to capture the certs
+        # for every org in cybex_orgs
+        cybex_domains = self.__results['domain_to_org_map'].keys()
+
+        current_fy_start = report_dates(now=self.__generated_time)['fy_start']
+
+        relevant_certs = self.__scan_db.certs.find({
+            'trimmed_subjects': {
+                '$in': cybex_domains
+            },
+            '$or': [
+                {'not_after': {'$gt': self.__generated_time}},
+                {'sct_or_not_before': {'$gte': current_fy_start}},
+                {'sct_or_not_before': {'$gte': self.__generated_time -
+                                               timedelta(days=30)}}
+            ]
+        }, {
+            '_id': False,
+            'not_after': True,
+            'trimmed_subjects': True,
+            'sct_or_not_before': True
+        })
+
+        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
+
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
         self.__requests = list(self.__cyhy_db.RequestDoc.find({'report_types':REPORT_TYPE.CYBEX}))
@@ -602,6 +733,7 @@ class ScorecardGenerator(object):
         self.__run_trustymail_queries(cybex_orgs)
         self.__run_https_scan_queries(cybex_orgs)
         self.__run_sslyze_scan_queries(cybex_orgs)
+        self.__run_cert_scan_queries(cybex_orgs)
 
     def __populate_scorecard_doc(self):
         # Go through each request doc and check if the org has a current tally doc
@@ -701,7 +833,12 @@ class ScorecardGenerator(object):
                       'sslyze-scan': {'scanned':False,
                                       'live_domains': {'domain_count':0,
                                                        'live_no_weak_crypto_count':0,
-                                                       'live_has_weak_crypto_count':0}}
+                                                       'live_has_weak_crypto_count':0}},
+                      'cert-scan': {'scanned':False,
+                                    'metrics': {'unexpired_certs_count':0,
+                                                'certs_issued_current_fy_count':0,
+                                                'certs_issued_past_30_days_count':0,
+                                                'certs_issued_past_7_days_count':0}}
                     }
             score['owner'] = r['_id']
             score['acronym'] = r['agency']['acronym']
@@ -790,6 +927,22 @@ class ScorecardGenerator(object):
                     score['sslyze-scan']['live_domains']['live_no_weak_crypto_count'] = sslyze_scan_result['domain_count'] - sslyze_scan_result['domains_with_weak_crypto_count']
                     break
 
+            # Pull cert-scan results into the score
+            if self.__results['cert-scan'].get(score['owner']):  # Found info for the current org
+                score['cert-scan']['scanned'] = True
+                for metric in ['unexpired_certs_count',
+                              'certs_issued_current_fy_count',
+                              'certs_issued_past_30_days_count',
+                              'certs_issued_past_7_days_count']:
+                    score['cert-scan']['metrics'][metric] = self.__results['cert-scan'][score['owner']][metric]
+
+                if score['cert-scan']['metrics']['certs_issued_past_7_days_count'] > 0:
+                    self.__orgs_with_recently_issued_certs.append(score)
+                else:
+                    self.__orgs_with_no_recently_issued_certs.append(score)
+            else:
+                self.__orgs_with_no_known_domains.append(score)
+
             # Pull vuln-scan results into the score
             for t in self.__tallies:
                 if t['_id'] == r['_id']:  # Found a current CyHy tally that matches this request (org)
@@ -845,6 +998,9 @@ class ScorecardGenerator(object):
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
             self.__results[total_id] = dict()
 
+            # Copy previously-calculated cert-scan totals
+            self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
+
             # initialize vuln-scan metrics to 0
             self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-14_days':0, 'open_criticals_14-21_days':0, 'open_criticals_21-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'addresses':0, 'active_hosts':0}}
 
@@ -859,7 +1015,8 @@ class ScorecardGenerator(object):
             # initialize sslyze-scan metrics to 0
             self.__results[total_id]['sslyze-scan'] = {'live_domains': {'domain_count':0, 'live_no_weak_crypto_count':0, 'live_has_weak_crypto_count':0}}
 
-        # Accumulate all metrics into each totals dict
+        # Accumulate all metrics (except for previously-handled cert-scan
+        # metrics) into each totals dict
         for org in self.__scorecard_doc['scores']:
             for (scanner, scan_subtype, field) in [('vuln-scan', 'metrics', 'open_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_on_previous_scorecard'),
@@ -1014,6 +1171,9 @@ class ScorecardGenerator(object):
 
         # sort org lists
         self.__scorecard_doc['scores'].sort(key=lambda x:x['acronym'])
+        self.__orgs_with_recently_issued_certs.sort(key=lambda x:x['acronym'])
+        self.__orgs_with_no_recently_issued_certs.sort(key=lambda x:x['acronym'])
+        self.__orgs_with_no_known_domains.sort(key=lambda x:x['acronym'])
         self.__orgs_with_criticals.sort(key=lambda x:x['acronym'])
         self.__orgs_without_criticals.sort(key=lambda x:x['acronym'])
         self.__orgs_not_vuln_scanned.sort(key=lambda x:x['acronym'])
@@ -1185,11 +1345,27 @@ class ScorecardGenerator(object):
     #  Attachment Generation
     ###############################################################################
     def __generate_attachments(self):
+        self.__generate_ed1901_results_by_agency_attachment()
         self.__generate_email_security_summary_attachment()
         self.__generate_bod_results_by_agency_attachment()
         self.__generate_web_security_results_by_agency_attachment()
         self.__generate_email_security_results_by_agency_attachment()
         self.__generate_cybex_graph_csv()
+
+    def __generate_ed1901_results_by_agency_attachment(self):
+        header_fields = ('acronym', 'name', 'cfo_act', 'unexpired_certificates', 'new_certificates_current_fiscal_year', 'new_certificates_past_30_days', 'new_certificates_past_7_days')
+        data_fields = ('acronym', 'name', 'cfo_act_org', 'unexpired_certs_count', 'certs_issued_current_fy_count', 'certs_issued_past_30_days_count', 'certs_issued_past_7_days_count')
+        with open(ED1901_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction='ignore')
+            header_writer.writeheader()
+            for org in copy.deepcopy(self.__scorecard_doc['scores']):
+                for cert_scan_key in ('unexpired_certs_count', 'certs_issued_current_fy_count', 'certs_issued_past_30_days_count', 'certs_issued_past_7_days_count'):
+                    if org['cert-scan']['scanned']:
+                        org[cert_scan_key] = org['cert-scan']['metrics'].get(cert_scan_key)
+                    else:
+                        org[cert_scan_key] = 'N/A'
+                data_writer.writerow(org)
 
     def __generate_email_security_summary_attachment(self):
         trustymail_dmarc_summary = sorted(self.__results['trustymail_dmarc_summary'], key=lambda x:x['_id'])
@@ -1386,6 +1562,10 @@ class ScorecardGenerator(object):
     ###############################################################################
     def __generate_mustache_json(self, filename):
         result = {'all_orgs_alpha':self.__scorecard_doc['scores']}
+        result['orgs_with_recently_issued_certs'] = self.__orgs_with_recently_issued_certs
+        result['orgs_with_no_recently_issued_certs'] = self.__orgs_with_no_recently_issued_certs
+        result['orgs_with_no_known_domains'] = self.__orgs_with_no_known_domains
+        result['all_orgs_ed1901_cert'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['cert-scan']['metrics'].get('certs_issued_past_7_days_count'), x['cert-scan']['metrics'].get('certs_issued_past_30_days_count'), x['cert-scan']['metrics'].get('certs_issued_current_fy_count'), x['cert-scan']['metrics'].get('unexpired_certs_count'), x['cert-scan'].get('scanned')), reverse=True)
         result['orgs_with_criticals'] = self.__orgs_with_criticals
         result['orgs_without_criticals'] = self.__orgs_without_criticals
         result['orgs_not_vuln_scanned'] = self.__orgs_not_vuln_scanned
@@ -1473,7 +1653,10 @@ class ScorecardGenerator(object):
 
 def generate_empty_scorecard_json():
     current_time = utcnow()
-    result = {'orgs_with_criticals':[]}
+    result = { 'orgs_with_recently_issued_certs': [] }
+    result['orgs_with_no_recently_issued_certs'] = []
+    result['orgs_with_no_known_domains'] = []
+    result['orgs_with_criticals'] = []
     result['orgs_without_criticals'] = []
     result['orgs_not_vuln_scanned'] = []
     result['all_orgs_alpha'] = []

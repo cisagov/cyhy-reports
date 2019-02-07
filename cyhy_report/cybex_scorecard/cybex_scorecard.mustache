@@ -361,7 +361,7 @@ opacity=0.04
 \label{sec:executive-summary}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{Executive Summary}}} \\
 
-This weekly scorecard, created by the National Cybersecurity Assessments and Technical Services (NCATS) team inside the Department of Homeland Security's National Cybersecurity and Communications Integration Center (\href{http://www.dhs.gov/national-cybersecurity-and-communications-integration-center}{\underline{NCCIC}}), provides summary metrics for Binding Operational Directive (BOD) 15-01 (``Critical Vulnerability Mitigation") and \href{https://cyber.dhs.gov/}{\underline{18-01}} (``Enhance Email and Web Security").\\
+This weekly scorecard, created by the National Cybersecurity Assessments and Technical Services (NCATS) team inside the Department of Homeland Security's National Cybersecurity and Communications Integration Center (\href{http://www.dhs.gov/national-cybersecurity-and-communications-integration-center}{\underline{NCCIC}}), provides summary metrics for Emergency Directive (ED) \href{https://cyber.dhs.gov/ed/19-01/}{\underline{19-01}}, Binding Operational Directive (BOD) \href{https://cyber.dhs.gov/bod/15-01/}{\underline{15-01}} (``Critical Vulnerability Mitigation"), and \href{https://cyber.dhs.gov/bod/18-01/}{\underline{18-01}} (``Enhance Email and Web Security").\\
 
 Notes:
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
@@ -372,6 +372,63 @@ Notes:
 
 \vspace*{5mm}
 If there are questions, comments, or concerns about this scorecard, please contact \href{mailto:NCATS@hq.dhs.gov}{\underline{NCATS@hq.dhs.gov}}.
+
+
+\newpage
+\begin{landscape}
+\BgThispage
+\hiddensection{ED 19-01 Status}
+\label{sec:ed-19-01-status}
+\begin{center}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{<<&scorecard_name>> Cyber Exposure Scorecard\ \textemdash \ \usvardate\formatdate<<&title_date_tex>>\\
+ED 19-01 \textemdash \ New Certificates}}}
+\end{center}
+
+%\vspace*{-7mm}
+\begin{multicols*}{3}
+	\raggedcolumns
+	\begin{spacing}{0.85}
+		\setlength{\parskip}{0pt}
+		{\RaggedRight\color{sc-medium}
+		\textbf{ISSUED NEW CERTIFICATES IN PAST 7 DAYS \fontencoding{U}\fontfamily{futs}\selectfont\char 66}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\fontencoding{U}\fontfamily{futs}\selectfont\char 66}]
+		<<#orgs_with_recently_issued_certs>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_recently_issued_certs>>
+		<<^orgs_with_recently_issued_certs>>\item[] \textit{No agencies are in this category}<</orgs_with_recently_issued_certs>>
+		\end{itemize}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-low}
+		\textbf{NO NEW CERTIFICATES IN PAST 7 DAYS \cmark}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\cmark}]
+		<<#orgs_with_no_recently_issued_certs>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_no_recently_issued_certs>>
+		<<^orgs_with_no_recently_issued_certs>>\item[] \textit{No agencies are in this category}<</orgs_with_no_recently_issued_certs>>
+		\end{itemize}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-nope}
+		\textbf{NO KNOWN DOMAINS EXIST $\varobslash$}\\
+		\rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-1mm}
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{$\varobslash$}]
+		<<#orgs_with_no_known_domains>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+		<</orgs_with_no_known_domains>>
+		<<^orgs_with_no_known_domains>>\item[] \textit{No agencies are in this category}<</orgs_with_no_known_domains>>
+		\end{itemize}
+		} % end \RaggedRight
+	\end{spacing}
+\end{multicols*}
+\end{landscape}
 
 
 \newpage
@@ -493,6 +550,155 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 
 \newpage
 \begin{landscape}
+\hiddensection{ED 19-01 Results by Agency}
+\label{sec:ed-19-01-results-by-agency}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{ED 19-01 Results by Agency}}}
+
+{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+  \item \textbf{Unexpired Certificates:} The number of unexpired certificates that are listed in \href{https://www.certificate-transparency.org/}{\underline{Certificate Transparency}} logs.
+  \item \textbf{New Certificates (Current Fiscal Year):} The number of known certificates for Federal domains and subdomains which were issued this fiscal year.
+  \item \textbf{New Certificates (Past 30 Days):} The number of known certificates for Federal domains and subdomains which were issued within the past 30 days.
+  \item \textbf{New Certificates (Past 7 Days):} The number of known certificates for Federal domains and subdomains which were issued within the past 7 days.
+\end{itemize}
+
+\vspace*{3mm}
+The table below is sorted in descending order on the ``New Certificates (Past 7 Days)" field. The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section \\(``cybex-certs-by-agency.csv").
+\rowcolors{10}{row-light-blue}{white}
+\setlength{\tabcolsep}{7pt}
+\begin{longtable}{>{\raggedright}p{4.0in}||rrrr}
+  \toprule
+      & \textbf{Unexpired}    & \textbf{New Certificates}      & \textbf{New Certificates} & \textbf{New Certificates}  \\
+      & \textbf{Certificates} & \textbf{(Current Fiscal Year)} & \textbf{(Past 30 Days)}   & \textbf{(Past 7 Days)} \\
+  \midrule \endhead\label{tab:cert-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} & \textbf{\numprint{<<&federal_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&federal_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&cfo_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&cfo_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.unexpired_certs_count>>}} &  \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_current_fy_count>>}} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_past_30_days_count>>}} & \textbf{\numprint{<<&non_cfo_totals.cert-scan.certs_issued_past_7_days_count>>}} \\
+  \hhline{=====}
+  <<#all_orgs_ed1901_cert>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & <<#cert-scan.scanned>>\numprint{<<&cert-scan.metrics.unexpired_certs_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_current_fy_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_past_30_days_count>>} & \numprint{<<&cert-scan.metrics.certs_issued_past_7_days_count>>}<</cert-scan.scanned>><<^cert-scan.scanned>>\multicolumn{4}{c}{Not currently scanned for certificates - no known domains exist}<</cert-scan.scanned>>\\
+  <</all_orgs_ed1901_cert>>
+  \bottomrule
+\end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\hiddensection{BOD Results By Agency}
+\label{sec:bod-results-by-agency}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{BOD Results by Agency}}}
+
+{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+  \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated as quickly as possible.
+  \item \textbf{Missing STARTTLS:} Number of live (DNS-responsive) Federal second-level domains and subdomains that support SMTP, but do not support STARTTLS, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.
+  \item \textbf{Missing HTTPS+HSTS:} Number of live Federal second-level domains and subdomains that support HTTP, but do not enforce both HTTPS and HSTS, according to the latest \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scan.
+  \item \textbf{SSLv2/v3, 3DES, RC4:} Number of live Federal second-level domains and subdomains that support any of the following weak protocols/ciphers for email or web: SSLv2, SSLv3, 3DES, or RC4, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} and \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scans.
+  \item \textbf{Non-Compliant DMARC:} Number of live Federal second-level domains and mail-sending hosts that do not meet the DMARC requirements of BOD 18-01, due to any of the following, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan:
+    \begin{itemize}[topsep=-6pt, itemsep=0pt]
+      \item Invalid DMARC record
+      \item DMARC record does not have ``\texttt{p=reject}"
+      \item DMARC record does not include URI to report aggregate DMARC results to DHS (``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}")
+    \end{itemize}
+\end{itemize}
+
+\vspace*{3mm}
+The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-bod-results-by-agency.csv").
+
+\rowcolors{13}{white}{row-light-blue}
+\setlength{\tabcolsep}{6pt}
+\begin{longtable}{>{\raggedright}p{2.3in}||rrrrrrr||rrrr}
+  \toprule
+    & \multicolumn{7}{c||}{\textbf{BOD 15-01}} & \multicolumn{4}{c}{\textbf{BOD 18-01}}\\
+    & \multicolumn{7}{c||}{ \ }                 & \multicolumn{4}{c}{\textbf{Email and Web Security}}\\
+    & \multicolumn{7}{c||}{\textbf{Active Critical-Severity Vulnerabilities}} & \multicolumn{4}{c}{ \ }\\
+    & \textbf{Total} & \textbf{$\Delta$ Since} & \textbf{7-14} & \textbf{14-21} & \textbf{21-30} & \textbf{30-90} & \textbf{90+} & \textbf{Missing} & \textbf{Missing} & \textbf{SSLv2/v3,} & \textbf{Non-Compliant}\\
+    & \textbf{\monthdayonly\formatdate<<&title_date_tex>>} & \textbf{\monthdayonly\formatdate<<&previous_scorecard_date_tex>>} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{STARTTLS} & \textbf{HTTPS+HSTS} & \textbf{3DES, RC4} & \textbf{DMARC}\\
+    \midrule \endhead\label{tab:bod-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
+  \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &  \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} &
+  \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&federal_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
+  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} & \textbf{\numprint{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&cfo_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&cfo_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
+  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &  \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} & \textbf{\numprint{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&non_cfo_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&non_cfo_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
+  \hhline{============}
+  <<#all_orgs_vuln>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & <<#vuln-scan.scanned>><<&vuln-scan.metrics.open_criticals>> & <<#vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>> &  <<&vuln-scan.metrics.open_criticals_7-14_days>> & <<&vuln-scan.metrics.open_criticals_14-21_days>> & <<&vuln-scan.metrics.open_criticals_21-30_days>> & <<&vuln-scan.metrics.open_criticals_30-90_days>> & <<&vuln-scan.metrics.open_criticals_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{7}{c||}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>> & \numprint{<<&trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>} & \numprint{<<&https-scan.live_domains.live_missing_https_hsts_count>>} & \numprint{<<&sslyze-scan.live_domains.live_has_weak_crypto_count>>} & \numprint{<<&trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}\\
+	<</all_orgs_vuln>>
+  \bottomrule
+\end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\hiddensection{Web Security Summary Metrics}
+\label{sec:web-security-summary-metrics}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Summary Metrics}}}
+
+\begin{minipage}{\linewidth}
+  \centering
+  \begin{minipage}{0.40\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.55]{figure_bod1801_web_components.pdf}
+	  \end{figure}
+	\end{minipage}
+	\begin{minipage}{0.40\linewidth}
+	  \begin{figure}[H]
+	  \centering
+	  \includegraphics[scale=0.55]{figure_bod1801_web_compliant.pdf}
+	  \end{figure}
+	\end{minipage}
+\end{minipage}
+
+\vspace*{8mm}
+
+Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>} Federal .gov domains and subdomains} that currently respond to HTTP requests:
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_supports_https_count>>} (<<&federal_totals.https-scan.live_domains.live_supports_https_pct_int>>\%) use HTTPS}
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_enforces_https_count>>} (<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_int>>\%) enforce HTTPS}
+	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_count>>} (<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_int>>\%) use Strong HSTS}
+  \item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_count>>} (<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
+  \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_count>>} (<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for web security}}
+\end{itemize}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
+\hiddensection{Web Security Results by Agency}
+\label{sec:web-security-results-by-agency}
+{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Results by Agency}}}
+
+{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
+\begin{itemize}[topsep=-6pt, itemsep=0pt]
+  \item \textbf{HTTP-responsive Hosts:} Of known Federal second-level domains and subdomains, the number which respond to HTTP requests, performed by \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}}.
+  \item \textbf{Uses HTTPS:} Percentage of HTTP-responsive hosts that can be used over HTTPS, on either its bare domain or its www subdomain.
+  \item \textbf{Enforces HTTPS:} Percentage of HTTP-responsive hosts that appear to ``default" to using HTTPS.
+  \item \textbf{Uses Strong HSTS:} Percentage of HTTP-responsive hosts that have an HSTS max-age of at least 31536000 seconds (one year).
+  \item \textbf{Free of SSLv2/v3, 3DES, RC4:} Percentage of HTTP-responsive hosts that do not support weak protocols (SSLv2, SSLv3) or weak ciphers (3DES, RC4)
+  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.
+\end{itemize}
+
+\vspace*{3mm}
+The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" field. The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section \\(``cybex-web-security-results-by-agency.csv").
+\rowcolors{11}{white}{row-light-blue}
+\setlength{\tabcolsep}{7pt}
+\begin{longtable}{>{\raggedright}p{4.0in}||rrrrrr}
+  \toprule
+      & \textbf{HTTP-}      & \textbf{Uses}  & \textbf{Enforces} & \textbf{Uses}   & \textbf{Free of}    & \textbf{BOD 18-01} \\
+      & \textbf{responsive} & \textbf{HTTPS} & \textbf{HTTPS}    & \textbf{Strong} & \textbf{SSL v2/v3,} & \textbf{Web} \\
+      & \textbf{Hosts}      &                &                   & \textbf{HSTS}   & \textbf{3DES, RC4}  & \textbf{Compliant} \\
+  \midrule \endhead\label{tab:web-security-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} & \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&federal_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
+  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&cfo_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&cfo_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
+  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&non_cfo_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&non_cfo_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
+  \hhline{=======}
+  <<#all_orgs_bod1801_web_compliant>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & \numprint{<<&https-scan.live_domains.live_domain_count>>} & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_supports_https>>\color{sc-low}<</https-scan.live_domains.all_live_supports_https>><<^https-scan.live_domains.all_live_supports_https>><<#https-scan.live_domains.live_supports_https_pct>>\color{sc-medium}<</https-scan.live_domains.live_supports_https_pct>><<^https-scan.live_domains.live_supports_https_pct>>\color{sc-high}<</https-scan.live_domains.live_supports_https_pct>><</https-scan.live_domains.all_live_supports_https>>{<<&https-scan.live_domains.live_supports_https_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_enforces_https>>\color{sc-low}<</https-scan.live_domains.all_live_enforces_https>><<^https-scan.live_domains.all_live_enforces_https>><<#https-scan.live_domains.live_enforces_https_pct>>\color{sc-medium}<</https-scan.live_domains.live_enforces_https_pct>><<^https-scan.live_domains.live_enforces_https_pct>>\color{sc-high}<</https-scan.live_domains.live_enforces_https_pct>><</https-scan.live_domains.all_live_enforces_https>>{<<&https-scan.live_domains.live_enforces_https_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_uses_strong_hsts>>\color{sc-low}<</https-scan.live_domains.all_live_uses_strong_hsts>><<^https-scan.live_domains.all_live_uses_strong_hsts>><<#https-scan.live_domains.live_uses_strong_hsts_pct>>\color{sc-medium}<</https-scan.live_domains.live_uses_strong_hsts_pct>><<^https-scan.live_domains.live_uses_strong_hsts_pct>>\color{sc-high}<</https-scan.live_domains.live_uses_strong_hsts_pct>><</https-scan.live_domains.all_live_uses_strong_hsts>>{<<&https-scan.live_domains.live_uses_strong_hsts_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_no_weak_crypto>>\color{sc-low}<</https-scan.live_domains.all_live_no_weak_crypto>><<^https-scan.live_domains.all_live_no_weak_crypto>><<#https-scan.live_domains.live_no_weak_crypto_pct>>\color{sc-medium}<</https-scan.live_domains.live_no_weak_crypto_pct>><<^https-scan.live_domains.live_no_weak_crypto_pct>>\color{sc-high}<</https-scan.live_domains.live_no_weak_crypto_pct>><</https-scan.live_domains.all_live_no_weak_crypto>>{<<&https-scan.live_domains.live_no_weak_crypto_pct_str>>}<</https-scan.live_domains.live_domain_count>> & \textbf{<<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_bod1801_web_compliant>>\color{sc-low}<</https-scan.live_domains.all_live_bod1801_web_compliant>><<^https-scan.live_domains.all_live_bod1801_web_compliant>><<#https-scan.live_domains.live_bod1801_web_compliant_pct>>\color{sc-medium}<</https-scan.live_domains.live_bod1801_web_compliant_pct>><<^https-scan.live_domains.live_bod1801_web_compliant_pct>>\color{sc-high}<</https-scan.live_domains.live_bod1801_web_compliant_pct>><</https-scan.live_domains.all_live_bod1801_web_compliant>>{<<&https-scan.live_domains.live_bod1801_web_compliant_pct_str>>}<</https-scan.live_domains.live_domain_count>><<^https-scan.live_domains.live_domain_count>>\color{black}{N/A}<</https-scan.live_domains.live_domain_count>>}\\
+  <</all_orgs_bod1801_web_compliant>>
+  \bottomrule
+\end{longtable}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
 \hiddensection{Email Security Summary Metrics}
 \label{sec:email-security-summary-metrics}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{Email Security Summary Metrics}}}
@@ -583,122 +789,6 @@ BOD 18-01 \textemdash \ DMARC Status}}}
 
 \newpage
 \begin{landscape}
-\hiddensection{Web Security Summary Metrics}
-\label{sec:web-security-summary-metrics}
-{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Summary Metrics}}}
-
-\begin{minipage}{\linewidth}
-  \centering
-  \begin{minipage}{0.40\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.55]{figure_bod1801_web_components.pdf}
-	  \end{figure}
-	\end{minipage}
-	\begin{minipage}{0.40\linewidth}
-	  \begin{figure}[H]
-	  \centering
-	  \includegraphics[scale=0.55]{figure_bod1801_web_compliant.pdf}
-	  \end{figure}
-	\end{minipage}
-\end{minipage}
-
-\vspace*{8mm}
-
-Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>} Federal .gov domains and subdomains} that currently respond to HTTP requests:
-\begin{itemize}[topsep=-6pt, itemsep=0pt]
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_supports_https_count>>} (<<&federal_totals.https-scan.live_domains.live_supports_https_pct_int>>\%) use HTTPS}
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_enforces_https_count>>} (<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_int>>\%) enforce HTTPS}
-	\item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_count>>} (<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_int>>\%) use Strong HSTS}
-  \item \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_count>>} (<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_int>>\%)} do not support \textbf{SSLv2, SSLv3, 3DES, or RC4}
-  \item \color{dhs-blue}{\textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_count>>} (<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_int>>\%)} are \textbf{BOD 18-01 Compliant for web security}}
-\end{itemize}
-\end{landscape}
-
-
-\newpage
-\begin{landscape}
-\hiddensection{BOD Results By Agency}
-\label{sec:bod-results-by-agency}
-{\textcolor{dhs-blue}{\NCCICHeadingOne{BOD Results by Agency}}}
-
-{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
-\begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated as quickly as possible.
-  \item \textbf{Missing STARTTLS:} Number of live (DNS-responsive) Federal second-level domains and subdomains that support SMTP, but do not support STARTTLS, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.
-  \item \textbf{Missing HTTPS+HSTS:} Number of live Federal second-level domains and subdomains that support HTTP, but do not enforce both HTTPS and HSTS, according to the latest \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scan.
-  \item \textbf{SSLv2/v3, 3DES, RC4:} Number of live Federal second-level domains and subdomains that support any of the following weak protocols/ciphers for email or web: SSLv2, SSLv3, 3DES, or RC4, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} and \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scans.
-  \item \textbf{Non-Compliant DMARC:} Number of live Federal second-level domains and mail-sending hosts that do not meet the DMARC requirements of BOD 18-01, due to any of the following, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan:
-    \begin{itemize}[topsep=-6pt, itemsep=0pt]
-      \item Invalid DMARC record
-      \item DMARC record does not have ``\texttt{p=reject}"
-      \item DMARC record does not include URI to report aggregate DMARC results to DHS (``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}")
-    \end{itemize}
-\end{itemize}
-
-\vspace*{3mm}
-The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-bod-results-by-agency.csv").
-
-\rowcolors{13}{white}{row-light-blue}
-\setlength{\tabcolsep}{6pt}
-\begin{longtable}{>{\raggedright}p{2.3in}||rrrrrrr||rrrr}
-  \toprule
-    & \multicolumn{7}{c||}{\textbf{BOD 15-01}} & \multicolumn{4}{c}{\textbf{BOD 18-01}}\\
-    & \multicolumn{7}{c||}{ \ }                 & \multicolumn{4}{c}{\textbf{Email and Web Security}}\\
-    & \multicolumn{7}{c||}{\textbf{Active Critical-Severity Vulnerabilities}} & \multicolumn{4}{c}{ \ }\\
-    & \textbf{Total} & \textbf{$\Delta$ Since} & \textbf{7-14} & \textbf{14-21} & \textbf{21-30} & \textbf{30-90} & \textbf{90+} & \textbf{Missing} & \textbf{Missing} & \textbf{SSLv2/v3,} & \textbf{Non-Compliant}\\
-    & \textbf{\monthdayonly\formatdate<<&title_date_tex>>} & \textbf{\monthdayonly\formatdate<<&previous_scorecard_date_tex>>} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{STARTTLS} & \textbf{HTTPS+HSTS} & \textbf{3DES, RC4} & \textbf{DMARC}\\
-    \midrule \endhead\label{tab:bod-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
-  \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &  \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} &
-  \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&federal_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
-  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} & \textbf{\numprint{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&cfo_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&cfo_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
-  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals>>} & \textbf{<<#non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &  \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} & \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} & \textbf{\numprint{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>}} & \textbf{\numprint{<<&non_cfo_totals.https-scan.live_domains.live_missing_https_hsts_count>>}} & \textbf{\numprint{<<&non_cfo_totals.sslyze-scan.live_domains.live_has_weak_crypto_count>>}} & \textbf{\numprint{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}}\\
-  \hhline{============}
-  <<#all_orgs_vuln>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & <<#vuln-scan.scanned>><<&vuln-scan.metrics.open_criticals>> & <<#vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>> &  <<&vuln-scan.metrics.open_criticals_7-14_days>> & <<&vuln-scan.metrics.open_criticals_14-21_days>> & <<&vuln-scan.metrics.open_criticals_21-30_days>> & <<&vuln-scan.metrics.open_criticals_30-90_days>> & <<&vuln-scan.metrics.open_criticals_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{7}{c||}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>> & \numprint{<<&trustymail.base_domains_and_smtp_subdomains.live_missing_starttls_count>>} & \numprint{<<&https-scan.live_domains.live_missing_https_hsts_count>>} & \numprint{<<&sslyze-scan.live_domains.live_has_weak_crypto_count>>} & \numprint{<<&trustymail.base_domains_and_smtp_subdomains.live_bod1801_dmarc_non_compliant_count>>}\\
-	<</all_orgs_vuln>>
-  \bottomrule
-\end{longtable}
-\end{landscape}
-
-
-\newpage
-\begin{landscape}
-\hiddensection{Web Security Results by Agency}
-\label{sec:web-security-results-by-agency}
-{\textcolor{dhs-blue}{\NCCICHeadingOne{Web Security Results by Agency}}}
-
-{\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
-\begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \textbf{HTTP-responsive Hosts:} Of known Federal second-level domains and subdomains, the number which respond to HTTP requests, performed by \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}}.
-  \item \textbf{Uses HTTPS:} Percentage of HTTP-responsive hosts that can be used over HTTPS, on either its bare domain or its www subdomain.
-  \item \textbf{Enforces HTTPS:} Percentage of HTTP-responsive hosts that appear to ``default" to using HTTPS.
-  \item \textbf{Uses Strong HSTS:} Percentage of HTTP-responsive hosts that have an HSTS max-age of at least 31536000 seconds (one year).
-  \item \textbf{Free of SSLv2/v3, 3DES, RC4:} Percentage of HTTP-responsive hosts that do not support weak protocols (SSLv2, SSLv3) or weak ciphers (3DES, RC4)
-  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.
-\end{itemize}
-
-\vspace*{3mm}
-The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" field. The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section \\(``cybex-web-security-results-by-agency.csv").
-\rowcolors{7}{row-light-blue}{white}
-\setlength{\tabcolsep}{7pt}
-\begin{longtable}{>{\raggedright}p{4.0in}||rrrrrr}
-  \toprule
-      & \textbf{HTTP-}      & \textbf{Uses}  & \textbf{Enforces} & \textbf{Uses}   & \textbf{Free of}    & \textbf{BOD 18-01} \\
-      & \textbf{responsive} & \textbf{HTTPS} & \textbf{HTTPS}    & \textbf{Strong} & \textbf{SSL v2/v3,} & \textbf{Web} \\
-      & \textbf{Hosts}      &                &                   & \textbf{HSTS}   & \textbf{3DES, RC4}  & \textbf{Compliant} \\
-  \midrule \endhead\label{tab:web-security-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} & \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&federal_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
-  \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&cfo_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&cfo_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
-  \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} & \textbf{\numprint{<<&non_cfo_totals.https-scan.live_domains.live_domain_count>>}} &  \textbf{<<&non_cfo_totals.https-scan.live_domains.live_supports_https_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_enforces_https_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_uses_strong_hsts_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_no_weak_crypto_pct_str>>} & \textbf{<<&non_cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} \\
-  \hhline{=======}
-  <<#all_orgs_bod1801_web_compliant>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> & \numprint{<<&https-scan.live_domains.live_domain_count>>} & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_supports_https>>\color{sc-low}<</https-scan.live_domains.all_live_supports_https>><<^https-scan.live_domains.all_live_supports_https>><<#https-scan.live_domains.live_supports_https_pct>>\color{sc-medium}<</https-scan.live_domains.live_supports_https_pct>><<^https-scan.live_domains.live_supports_https_pct>>\color{sc-high}<</https-scan.live_domains.live_supports_https_pct>><</https-scan.live_domains.all_live_supports_https>>{<<&https-scan.live_domains.live_supports_https_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_enforces_https>>\color{sc-low}<</https-scan.live_domains.all_live_enforces_https>><<^https-scan.live_domains.all_live_enforces_https>><<#https-scan.live_domains.live_enforces_https_pct>>\color{sc-medium}<</https-scan.live_domains.live_enforces_https_pct>><<^https-scan.live_domains.live_enforces_https_pct>>\color{sc-high}<</https-scan.live_domains.live_enforces_https_pct>><</https-scan.live_domains.all_live_enforces_https>>{<<&https-scan.live_domains.live_enforces_https_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_uses_strong_hsts>>\color{sc-low}<</https-scan.live_domains.all_live_uses_strong_hsts>><<^https-scan.live_domains.all_live_uses_strong_hsts>><<#https-scan.live_domains.live_uses_strong_hsts_pct>>\color{sc-medium}<</https-scan.live_domains.live_uses_strong_hsts_pct>><<^https-scan.live_domains.live_uses_strong_hsts_pct>>\color{sc-high}<</https-scan.live_domains.live_uses_strong_hsts_pct>><</https-scan.live_domains.all_live_uses_strong_hsts>>{<<&https-scan.live_domains.live_uses_strong_hsts_pct_str>>}<</https-scan.live_domains.live_domain_count>> & <<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_no_weak_crypto>>\color{sc-low}<</https-scan.live_domains.all_live_no_weak_crypto>><<^https-scan.live_domains.all_live_no_weak_crypto>><<#https-scan.live_domains.live_no_weak_crypto_pct>>\color{sc-medium}<</https-scan.live_domains.live_no_weak_crypto_pct>><<^https-scan.live_domains.live_no_weak_crypto_pct>>\color{sc-high}<</https-scan.live_domains.live_no_weak_crypto_pct>><</https-scan.live_domains.all_live_no_weak_crypto>>{<<&https-scan.live_domains.live_no_weak_crypto_pct_str>>}<</https-scan.live_domains.live_domain_count>> & \textbf{<<#https-scan.live_domains.live_domain_count>><<#https-scan.live_domains.all_live_bod1801_web_compliant>>\color{sc-low}<</https-scan.live_domains.all_live_bod1801_web_compliant>><<^https-scan.live_domains.all_live_bod1801_web_compliant>><<#https-scan.live_domains.live_bod1801_web_compliant_pct>>\color{sc-medium}<</https-scan.live_domains.live_bod1801_web_compliant_pct>><<^https-scan.live_domains.live_bod1801_web_compliant_pct>>\color{sc-high}<</https-scan.live_domains.live_bod1801_web_compliant_pct>><</https-scan.live_domains.all_live_bod1801_web_compliant>>{<<&https-scan.live_domains.live_bod1801_web_compliant_pct_str>>}<</https-scan.live_domains.live_domain_count>><<^https-scan.live_domains.live_domain_count>>\color{black}{N/A}<</https-scan.live_domains.live_domain_count>>}\\
-  <</all_orgs_bod1801_web_compliant>>
-  \bottomrule
-\end{longtable}
-\end{landscape}
-
-
-\newpage
-\begin{landscape}
 \hiddensection{Email Security Results by Agency}
 \label{sec:email-security-results-by-agency}
 {\textcolor{dhs-blue}{\NCCICHeadingOne{Email Security Results by Agency}}}
@@ -717,7 +807,7 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
 
 \vspace*{3mm}
 The data from the table below is available in CSV format in the \hyperref[sec:attachments]{\underline{Attachments}} section (``cybex-email-security-results-by-agency.csv"). The table below is sorted in descending order on the ``BOD 18-01 Email Compliant" field.
-\rowcolors{7}{row-light-blue}{white}
+\rowcolors{11}{white}{row-light-blue}
 \setlength{\tabcolsep}{7pt}
 \begin{longtable}{>{\raggedright}p{3.0in}||rrrrrrrr}
   \toprule
@@ -760,9 +850,10 @@ The data from the graph below is available in CSV format in the \hyperref[sec:at
 
 If your PDF viewer supports embedded attachments, you will see a paperclip icon below for each attached file.
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-email-security-summary.csv]{cybex-email-security-summary.csv} cybex-email-security-summary.csv : Data from the \hyperref[sec:email-security-summary-metrics]{\underline{Email Security Summary Metrics}} table
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-certs-by-agency.csv]{cybex-certs-by-agency.csv} cybex-certs-by-agency.csv : Data from the \hyperref[sec:ed-19-01-results-by-agency]{\underline{ED 19-01 Results by Agency}} table
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-bod-results-by-agency.csv]{cybex-bod-results-by-agency.csv} cybex-bod-results-by-agency.csv : Data from the \hyperref[sec:bod-results-by-agency]{\underline{BOD Results by Agency}} table
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-web-security-results-by-agency.csv]{cybex-web-security-results-by-agency.csv} cybex-web-security-results-by-agency.csv : Data from the \hyperref[sec:web-security-results-by-agency]{\underline{Web Security Results by Agency}} table
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-email-security-summary.csv]{cybex-email-security-summary.csv} cybex-email-security-summary.csv : Data from the \hyperref[sec:email-security-summary-metrics]{\underline{Email Security Summary Metrics}} table
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-email-security-results-by-agency.csv]{cybex-email-security-results-by-agency.csv} cybex-email-security-results-by-agency.csv : Data from the \hyperref[sec:email-security-results-by-agency]{\underline{Email Security Results by Agency}} table
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-age-of-active-critical-vulns.csv]{cybex-age-of-active-critical-vulns.csv} cybex-age-of-active-critical-vulns.csv : Data from the \hyperref[sec:critical-vuln-age-graphs]{\underline{Age of Active Critical-Severity Vulnerabilities}} graph
 \end{itemize}
