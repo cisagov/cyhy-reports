@@ -336,6 +336,7 @@
 \newacronym{CSV}{CSV}{Comma-Separated Values}
 \newacronym[description={National Cybersecurity and Communications Integration Center [\href{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}]}]{NCCIC}{NCCIC}{National Cybersecurity and Communications Integration Center}
 \newacronym{NCATS}{NCATS}{National Cybersecurity Assessments and Technical Services}
+\newacronym{CT}{CT}{Certificate transparency}
 \newacronym{CyHy}{CyHy}{Cyber Hygiene}
 \newacronym[description={Common Vulnerabilities and Exposures; for more information refer to \href{https://cve.mitre.org/about/faqs.html}{https://cve.mitre.org/about/faqs.html}}]{CVE}{CVE}{Common Vulnerabilities and Exposures}
 \newacronym[description={Common Vulnerability Scoring System; for more information refer to \href{https://www.first.org/cvss/v2}{https://www.first.org/cvss/v2}}]{CVSS}{CVSS}{Common Vulnerability Scoring System}
@@ -660,15 +661,14 @@ See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-s
 \label{sec:ed1901}
 Issued on 22 January 2019, Emergency Directive (ED) 19-01 requires
 CISA to assist Federal agencies in identifying newly added
-certificates to Certificate Transparency (CT) logs for agency
-domains. NCATS is supporting the directive by providing certificate
-information found in CT log entries for known agency second-level
-domains and all subdomains under them. Per the directive, agencies
-shall monitor CT log data for certificates issued that they did not
-request.
+certificates to \gls{CT} logs for agency domains. \gls{NCATS} is
+supporting the directive by providing certificate information found in
+\gls{CT} log entries for known agency second-level domains and all
+subdomains under them. Per the directive, agencies shall monitor
+\gls{CT} log data for certificates issued that they did not request.
 <<#display_owner>>
-Detailed information on the certificates discovered by NCATS
-can be found in the
+Detailed information on the certificates discovered by \gls{NCATS} can
+be found in the
 \hyperref[app:attachments]{\texttt{certificates.csv}} attachment
 within the agency’s weekly Cyber Hygiene report.
 <</display_owner>>
@@ -684,9 +684,9 @@ information for your sub-organization's domains.
 <<#display_owner>>
 We recommend focusing on validating that newly-added certificates were
 purposefully issued; new certificates issued without a known purpose
-may indicate Domain Name System (DNS) infrastructure tampering. The
-issuing organization table is included to help identify possible
-outlier certificates that have been issued by an unusual organization.
+may indicate \gls{DNS} infrastructure tampering. The issuing
+organization table is included to help identify possible outlier
+certificates that have been issued by an unusual organization.
 <</display_owner>>
 
 <<#display_owner>>
@@ -1025,7 +1025,7 @@ If a vulnerability that was previously reported to you is no longer detected by 
 
 We encourage you to validate the status of vulnerabilities in both \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities} and \autoref{app:recently-detected-vulnerabilities}: \nameref{app:recently-detected-vulnerabilities} against your change control register. This will help to ensure that the vulnerability we detected has actually been remediated and is not simply unresponsive to our scans.
 
-% \gls{DNSSEC} Security Scan – \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning performs in-depth checks to ensure that all .GOV DNS domains validate and a have properly implemented DNS security extensions.
+% \gls{DNSSEC} Security Scan – \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning performs in-depth checks to ensure that all .GOV \gls{DNS} domains validate and a have properly implemented \gls{DNS} security extensions.
 
 \clearpage
 \section{Approximate Host Locations}
@@ -1206,7 +1206,7 @@ Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_
 % \clearpage
 % \section{DNSSEC Scan Results}
 % \label{sec:dnssec}
-% Implementing \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning checks to ensure all important DNS elements are up to date and reports any deficiencies.  The scan operates by mimicking the same process employed by Internet browsers to verify that a domain uses \gls{DNSSEC}.  \gls{DNSSEC} Scans are conducted weekly and incorporated into the Cyber Hygiene report.  \gls{AGENCY} had 0 of 1 (0\%) domains fully compliant with \gls{DNSSEC}.  \autoref{tab:dnssec-report} illustrates the current and quarterly \gls{DNSSEC} score for all \gls{AGENCY} domains.  Over the past thirteen months, \gls{AGENCY} compliance has stayed constant and, is generally below the CH average.  For full \gls{DNSSEC} results, please refer to \autoref{app:dnssec-results}.
+% Implementing \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning checks to ensure all important \gls{DNS} elements are up to date and reports any deficiencies.  The scan operates by mimicking the same process employed by Internet browsers to verify that a domain uses \gls{DNSSEC}.  \gls{DNSSEC} Scans are conducted weekly and incorporated into the Cyber Hygiene report.  \gls{AGENCY} had 0 of 1 (0\%) domains fully compliant with \gls{DNSSEC}.  \autoref{tab:dnssec-report} illustrates the current and quarterly \gls{DNSSEC} score for all \gls{AGENCY} domains.  Over the past thirteen months, \gls{AGENCY} compliance has stayed constant and, is generally below the CH average.  For full \gls{DNSSEC} results, please refer to \autoref{app:dnssec-results}.
 % \begin{figure}[H]
 % 	\centering
 % 	\scalegraphics{dnssec-domain-compliance}{Compliant vs. Not Compliant Domains}
@@ -1531,13 +1531,13 @@ If your PDF viewer supports embedded attachments you will see paperclip icons be
 <<#owner_is_federal_executive>>
 <<#display_owner>>
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=certificates.csv]{certificates.csv} certificates.csv : Data collected about each certificate found that was issued for a domain known to belong to you.
-\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=domains.csv]{domains.csv} domains.csv : A CSV containing all the base domains we know belong to you.
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=domains.csv]{domains.csv} domains.csv : A \gls{CSV} containing all the base domains we know belong to you.
 <</display_owner>>
 <</owner_is_federal_executive>>
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} findings.csv : Detailed list of all \gls{vulnerability} findings for each \gls{IP} address and port.
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=mitigated-vulnerabilities.csv]{mitigated-vulnerabilities.csv} mitigated-vulnerabilities.csv : List of vulnerabilities that were included on the last report, but were not detected in the latest scans.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=recently-detected.csv]{recently-detected.csv} recently-detected.csv : List of all vulnerabilities detected since the last report, but not detected in the latest scans.
-	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full TCP handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
+	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full \gls{TCP} handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=hosts.csv]{hosts.csv} hosts.csv : List of \glspl{host} discovered with \gls{IP} address, best-guess \gls{OS} identification, and hostname if available.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope.csv]{scope.csv} scope.csv : List of \gls{IP} addresses that were in scope for this report.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=false-positive-findings.csv]{false-positive-findings.csv} false-positive-findings.csv : List of all reported \gls{false positive} vulnerability findings.
