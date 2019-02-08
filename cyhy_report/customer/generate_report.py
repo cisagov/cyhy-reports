@@ -563,7 +563,7 @@ class ReportGenerator(object):
             # * That expire in the next seven days
             # * That expired in the last thirty days
             # * That expire in the next thirty days
-            cert_counts = self.__scan_db.certs.aggregate([
+            cert_counts = list(self.__scan_db.certs.aggregate([
                 {
                     '$match': {
                         'trimmed_subjects': {
@@ -729,7 +729,7 @@ class ReportGenerator(object):
                         }
                     }
                 }
-            ], cursor={})
+            ], cursor={}))[0]
 
             # Get a count of all certs issued for this organization
             # since the start of the current fiscal year
