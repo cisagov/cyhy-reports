@@ -516,9 +516,13 @@ class ReportGenerator(object):
                 self.__results['ss0_descendant_data'].append({'owner':snap['owner'], 'address_count':address_count, 'addresses_scanned':snap['addresses_scanned'], 'addresses_scanned_percent':addresses_scanned_percent, 'host_count':snap['host_count'], 'vulnerable_host_count':snap['vulnerable_host_count'], 'vuln_host_percent':vuln_host_percent, 'vulnerabilities':snap['vulnerabilities'], 'port_count':snap['port_count'], 'tix_days_to_close':tix_days_to_close, 'tix_days_open':tix_days_open})
 
         #
-        # Run ED 19-01 queries
+        # Run ED 19-01 queries, but only for Federal executive
+        # agencies that are not suborgs.  We exclude suborgs because
+        # all domains are associated with the parent org, and hence
+        # there is nothing to display for suborgs.
         #
-        if self.__results['owner_is_federal_executive']:
+        display_owner = self.__snapshots[0].get('descendants_included')
+        if self.__results['owner_is_federal_executive'] and display_owner:
             certs = {}
 
             today = self.__generated_time
