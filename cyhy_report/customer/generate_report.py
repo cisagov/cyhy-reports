@@ -1691,6 +1691,7 @@ class ReportGenerator(object):
                 'Expiring in Next 30 Days',
                 'Days Until Expiration',
                 'Certificate Lifetime in Days',
+                'Serial Number',
                 'Issued in Last 7 Days',
                 'Issued in Last 30 Days',
                 'Issued Current Fiscal Year',
@@ -1736,6 +1737,7 @@ class ReportGenerator(object):
                         'Days Until Expiration': (not_after - today).days,
                         'Certificate Lifetime in Days': (not_after - d['not_before']).days,
                         'Issued Current Fiscal Year': issued_this_fy,
+                        'Serial Number': d['serial'],
                         'Issued in Last 30 Days': issued_last_thirty_days,
                         'Issued in Last 7 Days': issued_last_seven_days,
                         'Certificate': d['pem']
