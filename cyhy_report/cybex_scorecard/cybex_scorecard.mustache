@@ -763,12 +763,15 @@ The data from the graph below is available in CSV format in the \hyperref[sec:at
 ED 19-01 \textemdash \ New Certificates}}}
 \end{center}
 
-%\vspace*{-7mm}
+\vspace*{-7mm}
+Issued on January 22, 2019, \href{https://cyber.dhs.gov/ed/19-01/}{\underline{Emergency Directive (ED) 19-01}} requires \href{https://cisa.gov/}{\underline{CISA}} to assist Federal agencies with identifying newly-added certificates for agency domains in \href{https://www.certificate-transparency.org/}{\underline{Certificate Transparency}} (CT) logs.  Per the directive, agencies shall monitor CT log data for certificates issued that they did not request.  Detailed information on the certificates discovered by NCATS can be found in the \textit{certificates.csv} attachment within your agency's latest Cyber Hygiene report.  We recommend focusing on validating that newly-added certificates were purposefully issued; new certificates issued without a known purpose may indicate Domain Name System (DNS) infrastructure tampering.
+
+\vspace*{-2mm}
 \begin{multicols*}{3}
 	\raggedcolumns
-	\begin{spacing}{0.85}
+	\begin{spacing}{0.77}
 		\setlength{\parskip}{0pt}
-		{\RaggedRight\color{sc-medium}
+		{\RaggedRight\color{dhs-blue}
 		\textbf{ISSUED NEW CERTIFICATES IN PAST 7 DAYS \fontencoding{U}\fontfamily{futs}\selectfont\char 66}\\
 		\rule[2mm]{0.9\columnwidth}{0.4mm}
     \vspace{-1mm}
@@ -781,7 +784,7 @@ ED 19-01 \textemdash \ New Certificates}}}
 		} % end \RaggedRight
 
 		\vspace*{5mm}
-		{\RaggedRight\color{sc-low}
+		{\RaggedRight
 		\textbf{NO NEW CERTIFICATES IN PAST 7 DAYS \cmark}\\
 		\rule[2mm]{0.9\columnwidth}{0.4mm}
     \vspace{-1mm}
