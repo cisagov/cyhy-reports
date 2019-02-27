@@ -590,10 +590,10 @@ The table below is sorted in descending order on the ``New Certificates (Past 7 
 {\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
   \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated as quickly as possible.
-  \item \textbf{Missing STARTTLS:} Number of live (DNS-responsive) Federal second-level domains and subdomains that support SMTP, but do not support STARTTLS, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.
-  \item \textbf{Missing HTTPS+HSTS:} Number of live Federal second-level domains and subdomains that support HTTP, but do not enforce both HTTPS and HSTS, according to the latest \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scan.
-  \item \textbf{SSLv2/v3, 3DES, RC4:} Number of live Federal second-level domains and subdomains that support any of the following weak protocols/ciphers for email or web: SSLv2, SSLv3, 3DES, or RC4, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} and \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}} scans.
-  \item \textbf{Non-Compliant DMARC:} Number of live Federal second-level domains and mail-sending hosts that do not meet the DMARC requirements of BOD 18-01, due to any of the following, according to the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan:
+  \item \textbf{Missing STARTTLS:} Number of live (DNS-responsive) Federal second-level domains and subdomains that support SMTP, but do not support STARTTLS, according to the latest \href{https://github.com/cisagov/trustymail}{\underline{trustymail}} scan.
+  \item \textbf{Missing HTTPS+HSTS:} Number of live Federal second-level domains and subdomains that support HTTP, but do not enforce both HTTPS and HSTS, according to the latest \href{https://github.com/cisagov/pshtt}{\underline{pshtt}} scan.
+  \item \textbf{SSLv2/v3, 3DES, RC4:} Number of live Federal second-level domains and subdomains that support any of the following weak protocols/ciphers for email or web: SSLv2, SSLv3, 3DES, or RC4, according to the latest \href{https://github.com/cisagov/trustymail}{\underline{trustymail}} and \href{https://github.com/cisagov/pshtt}{\underline{pshtt}} scans.
+  \item \textbf{Non-Compliant DMARC:} Number of live Federal second-level domains and mail-sending hosts that do not meet the DMARC requirements of BOD 18-01, due to any of the following, according to the latest \href{https://github.com/cisagov/trustymail}{\underline{trustymail}} scan:
     \begin{itemize}[topsep=-6pt, itemsep=0pt]
       \item Invalid DMARC record
       \item DMARC record does not have ``\texttt{p=reject}"
@@ -669,7 +669,7 @@ Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_c
 
 {\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \textbf{HTTP-responsive Hosts:} Of known Federal second-level domains and subdomains, the number which respond to HTTP requests, performed by \href{https://github.com/dhs-ncats/pshtt}{\underline{pshtt}}.
+  \item \textbf{HTTP-responsive Hosts:} Of known Federal second-level domains and subdomains, the number which respond to HTTP requests, performed by \href{https://github.com/cisagov/pshtt}{\underline{pshtt}}.
   \item \textbf{Uses HTTPS:} Percentage of HTTP-responsive hosts that can be used over HTTPS, on either its bare domain or its www subdomain.
   \item \textbf{Enforces HTTPS:} Percentage of HTTP-responsive hosts that appear to ``default" to using HTTPS.
   \item \textbf{Uses Strong HSTS:} Percentage of HTTP-responsive hosts that have an HSTS max-age of at least 31536000 seconds (one year).
@@ -795,7 +795,7 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
 
 {\textcolor{dhs-dark-gray}{\NCCICHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
-  \item \textbf{Live Domains and SMTP Subdomains:} The number of second-level agency-owned domains (according to \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{DotGov}}) and mail-sending hosts (subdomains) that responded to DNS queries on the latest \href{https://github.com/dhs-ncats/trustymail}{\underline{trustymail}} scan.% (All other metrics are based on the adjudication that a domain is ``live".) These have the potential to be different, especially in the case of new or unused domains.
+  \item \textbf{Live Domains and SMTP Subdomains:} The number of second-level agency-owned domains (according to \href{https://github.com/GSA/data/blob/master/dotgov-domains/current-federal.csv}{\underline{DotGov}}) and mail-sending hosts (subdomains) that responded to DNS queries on the latest \href{https://github.com/cisagov/trustymail}{\underline{trustymail}} scan.% (All other metrics are based on the adjudication that a domain is ``live".) These have the potential to be different, especially in the case of new or unused domains.
   \item \textbf{Valid DMARC Record:} Percentage of Live Domains and SMTP Subdomains where a DMARC (TXT) record is present at \texttt{\_dmarc.<domain>.gov}, or covered by a record at its second-level domain.
   \item \textbf{DMARC Reject:} Percentage of Live Domains and SMTP Subdomains with a Valid DMARC Record of ``\texttt{p=reject}".
   \item \textbf{Reports DMARC To DHS:} Percentage of Live Domains and SMTP Subdomains where DHS is a recipient of DMARC aggregate reports \\ (``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}")
