@@ -95,11 +95,6 @@ BOD_1902_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-vuln-results-by-agency.csv'
 WEB_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-web-security-results-by-agency.csv'
 EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-email-security-results-by-agency.csv'
 
-VULN_AGE_GRAPH_START_DATE = time_to_utc(parser.parse('20150521'))   # Starting date for vuln age graphs
-TICKET_AGE_BUCKET_CUTOFF_DAYS = 30      # Dividing line between 'young' and 'old' tickets in vuln age graphs
-ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180   # Max number of days to display in CRITICAL vuln age distribution graph
-ACTIVE_CRITICAL_AGE_BUCKETS = [(0,7), (7,14), (14,21), (21,30), (30,90)]    # Age buckets for CRITICAL vuln age distribution graph
-
 TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 10      # Number of Trustymail scans to fetch summary data for
 BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 
