@@ -667,12 +667,8 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
 
 \vspace*{-3mm}
 \begin{minipage}{\linewidth}
-  \begin{minipage}[t]{0.28\linewidth}
-    \   % space so the minipage is not "empty"
-  \end{minipage}
-  \begin{minipage}[t]{0.72\linewidth}
     \rowcolors{4}{row-light-blue}{white}
-    \setlength{\tabcolsep}{6pt}
+    \setlength{\tabcolsep}{5pt}
     \begin{longtable}{>{\raggedright}p{1.4in}||<<#dmarc_summary>>r<</dmarc_summary>>}
         \toprule
         \textbf{DMARC Policy} <<#dmarc_summary>>& \textbf{\usshortvardate\formatdate<<&scan_date_tex>>} <</dmarc_summary>>\\
@@ -688,7 +684,6 @@ The table below is sorted in descending order on the ``BOD 18-01 Web Compliant" 
         \textbf{Domains tested:} Total number of executive branch .gov domains <<#dmarc_summary>>& \numprint{<<&base_domain_count>>} <</dmarc_summary>>\\
         \bottomrule
     \end{longtable}
-  \end{minipage}
 \end{minipage}
 \end{landscape}
 

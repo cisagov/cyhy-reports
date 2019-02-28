@@ -99,7 +99,7 @@ TICKET_AGE_BUCKET_CUTOFF_DAYS = 30      # Dividing line between 'young' and 'old
 ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180   # Max number of days to display in CRITICAL vuln age distribution graph
 ACTIVE_CRITICAL_AGE_BUCKETS = [(0,7), (7,14), (14,21), (21,30), (30,90)]    # Age buckets for CRITICAL vuln age distribution graph
 
-TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 6      # Number of Trustymail scans to fetch summary data for
+TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 10      # Number of Trustymail scans to fetch summary data for
 BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 
 OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/ocsp-crl.csv'
@@ -1362,7 +1362,7 @@ class ScorecardGenerator(object):
                 header_row.append(summary_item['_id'].strftime('%Y-%m-%d'))
             data_writer.writerow(header_row)
             # write remaining CSV data
-            for (row_title, summary_field) in [('p=none', 'dmarc_policy_none'), ('p=quarantine', 'dmarc_policy_quarantine'), ('p=reject', 'dmarc_policy_reject'), ('reports_dmarc_to_dhs', 'dmarc_correct_rua'), ('invalid_dmarc_record', 'invalid_dmarc_record'), ('no_dmarc_record', 'no_dmarc_record'), ('domains_tested', 'base_domain_count')]:
+            for (row_title, summary_field) in [('p=none', 'dmarc_policy_none'), ('p=quarantine', 'dmarc_policy_quarantine'), ('p=reject', 'dmarc_policy_reject'), ('reports_dmarc_to_cisa', 'dmarc_correct_rua'), ('invalid_dmarc_record', 'invalid_dmarc_record'), ('no_dmarc_record', 'no_dmarc_record'), ('domains_tested', 'base_domain_count')]:
                 data_row = [row_title]
                 for summary_item in trustymail_dmarc_summary:
                     data_row.append(summary_item[summary_field])
@@ -1407,7 +1407,7 @@ class ScorecardGenerator(object):
                 data_writer.writerow(org)
 
     def __generate_email_security_results_by_agency_attachment(self):
-        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_reject', 'dmarc_reject_%', 'reports_dmarc_to_dhs', 'reports_dmarc_to_dhs_%', 'supports_starttls', 'supports_starttls_%', 'valid_spf_record', 'valid_spf_record_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
+        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_reject', 'dmarc_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'valid_spf_record', 'valid_spf_record_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
         data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_valid_spf_count', 'live_valid_spf_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct')
         with open(EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
@@ -1467,7 +1467,7 @@ class ScorecardGenerator(object):
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_supports_starttls_pct_int'],
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_valid_spf_pct_int'],
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_no_weak_crypto_pct_int']],
-            label_list=['Valid\nDMARC', 'DMARC\np=reject', 'Reports DMARC\nto DHS', 'Supports\nSTARTTLS', 'Valid\nSPF', 'No SSLv2/v3,\n3DES,RC4'],
+            label_list=['Valid\nDMARC', 'DMARC\np=reject', 'Reports DMARC\nto CISA', 'Supports\nSTARTTLS', 'Valid\nSPF', 'No SSLv2/v3,\n3DES,RC4'],
             fill_color=graphs.DARK_BLUE,
             title='BOD 18-01 Email Components')
         bod_1801_email_bar.plot(filename='figure_bod1801_email_components')
