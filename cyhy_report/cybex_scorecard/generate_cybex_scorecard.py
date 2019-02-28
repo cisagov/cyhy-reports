@@ -13,7 +13,6 @@ Options:
   -d --debug                     Keep intermediate files for debugging.
   -f --final                     Remove draft watermark.
   -h --help                      Show this screen.
-  -w --use-web-data              Pull graphs and CSVs from cybex web
   -n --nolog                     Do not log that this report was created.
   --version                      Show version.
 
@@ -88,16 +87,6 @@ LATEX_ESCAPE_MAP = {
     '`':'{}`',
     '\n': '\\newline{}',
 }
-PDF_CAPTURE_JS = 'pdf_capture.js'
-CYBEX_WEB_SERVER = 'http://web.data.ncats.dhs.gov:5000'
-CRITICAL_AGE_GRAPH_URL = CYBEX_WEB_SERVER + '/cybex/chart1'
-CRITICAL_AGE_GRAPH_FILE = 'cybex-critical-age-graph.pdf'
-CRITICAL_AGE_DISTRIBUTION_URL = CYBEX_WEB_SERVER + '/cybex/chart2'
-CRITICAL_AGE_DISTRIBUTION_FILE = 'cybex-critical-age-distribution.pdf'
-CYBEX_WEB_CHART_WIN_WIDTH = '1135'     # Size of the viewport (virtual browser window)
-CYBEX_WEB_CHART_WIN_HEIGHT = '325'
-CRITICAL_AGE_GRAPH_CSV_URL = CYBEX_WEB_SERVER + '/cybex/?c1'
-CRITICAL_AGE_GRAPH_CSV_FILE = 'cybex-age-of-active-critical-vulns.csv'
 
 ED1901_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-certs-by-agency.csv'
 EMAIL_SECURITY_SUMMARY_CSV_FILE = 'cybex-email-security-summary.csv'
@@ -117,7 +106,9 @@ OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/oc
 OCSP_FILE = '/tmp/ocsp-crl.csv'
 
 class ScorecardGenerator(object):
-    def __init__(self, cyhy_db, scan_db, ocsp_file, previous_scorecard_json_file, debug=False, final=False, log_scorecard=True, use_web_data=False, anonymize=False):
+    def __init__(self, cyhy_db, scan_db, ocsp_file,
+                 previous_scorecard_json_file, debug=False, final=False,
+                 log_scorecard=True, anonymize=False):
         self.__cyhy_db = cyhy_db
         self.__scan_db = scan_db
         self.__generated_time = utcnow()
@@ -141,7 +132,6 @@ class ScorecardGenerator(object):
         self.__previous_scorecard_data = json.load(codecs.open(previous_scorecard_json_file,'r', encoding='utf-8'))
         self.__scorecard_oid = ObjectId()
         self.__log_scorecard_to_db = log_scorecard
-        self.__use_web_data = use_web_data
         self.__anonymize = anonymize
 
         # Read in and parse the OCSP exclusion domains.
@@ -280,10 +270,6 @@ class ScorecardGenerator(object):
             for descendant_id in descendants:       # Iterate through descendants and grab count of addresses
                 address_count += len(self.__cyhy_db.RequestDoc.get_by_owner(descendant_id).networks)
             self.__results['vuln-scan']['addresses'].append({'_id':{'owner':r['_id']}, 'addresses_count':address_count})
-
-        if not self.__use_web_data:     # Can skip this if we are grabbing the graphs from cyhy-web
-            self.__results['vuln-scan']['critical_ticket_age_data'] = self.__load_ticket_age_data(VULN_AGE_GRAPH_START_DATE, CRITICAL_SEVERITY, TICKET_AGE_BUCKET_CUTOFF_DAYS, self.__all_cybex_orgs_with_descendants)
-            self.__results['vuln-scan']['open_critical_tickets'] = self.__load_open_tickets(CRITICAL_SEVERITY, self.__all_cybex_orgs_with_descendants)
 
     def __run_trustymail_queries(self, cybex_orgs):
         # Latest Trustymail metrics for base domains
@@ -1235,7 +1221,7 @@ class ScorecardGenerator(object):
     def __setup_work_directory(self, work_dir):
         me = os.path.realpath(__file__)
         my_dir = os.path.dirname(me)
-        for n in (MUSTACHE_FILE, PDF_CAPTURE_JS):
+        for n in (MUSTACHE_FILE,):
             file_src = os.path.join(my_dir, n)
             file_dst = os.path.join(work_dir, n)
             shutil.copyfile(file_src, file_dst)
@@ -1350,7 +1336,6 @@ class ScorecardGenerator(object):
         self.__generate_bod_results_by_agency_attachment()
         self.__generate_web_security_results_by_agency_attachment()
         self.__generate_email_security_results_by_agency_attachment()
-        self.__generate_cybex_graph_csv()
 
     def __generate_ed1901_results_by_agency_attachment(self):
         header_fields = ('acronym', 'name', 'cfo_act', 'unexpired_certificates', 'new_certificates_current_fiscal_year', 'new_certificates_past_30_days', 'new_certificates_past_7_days')
@@ -1435,22 +1420,6 @@ class ScorecardGenerator(object):
                     else:
                         org[trustymail_key] = 'N/A'
                 data_writer.writerow(org)
-
-    def __generate_cybex_graph_csv(self):
-        if self.__use_web_data:
-            output = open(CRITICAL_AGE_GRAPH_CSV_FILE, 'w')
-            subprocess.call(['curl', '-s', CRITICAL_AGE_GRAPH_CSV_URL], stdout=output, stderr=subprocess.STDOUT)
-        else:
-            critical_df = self.__results['vuln-scan']['critical_ticket_age_data'].copy()     # Make a copy, don't mess with original dataframe
-            for df in [critical_df]:
-                df.index = df.index.strftime('%Y-%m-%d')    # Order matters here, otherwise index.rename gets clobbered by df.index.strftime
-                df.index.rename('date', inplace=True)
-                df.columns = ['< {} days'.format(TICKET_AGE_BUCKET_CUTOFF_DAYS), '> {} days'.format(TICKET_AGE_BUCKET_CUTOFF_DAYS), 'total']
-
-            for (csv_file, ticket_df) in [(CRITICAL_AGE_GRAPH_CSV_FILE, critical_df)]:
-                with open(csv_file, 'wb') as out_file:
-                    out_file.write(ticket_df.to_csv())
-                    out_file.close()
 
     ###############################################################################
     # Chart PDF Generation
@@ -1539,15 +1508,6 @@ class ScorecardGenerator(object):
             output = sys.stdout
         else:
             output = open(os.devnull, 'w')
-
-        if self.__use_web_data: #TODO: Get rid of this; we are getting rid of phantomjs
-            return_code = subprocess.call(['phantomjs', 'pdf_capture.js', CRITICAL_AGE_GRAPH_URL, CRITICAL_AGE_GRAPH_FILE, CYBEX_WEB_CHART_WIN_WIDTH, CYBEX_WEB_CHART_WIN_HEIGHT], stdout=output, stderr=subprocess.STDOUT)
-            #assert return_code == 0, 'phantomjs pdf_capture.js (chart1) return code was %s' % return_code
-            return_code = subprocess.call(['phantomjs', 'pdf_capture.js', CRITICAL_AGE_DISTRIBUTION_URL, CRITICAL_AGE_DISTRIBUTION_FILE, CYBEX_WEB_CHART_WIN_WIDTH, CYBEX_WEB_CHART_WIN_HEIGHT], stdout=output, stderr=subprocess.STDOUT)
-            #assert return_code == 0, 'phantomjs pdf_capture.js (chart2) return code was %s' % return_code
-        else:
-            self.__figure_vuln_age_history_graph(self.__results['vuln-scan']['critical_ticket_age_data'], CRITICAL_AGE_GRAPH_FILE.split('.')[0], 'Critical')
-            self.__figure_vuln_age_distribution(self.__results['vuln-scan']['open_critical_tickets'], CRITICAL_AGE_DISTRIBUTION_FILE.split('.')[0], 'Critical', ACTIVE_CRITICAL_AGE_CUTOFF_DAYS, ACTIVE_CRITICAL_AGE_BUCKETS)
 
         # trustymail charts
         self.__figure_bod1801_email_components()
@@ -1710,7 +1670,6 @@ def main():
                                        debug=args['--debug'],
                                        final=args['--final'],
                                        log_scorecard=not args['--nolog'],
-                                       use_web_data=args['--use-web-data'],
                                        anonymize=args['--anonymize'])
         results = generator.generate_cybex_scorecard()
         print 'Done'
