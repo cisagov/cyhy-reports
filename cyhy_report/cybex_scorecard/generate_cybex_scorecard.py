@@ -59,6 +59,11 @@ CURRENTLY_SCANNED_DAYS = 14  # Number of days in the past that an org's CyHy tal
 CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
 
+# Number of days a vulnerability can be active until it's considered
+# "overdue" to be mitigated
+DAYS_UNTIL_OVERDUE_CRITICAL = 15
+DAYS_UNTIL_OVERDUE_HIGH = 30
+
 # Do not include the orgs below (based on _id) in the Scorecard
 EXEMPT_ORGS = []
 
@@ -141,7 +146,8 @@ class ScorecardGenerator(object):
             csvreader = csv.reader(f)
             self.__ocsp_exclusions = {row[0]: None for row in csvreader}
 
-    def __open_tix_opened_in_date_range_pl(self, severity, current_date):
+    def __open_tix_opened_in_date_range_pl(self, severity, current_date,
+                                           days_until_tix_overdue):
         return [
                {'$match': {'open':True, 'details.severity':severity, 'false_positive':False}},
                {'$group': {'_id': {'owner':'$owner'},
@@ -151,12 +157,16 @@ class ScorecardGenerator(object):
                            'open_tix_opened_21-30_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=21)]}, {'$gte':['$time_opened', current_date - timedelta(days=30)]}]}, 1, 0]}},
                            'open_tix_opened_30-90_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=30)]}, {'$gte':['$time_opened', current_date - timedelta(days=90)]}]}, 1, 0]}},
                            'open_tix_opened_more_than_90_days_ago':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=90)]}, 1, 0]}},
+                           'open_overdue_tix':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=days_until_tix_overdue)]}, 1, 0]}},
                            'open_tix_count':{'$sum':1}
                            }
                }
                ], database.TICKET_COLLECTION
 
-    def __open_tix_opened_in_date_range_for_orgs_pl(self, severity, current_date, parent_org, descendant_orgs):
+    def __open_tix_opened_in_date_range_for_orgs_pl(self, severity,
+                                                    current_date, parent_org,
+                                                    descendant_orgs,
+                                                    days_until_tix_overdue):
         return [
                {'$match': {'open':True, 'details.severity':severity, 'false_positive':False,
                            'owner':{'$in':[parent_org] + descendant_orgs}}},
@@ -167,6 +177,7 @@ class ScorecardGenerator(object):
                            'open_tix_opened_21-30_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=21)]}, {'$gte':['$time_opened', current_date - timedelta(days=30)]}]}, 1, 0]}},
                            'open_tix_opened_30-90_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=30)]}, {'$gte':['$time_opened', current_date - timedelta(days=90)]}]}, 1, 0]}},
                            'open_tix_opened_more_than_90_days_ago':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=90)]}, 1, 0]}},
+                           'open_overdue_tix':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=days_until_tix_overdue)]}, 1, 0]}},
                            'open_tix_count':{'$sum':1}
                            }
                }
@@ -240,11 +251,15 @@ class ScorecardGenerator(object):
                 self.__results['vuln-scan']['addresses'].append({'_id':{'owner':r['_id']}, 'addresses_count':len(r.networks)})
 
         # Get relevant critical-severity ticket data
-        pipeline_collection = self.__open_tix_opened_in_date_range_pl(CRITICAL_SEVERITY, self.__generated_time)
+        pipeline_collection = self.__open_tix_opened_in_date_range_pl(
+                                CRITICAL_SEVERITY, self.__generated_time,
+                                DAYS_UNTIL_OVERDUE_CRITICAL)
         self.__results['vuln-scan']['open_critical_ticket_counts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         # Get relevant high-severity ticket data
-        pipeline_collection = self.__open_tix_opened_in_date_range_pl(HIGH_SEVERITY, self.__generated_time)
+        pipeline_collection = self.__open_tix_opened_in_date_range_pl(
+                                HIGH_SEVERITY, self.__generated_time,
+                                DAYS_UNTIL_OVERDUE_HIGH)
         self.__results['vuln-scan']['open_high_ticket_counts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         pipeline_collection = self.__active_hosts_pl()
@@ -261,10 +276,10 @@ class ScorecardGenerator(object):
         for r in requests_with_descendants:
             descendants = self.__cyhy_db.RequestDoc.get_all_descendants(r['_id'])
 
-            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(CRITICAL_SEVERITY, self.__generated_time, r['_id'], descendants)
+            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(CRITICAL_SEVERITY, self.__generated_time, r['_id'], descendants, DAYS_UNTIL_OVERDUE_CRITICAL)
             self.__results['vuln-scan']['open_critical_ticket_counts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
-            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(HIGH_SEVERITY, self.__generated_time, r['_id'], descendants)
+            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(HIGH_SEVERITY, self.__generated_time, r['_id'], descendants, DAYS_UNTIL_OVERDUE_HIGH)
             self.__results['vuln-scan']['open_high_ticket_counts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
             pipeline_collection = self.__active_hosts_for_orgs_pl(r['_id'], descendants)
@@ -737,6 +752,7 @@ class ScorecardGenerator(object):
                                                 'open_criticals_21-30_days':0,
                                                 'open_criticals_30-90_days':0,
                                                 'open_criticals_more_than_90_days':0,
+                                                'open_overdue_criticals': 0,
                                                 'open_highs':0,
                                                 'open_highs_on_previous_scorecard':0,
                                                 'open_highs_0-7_days':0,
@@ -745,6 +761,7 @@ class ScorecardGenerator(object):
                                                 'open_highs_21-30_days':0,
                                                 'open_highs_30-90_days':0,
                                                 'open_highs_more_than_90_days':0,
+                                                'open_overdue_highs': 0,
                                                 'addresses':0,
                                                 'active_hosts':0}},
                       'trustymail': {'scanned':False,
@@ -965,7 +982,8 @@ class ScorecardGenerator(object):
                             ('open_criticals_14-21_days', 'open_tix_opened_14-21_days_ago'),
                             ('open_criticals_21-30_days', 'open_tix_opened_21-30_days_ago'),
                             ('open_criticals_30-90_days', 'open_tix_opened_30-90_days_ago'),
-                            ('open_criticals_more_than_90_days', 'open_tix_opened_more_than_90_days_ago')]:
+                            ('open_criticals_more_than_90_days', 'open_tix_opened_more_than_90_days_ago'),
+                            ('open_overdue_criticals', 'open_overdue_tix')]:
                                 score['vuln-scan']['metrics'][score_field] = vuln_scan_result[result_field]
                             break
 
@@ -978,7 +996,8 @@ class ScorecardGenerator(object):
                             ('open_highs_14-21_days', 'open_tix_opened_14-21_days_ago'),
                             ('open_highs_21-30_days', 'open_tix_opened_21-30_days_ago'),
                             ('open_highs_30-90_days', 'open_tix_opened_30-90_days_ago'),
-                            ('open_highs_more_than_90_days', 'open_tix_opened_more_than_90_days_ago')]:
+                            ('open_highs_more_than_90_days', 'open_tix_opened_more_than_90_days_ago'),
+                            ('open_overdue_highs', 'open_overdue_tix')]:
                                 score['vuln-scan']['metrics'][score_field] = vuln_scan_result[result_field]
                             break
 
@@ -1024,7 +1043,7 @@ class ScorecardGenerator(object):
             self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
 
             # initialize vuln-scan metrics to 0
-            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-14_days':0, 'open_criticals_14-21_days':0, 'open_criticals_21-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-14_days':0, 'open_highs_14-21_days':0, 'open_highs_21-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'addresses':0, 'active_hosts':0}}
+            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-14_days':0, 'open_criticals_14-21_days':0, 'open_criticals_21-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-14_days':0, 'open_highs_14-21_days':0, 'open_highs_21-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
 
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
@@ -1048,6 +1067,7 @@ class ScorecardGenerator(object):
                                                    ('vuln-scan', 'metrics', 'open_criticals_21-30_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_more_than_90_days'),
+                                                   ('vuln-scan', 'metrics', 'open_overdue_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_highs'),
                                                    ('vuln-scan', 'metrics', 'open_highs_on_previous_scorecard'),
                                                    ('vuln-scan', 'metrics', 'open_highs_0-7_days'),
@@ -1056,6 +1076,7 @@ class ScorecardGenerator(object):
                                                    ('vuln-scan', 'metrics', 'open_highs_21-30_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_more_than_90_days'),
+                                                   ('vuln-scan', 'metrics', 'open_overdue_highs'),
                                                    ('vuln-scan', 'metrics', 'addresses'),
                                                    ('vuln-scan', 'metrics', 'active_hosts'),
                                                    ('trustymail', 'base_domains', 'domain_count'),
@@ -1422,26 +1443,62 @@ class ScorecardGenerator(object):
                 data_writer.writerow(data_row)
 
     def __generate_bod_results_by_agency_attachment(self):
-        generated_date_txt = self.__generated_time.strftime('%Y-%m-%d')
-        prev_scorecard_date_txt = parser.parse(self.__previous_scorecard_data['generated_time']).strftime('%Y-%m-%d')
-        header_fields = ('acronym', 'name', 'cfo_act', 'active_critical_vulns', 'delta_active_critical_vulns_since_'+prev_scorecard_date_txt, 'active_critical_vulns_0-7_days', 'active_critical_vulns_7-14_days', 'active_critical_vulns_14-21_days', 'active_critical_vulns_21-30_days', 'active_critical_vulns_30-90_days', 'active_critical_vulns_90+_days', 'missing_starttls', 'missing_https+hsts', 'sslv2/v3,3des,rc4', 'non_compliant_dmarc')
-        data_fields = ('acronym', 'name', 'cfo_act_org', 'open_criticals', 'open_criticals_delta_since_last_scorecard', 'open_criticals_0-7_days', 'open_criticals_7-14_days', 'open_criticals_14-21_days', 'open_criticals_21-30_days', 'open_criticals_30-90_days', 'open_criticals_more_than_90_days', 'live_missing_starttls_count', 'live_missing_https_hsts_count', 'live_has_weak_crypto_count', 'live_bod1801_dmarc_non_compliant_count')
+        header_fields = ('acronym', 'name', 'cfo_act',
+                         'active_critical_vulns',
+                         'overdue_critical_vulns_{}+_days'.format(
+                            DAYS_UNTIL_OVERDUE_CRITICAL),
+                         'active_high_vulns',
+                         'overdue_high_vulns_{}+_days'.format(
+                            DAYS_UNTIL_OVERDUE_HIGH),
+                         'bod_18-01_web_compliant_%',
+                         'bod_18-01_email_compliant_%')
+        data_fields = ('acronym', 'name', 'cfo_act_org',
+                       'open_criticals',
+                       'open_overdue_criticals',
+                       'open_highs',
+                       'open_overdue_highs',
+                       'live_bod1801_web_compliant_pct',
+                       'live_bod1801_email_compliant_pct')
+
         with open(BOD_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
-            data_writer = csv.DictWriter(out_file, data_fields, extrasaction='ignore')
+            header_writer = csv.DictWriter(out_file, header_fields,
+                                           extrasaction='ignore')
+            data_writer = csv.DictWriter(out_file, data_fields,
+                                         extrasaction='ignore')
             header_writer.writeheader()
             for org in copy.deepcopy(self.__scorecard_doc['scores']):
                 if org['vuln-scan']['scanned']:
-                    for vuln_scan_key in ('open_criticals', 'open_criticals_delta_since_last_scorecard', 'open_criticals_0-7_days', 'open_criticals_7-14_days', 'open_criticals_14-21_days', 'open_criticals_21-30_days', 'open_criticals_30-90_days', 'open_criticals_more_than_90_days'):
-                        org[vuln_scan_key] = org['vuln-scan']['metrics'].get(vuln_scan_key)
+                    for vuln_scan_key in ('open_criticals',
+                                          'open_overdue_criticals',
+                                          'open_highs',
+                                          'open_overdue_highs'):
+                        org[vuln_scan_key] = org['vuln-scan']['metrics'].get(
+                                                                vuln_scan_key)
                 else:
                     org['open_criticals'] = 'Not vuln-scanned by CyHy'
-                    for vuln_scan_key in ('open_criticals_delta_since_last_scorecard', 'open_criticals_0-7_days', 'open_criticals_7-14_days', 'open_criticals_14-21_days', 'open_criticals_21-30_days', 'open_criticals_30-90_days', 'open_criticals_more_than_90_days'):
+                    for vuln_scan_key in ('open_overdue_criticals',
+                                          'open_highs',
+                                          'open_overdue_highs'):
                         org[vuln_scan_key] = 'N/A'
-                org['live_missing_starttls_count'] = org['trustymail']['base_domains_and_smtp_subdomains'].get('live_missing_starttls_count')
-                org['live_missing_https_hsts_count'] = org['https-scan']['live_domains'].get('live_missing_https_hsts_count')
-                org['live_has_weak_crypto_count'] = org['sslyze-scan']['live_domains'].get('live_has_weak_crypto_count')
-                org['live_bod1801_dmarc_non_compliant_count'] = org['trustymail']['base_domains_and_smtp_subdomains'].get('live_bod1801_dmarc_non_compliant_count')
+
+                if org['https-scan']['scanned']:
+                    org['live_bod1801_web_compliant_pct'] = org[
+                        'https-scan'][
+                        'live_domains'].get(
+                        'live_bod1801_web_compliant_pct')
+                else:
+                    org['live_bod1801_web_compliant_pct'] = \
+                        'No known HTTP-responsive hosts'
+
+                if org['trustymail']['scanned']:
+                    org['live_bod1801_email_compliant_pct'] = org[
+                        'trustymail'][
+                        'base_domains_and_smtp_subdomains'].get(
+                        'live_bod1801_email_compliant_pct')
+                else:
+                    org['live_bod1801_email_compliant_pct'] = \
+                        'No known live domains or SMTP-responsive subdomains'
+
                 data_writer.writerow(org)
 
     def __generate_bod1902_results_by_agency_attachment(self):
@@ -1671,8 +1728,16 @@ class ScorecardGenerator(object):
         result['orgs_with_highs'] = self.__orgs_with_highs
         result['orgs_without_criticals_or_highs'] = self.__orgs_without_criticals_or_highs
         result['orgs_not_vuln_scanned'] = self.__orgs_not_vuln_scanned
-        result['all_orgs_vuln'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['vuln-scan']['metrics'].get('open_criticals'), x['vuln-scan']['metrics'].get('open_criticals_more_than_90_days'), x['vuln-scan']['metrics'].get('open_criticals_30-90_days'), x['vuln-scan']['metrics'].get('open_criticals_21-30_days'), x['vuln-scan']['metrics'].get('open_criticals_14-21_days'), x['vuln-scan']['metrics'].get('open_criticals_7-14_days'), x['vuln-scan']['metrics'].get('active_critical_vulns_0-7_days'), x['https-scan']['live_domains'].get('live_missing_https_hsts_count'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_bod1801_dmarc_non_compliant_count'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_missing_starttls_count'),
-        x['trustymail']['base_domains_and_smtp_subdomains'].get('live_has_weak_crypto_count')), reverse=True)
+        result['overall_bod_orgs'] = sorted(self.__scorecard_doc['scores'],
+                                            key=lambda x: (
+            x['vuln-scan']['metrics'].get('open_overdue_criticals'),
+            x['vuln-scan']['metrics'].get('open_criticals'),
+            x['vuln-scan']['metrics'].get('open_overdue_highs'),
+            x['vuln-scan']['metrics'].get('open_highs'),
+            x['https-scan']['live_domains'].get(
+                'live_bod1801_web_compliant_pct'),
+            x['trustymail']['base_domains_and_smtp_subdomains'].get(
+                'live_bod1801_email_compliant_pct')), reverse=True)
         result['bod_1902_orgs'] = sorted(self.__scorecard_doc['scores'],
                                          key=lambda x: (
             x['vuln-scan']['metrics'].get('open_criticals'),
@@ -1715,6 +1780,8 @@ class ScorecardGenerator(object):
         result['previous_scorecard_date_tex'] = parser.parse(self.__previous_scorecard_data['generated_time']).strftime('{%d}{%m}{%Y}')
         result['scorecard_name'] = self.__results['scorecard_name']
         # result['scorecard_subset_name'] = self.__results['scorecard_subset_name']
+        result['days_until_criticals_overdue'] = DAYS_UNTIL_OVERDUE_CRITICAL
+        result['days_until_highs_overdue'] = DAYS_UNTIL_OVERDUE_HIGH
 
         # Calculate earliest scan date for all scans (cyhy, trustymail, https-scan)
         # Since cyhy is always scanning, self.__generated_time will be used for 'latest scan date'
@@ -1781,7 +1848,8 @@ def generate_empty_scorecard_json():
     result['all_orgs_alpha'] = []
     result['all_orgs_bod1801_email_compliant'] = []
     result['all_orgs_bod1801_web_compliant'] = []
-    result['all_orgs_vuln'] = []
+    result['overall_bod_orgs'] = []
+    result['bod_1902_orgs'] = []
     result['dmarc_reject_all'] = []
     result['dmarc_reject_some'] = []
     result['dmarc_reject_none'] = []
