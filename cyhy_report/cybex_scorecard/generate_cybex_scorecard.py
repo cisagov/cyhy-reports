@@ -120,9 +120,8 @@ class ScorecardGenerator(object):
         self.__orgs_with_no_recently_issued_certs = []
         self.__orgs_with_no_known_domains = []
         self.__orgs_with_criticals = []
-        self.__orgs_without_criticals = []
         self.__orgs_with_highs = []
-        self.__orgs_without_highs = []
+        self.__orgs_without_criticals_or_highs = []
         self.__orgs_not_vuln_scanned = []
         self.__dmarc_reject_all = []
         self.__dmarc_reject_some = []
@@ -997,15 +996,15 @@ class ScorecardGenerator(object):
                     score['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_on_previous_scorecard']
 
                     # Add org's score to appropriate list
+                    org_has_criticals = False
                     if score['vuln-scan']['metrics'].get('open_criticals'):
                         self.__orgs_with_criticals.append(score)
-                    else:
-                        self.__orgs_without_criticals.append(score)
+                        org_has_criticals = True
 
                     if score['vuln-scan']['metrics'].get('open_highs'):
                         self.__orgs_with_highs.append(score)
-                    else:
-                        self.__orgs_without_highs.append(score)
+                    elif not org_has_criticals:
+                        self.__orgs_without_criticals_or_highs.append(score)
 
                     # Add current org's score to master list of scores
                     self.__scorecard_doc['scores'].append(score)
@@ -1213,9 +1212,8 @@ class ScorecardGenerator(object):
         self.__orgs_with_no_recently_issued_certs.sort(key=lambda x:x['acronym'])
         self.__orgs_with_no_known_domains.sort(key=lambda x:x['acronym'])
         self.__orgs_with_criticals.sort(key=lambda x:x['acronym'])
-        self.__orgs_without_criticals.sort(key=lambda x:x['acronym'])
         self.__orgs_with_highs.sort(key=lambda x:x['acronym'])
-        self.__orgs_without_highs.sort(key=lambda x:x['acronym'])
+        self.__orgs_without_criticals_or_highs.sort(key=lambda x: x['acronym'])
         self.__orgs_not_vuln_scanned.sort(key=lambda x:x['acronym'])
         self.__dmarc_reject_all.sort(key=lambda x:x['acronym'])
         self.__dmarc_reject_some.sort(key=lambda x:x['acronym'])
@@ -1670,9 +1668,8 @@ class ScorecardGenerator(object):
         result['orgs_with_no_known_domains'] = self.__orgs_with_no_known_domains
         result['all_orgs_ed1901_cert'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['cert-scan']['metrics'].get('certs_issued_past_7_days_count'), x['cert-scan']['metrics'].get('certs_issued_past_30_days_count'), x['cert-scan']['metrics'].get('certs_issued_current_fy_count'), x['cert-scan']['metrics'].get('unexpired_certs_count'), x['cert-scan'].get('scanned')), reverse=True)
         result['orgs_with_criticals'] = self.__orgs_with_criticals
-        result['orgs_without_criticals'] = self.__orgs_without_criticals
         result['orgs_with_highs'] = self.__orgs_with_highs
-        result['orgs_without_highs'] = self.__orgs_without_highs
+        result['orgs_without_criticals_or_highs'] = self.__orgs_without_criticals_or_highs
         result['orgs_not_vuln_scanned'] = self.__orgs_not_vuln_scanned
         result['all_orgs_vuln'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['vuln-scan']['metrics'].get('open_criticals'), x['vuln-scan']['metrics'].get('open_criticals_more_than_90_days'), x['vuln-scan']['metrics'].get('open_criticals_30-90_days'), x['vuln-scan']['metrics'].get('open_criticals_21-30_days'), x['vuln-scan']['metrics'].get('open_criticals_14-21_days'), x['vuln-scan']['metrics'].get('open_criticals_7-14_days'), x['vuln-scan']['metrics'].get('active_critical_vulns_0-7_days'), x['https-scan']['live_domains'].get('live_missing_https_hsts_count'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_bod1801_dmarc_non_compliant_count'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_missing_starttls_count'),
         x['trustymail']['base_domains_and_smtp_subdomains'].get('live_has_weak_crypto_count')), reverse=True)
