@@ -418,22 +418,22 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 \newpage
 \begin{landscape}
 \BgThispage
-\hiddensection{BOD 15-01 Status}
-\label{sec:bod-15-01-status}
+\hiddensection{BOD 19-02 Status}
+\label{sec:bod-19-02-status}
 \begin{center}
 {\textcolor{cisa-blue}{\CISAHeadingOne{<<&scorecard_name>> Cyber Exposure Scorecard\ \textemdash \ \usvardate\formatdate<<&title_date_tex>>\\
-BOD 15-01 Status}}}
+BOD 19-02 Status}}}
 \end{center}
 
-%\vspace*{-7mm}
+\vspace*{-7mm}
 \begin{multicols*}{3}
 	\raggedcolumns
-	\begin{spacing}{0.85}
+	\begin{spacing}{0.77}
 		\setlength{\parskip}{0pt}
 		{\RaggedRight\color{sc-high}
 		\textbf{ACTIVE CRITICAL VULNERABILITIES \fontencoding{U}\fontfamily{futs}\selectfont\char 66}\\
 		\rule[2mm]{0.9\columnwidth}{0.4mm}
-    \vspace{-1mm}
+    \vspace{-2mm}
 		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\fontencoding{U}\fontfamily{futs}\selectfont\char 66}]
 		<<#orgs_with_criticals>>
 		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
@@ -442,24 +442,37 @@ BOD 15-01 Status}}}
 		\end{itemize}
 		} % end \RaggedRight
 
-		\vspace*{5mm}
+		\vspace*{4mm}
+    {\RaggedRight\color{sc-medium}
+    \textbf{ACTIVE HIGH VULNERABILITIES \fontencoding{U}\fontfamily{futs}\selectfont\char 66}\\
+    \rule[2mm]{0.9\columnwidth}{0.4mm}
+    \vspace{-2mm}
+    \begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\fontencoding{U}\fontfamily{futs}\selectfont\char 66}]
+    <<#orgs_with_highs>>
+    \item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
+    <</orgs_with_highs>>
+    <<^orgs_with_highs>>\item[] \textit{No agencies have active high vulnerabilities}<</orgs_with_highs>>
+    \end{itemize}
+    } % end \RaggedRight
+
+    \vspace*{4mm}
 		{\RaggedRight\color{sc-low}
-		\textbf{NO ACTIVE CRITICAL VULNERABILITIES \cmark}\\
+		\textbf{NO ACTIVE CRITICAL OR HIGH VULNERABILITIES \cmark}\\
 		\rule[2mm]{0.9\columnwidth}{0.4mm}
-    \vspace{-1mm}
+    \vspace{-2mm}
 		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{\cmark}]
-		<<#orgs_without_criticals>>
+		<<#orgs_without_criticals_or_highs>>
 		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
-		<</orgs_without_criticals>>
-		<<^orgs_without_criticals>>\item[] \textit{No agencies have no active critical vulnerabilities}<</orgs_without_criticals>>
+		<</orgs_without_criticals_or_highs>>
+		<<^orgs_without_criticals_or_highs>>\item[] \textit{All agencies have active critical or high vulnerabilities}<</orgs_without_criticals_or_highs>>
 		\end{itemize}
 		} % end \RaggedRight
 
-		\vspace*{5mm}
+		\vspace*{4mm}
 		{\RaggedRight\color{sc-nope}
 		\textbf{NOT CURRENTLY VULNERABILITY SCANNED $\varobslash$}\\
 		\rule[2mm]{0.9\columnwidth}{0.4mm}
-    \vspace{-1mm}
+    \vspace{-2mm}
 		\begin{itemize}[topsep=0pt, leftmargin=4mm, rightmargin=4mm, itemindent=-4mm, labelsep=0.4mm, noitemsep, label=\textbf{$\varobslash$}]
 		<<#orgs_not_vuln_scanned>>
 		\item <<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>>
