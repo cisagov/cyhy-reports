@@ -616,6 +616,66 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 
 \newpage
 \begin{landscape}
+\BgThispage
+\hiddensection{BOD 18-01 HSTS Status}
+\label{sec:bod-18-01-hsts-status}
+\begin{center}
+{\textcolor{cisa-blue}{\CISAHeadingOne{<<&scorecard_name>> Cyber Exposure Scorecard\ \textemdash \ \usvardate\formatdate<<&title_date_tex>>\\
+BOD 18-01 \textemdash \ HSTS Status}}}
+\end{center}
+
+\begin{multicols*}{4}
+	\raggedcolumns
+		\setlength{\parskip}{0pt}
+		{\RaggedRight\color{sc-low}
+		\textbf{GOAL: Strong HSTS set on ALL of their HTTP/HTTPS-responsive domains}\\
+		\rule[4mm]{0.98\columnwidth}{0.4mm}
+    \vspace{-4mm}
+    \begin{spacing}{1.2}  % spacing between lines
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, itemindent=3mm, labelsep=4mm, noitemsep, label=\textbf{\cmark}]
+		<<#strong_hsts_all>>
+    \item <<#cfo_act_org>>\textbf{<<&acronym>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>><</cfo_act_org>>
+		<</strong_hsts_all>>
+		<<^strong_hsts_all>>\item[\textbf{$\varobslash$}] \textbf{NONE}<</strong_hsts_all>>
+		\end{itemize}
+    \end{spacing}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-medium}
+		\textbf{Strong HSTS set on SOME of their HTTP/HTTPS-responsive domains}\\
+		\rule[4mm]{0.98\columnwidth}{0.4mm}
+    \vspace{-4mm}
+    \begin{spacing}{1.2}  % spacing between lines
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, itemindent=3mm, labelsep=4mm, noitemsep, label=\textbf{\cmark}]
+		<<#strong_hsts_some>>
+		\item <<#cfo_act_org>>\textbf{<<&acronym>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>><</cfo_act_org>>
+		<</strong_hsts_some>>
+		<<^strong_hsts_some>>\item[\textbf{\cmark}] \textbf{NONE}<</strong_hsts_some>>
+		\end{itemize}
+    \end{spacing}
+		} % end \RaggedRight
+
+		\vspace*{5mm}
+		{\RaggedRight\color{sc-high}
+		\textbf{NO Strong HSTS set on ANY of their HTTP/HTTPS-responsive domains}\\
+		\rule[4mm]{0.98\columnwidth}{0.4mm}
+    \vspace{-4mm}
+    \begin{spacing}{1.2}  % spacing between lines
+		\begin{itemize}[topsep=0pt, leftmargin=4mm, itemindent=3mm, labelsep=4mm, noitemsep, label=\textbf{\xmark}]
+		<<#strong_hsts_none>>
+    \item <<#cfo_act_org>>\textbf{<<&acronym>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>><</cfo_act_org>>
+		<</strong_hsts_none>>
+		<<^strong_hsts_none>>\item[\textbf{\cmark}] \textbf{NONE}<</strong_hsts_none>>
+		\end{itemize}
+    \end{spacing}
+		} % end \RaggedRight
+\end{multicols*}
+\end{landscape}
+
+
+\newpage
+\begin{landscape}
 \hiddensection{Web Security Summary Metrics}
 \label{sec:web-security-summary-metrics}
 {\textcolor{cisa-blue}{\CISAHeadingOne{Web Security Summary Metrics}}}

@@ -128,6 +128,9 @@ class ScorecardGenerator(object):
         self.__orgs_with_highs = []
         self.__orgs_without_criticals_or_highs = []
         self.__orgs_not_vuln_scanned = []
+        self.__strong_hsts_all = []
+        self.__strong_hsts_some = []
+        self.__strong_hsts_none = []
         self.__dmarc_reject_all = []
         self.__dmarc_reject_some = []
         self.__dmarc_reject_none = []
@@ -931,6 +934,23 @@ class ScorecardGenerator(object):
                                                           ('live_bod1801_web_compliant_pct', 'all_live_bod1801_web_compliant')]:
                         if score['https-scan']['live_domains'][score_percent] == 1.0:
                             score['https-scan']['live_domains'][perfect_flag] = True
+
+                    # Add org to appropriate list for Strong HSTS adoption
+                    # (None, Some, All)
+                    if https_scan_result['live_uses_strong_hsts_count'] == 0:
+                        self.__strong_hsts_none.append(
+                            {'acronym': score['owner'],
+                             'cfo_act_org': score['cfo_act_org']})
+                    elif https_scan_result[
+                      'live_uses_strong_hsts_count'] == https_scan_result[
+                      'live_domain_count']:
+                        self.__strong_hsts_all.append(
+                            {'acronym': score['owner'],
+                             'cfo_act_org': score['cfo_act_org']})
+                    else:
+                        self.__strong_hsts_some.append(
+                            {'acronym': score['owner'],
+                             'cfo_act_org': score['cfo_act_org']})
                     break
 
             # Pull sslyze-scan results into the score
@@ -1188,7 +1208,13 @@ class ScorecardGenerator(object):
             real_agency_names.append(r['agency']['name'])
             real_agency_acronyms.append(r['agency']['acronym'])
 
-        for score_list in [self.__scorecard_doc['scores'], self.__dmarc_reject_all, self.__dmarc_reject_some, self.__dmarc_reject_none]:
+        for score_list in [self.__scorecard_doc['scores'],
+                           self.__strong_hsts_all,
+                           self.__strong_hsts_some,
+                           self.__strong_hsts_none,
+                           self.__dmarc_reject_all,
+                           self.__dmarc_reject_some,
+                           self.__dmarc_reject_none]:
             for s in score_list:
                 # If we already have a fake acronym for this org, use it; otherwise create a new one
                 real_acronym = s['acronym']
@@ -1228,17 +1254,21 @@ class ScorecardGenerator(object):
             # self.__results['scorecard_subset_name'] = ''
 
         # sort org lists
-        self.__scorecard_doc['scores'].sort(key=lambda x:x['acronym'])
-        self.__orgs_with_recently_issued_certs.sort(key=lambda x:x['acronym'])
-        self.__orgs_with_no_recently_issued_certs.sort(key=lambda x:x['acronym'])
-        self.__orgs_with_no_known_domains.sort(key=lambda x:x['acronym'])
-        self.__orgs_with_criticals.sort(key=lambda x:x['acronym'])
-        self.__orgs_with_highs.sort(key=lambda x:x['acronym'])
-        self.__orgs_without_criticals_or_highs.sort(key=lambda x: x['acronym'])
-        self.__orgs_not_vuln_scanned.sort(key=lambda x:x['acronym'])
-        self.__dmarc_reject_all.sort(key=lambda x:x['acronym'])
-        self.__dmarc_reject_some.sort(key=lambda x:x['acronym'])
-        self.__dmarc_reject_none.sort(key=lambda x:x['acronym'])
+        for org_list in [self.__scorecard_doc['scores'],
+                         self.__orgs_with_recently_issued_certs,
+                         self.__orgs_with_no_recently_issued_certs,
+                         self.__orgs_with_no_known_domains,
+                         self.__orgs_with_criticals,
+                         self.__orgs_with_highs,
+                         self.__orgs_without_criticals_or_highs,
+                         self.__orgs_not_vuln_scanned,
+                         self.__strong_hsts_all,
+                         self.__strong_hsts_some,
+                         self.__strong_hsts_none,
+                         self.__dmarc_reject_all,
+                         self.__dmarc_reject_some,
+                         self.__dmarc_reject_none]:
+            org_list.sort(key=lambda x: x['acronym'])
 
         # create a working directory
         original_working_dir = os.getcwdu()
@@ -1753,6 +1783,9 @@ class ScorecardGenerator(object):
             x['vuln-scan']['metrics'].get('open_criticals_7-14_days'),
             x['vuln-scan']['metrics'].get('open_highs_7-14_days')),
             reverse=True)
+        result['strong_hsts_all'] = self.__strong_hsts_all
+        result['strong_hsts_some'] = self.__strong_hsts_some
+        result['strong_hsts_none'] = self.__strong_hsts_none
         result['dmarc_reject_all'] = self.__dmarc_reject_all
         result['dmarc_reject_some'] = self.__dmarc_reject_some
         result['dmarc_reject_none'] = self.__dmarc_reject_none
@@ -1850,6 +1883,9 @@ def generate_empty_scorecard_json():
     result['all_orgs_bod1801_web_compliant'] = []
     result['overall_bod_orgs'] = []
     result['bod_1902_orgs'] = []
+    result['strong_hsts_all'] = []
+    result['strong_hsts_some'] = []
+    result['strong_hsts_none'] = []
     result['dmarc_reject_all'] = []
     result['dmarc_reject_some'] = []
     result['dmarc_reject_none'] = []
