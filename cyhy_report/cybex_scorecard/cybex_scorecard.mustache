@@ -380,8 +380,8 @@ If there are questions, comments, or concerns about this scorecard, please conta
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
   \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_criticals_overdue>> days.
   \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_highs_overdue>> days.
-  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.
-  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" and \\ ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a Valid SPF record, and are Free of SSLv2/v3, 3DES, RC4.
+  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known HTTP-responsive hosts.
+  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" and \\ ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a Valid SPF record, and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known Live Domains or SMTP Subdomains.
 \end{itemize}
 
 \vspace*{3mm}
@@ -662,7 +662,7 @@ Of the \textbf{\numprint{<<&federal_totals.https-scan.live_domains.live_domain_c
   \item \textbf{Enforces HTTPS:} Percentage of HTTP-responsive hosts that appear to ``default" to using HTTPS.
   \item \textbf{Uses Strong HSTS:} Percentage of HTTP-responsive hosts that have an HSTS max-age of at least 31536000 seconds (one year).
   \item \textbf{Free of SSLv2/v3, 3DES, RC4:} Percentage of HTTP-responsive hosts that do not support weak protocols (SSLv2, SSLv3) or weak ciphers (3DES, RC4)
-  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.
+  \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known HTTP-responsive hosts.
 \end{itemize}
 
 \vspace*{3mm}
@@ -845,7 +845,7 @@ BOD 18-01 \textemdash \ DMARC Status}}}
   \item \textbf{Supports STARTTLS:} Percentage of Live Domains and SMTP Subdomains that support STARTTLS or have no mail-sending hosts
   \item \textbf{Valid SPF Record:} Percentage of Live Domains and SMTP Subdomains with a valid SPF (TXT) record (per \href{https://tools.ietf.org/html/rfc7208}{\underline{RFC 7208}}) present at the domain.
   \item \textbf{Free of SSLv2/v3, 3DES, RC4:} Percentage of Live Domains and SMTP Subdomains that do not support weak protocols (SSLv2, SSLv3) or weak ciphers (3DES, RC4) or have no mail-sending hosts
-  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" and \\ ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a Valid SPF record, and are Free of SSLv2/v3, 3DES, RC4.
+  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" and \\ ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a Valid SPF record, and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known Live Domains or SMTP Subdomains.
 \end{itemize}
 
 \vspace*{3mm}
