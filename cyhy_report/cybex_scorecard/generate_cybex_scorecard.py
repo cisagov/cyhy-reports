@@ -1781,7 +1781,8 @@ class ScorecardGenerator(object):
             x['vuln-scan']['metrics'].get('open_criticals_14-21_days'),
             x['vuln-scan']['metrics'].get('open_highs_14-21_days'),
             x['vuln-scan']['metrics'].get('open_criticals_7-14_days'),
-            x['vuln-scan']['metrics'].get('open_highs_7-14_days')),
+            x['vuln-scan']['metrics'].get('open_highs_7-14_days'),
+            x['vuln-scan'].get('scanned')),
             reverse=True)
         result['strong_hsts_all'] = self.__strong_hsts_all
         result['strong_hsts_some'] = self.__strong_hsts_some
