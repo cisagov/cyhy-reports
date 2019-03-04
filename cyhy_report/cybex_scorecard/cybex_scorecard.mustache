@@ -531,83 +531,73 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 
 \rowcolors{11}{white}{row-light-blue}
 \setlength{\tabcolsep}{6pt}
-\begin{longtable}{>{\raggedright}p{2.3in}||rrrrrrr||rrrrrrr}
+\begin{longtable}{>{\raggedright}p{3.5in}||rrrrrr||rrrrrr}
   \toprule
-    & \multicolumn{7}{c||}{\textbf{Active Critical-Severity Vulnerabilities}} &
-      \multicolumn{7}{c}{\textbf{Active High-Severity Vulnerabilities}}\\
-    & \textbf{Total} & \textbf{$\Delta$ Since} & \textbf{7-14} &
-      \textbf{14-21} & \textbf{21-30} & \textbf{30-90} & \textbf{90+} &
-      \textbf{Total} & \textbf{$\Delta$ Since} & \textbf{7-14} &
-      \textbf{14-21} & \textbf{21-30} & \textbf{30-90} & \textbf{90+}\\
+    & \multicolumn{6}{c||}{\textbf{Active Critical-Severity Vulnerabilities}} &
+      \multicolumn{6}{c}{\textbf{Active High-Severity Vulnerabilities}}\\
+    & \textbf{Total} & \textbf{$\Delta$ Since} &
+      \textbf{7-15} & \textbf{15-30} & \textbf{30-90} & \textbf{90+} &
+      \textbf{Total} & \textbf{$\Delta$ Since} &
+      \textbf{7-15} & \textbf{15-30} & \textbf{30-90} & \textbf{90+}\\
     & \textbf{\monthdayonly\formatdate<<&title_date_tex>>} &
       \textbf{\monthdayonly\formatdate<<&previous_scorecard_date_tex>>} &
-      \textbf{Days} & \textbf{Days} & \textbf{Days} &
-      \textbf{Days} & \textbf{Days} &
+      \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} &
       \textbf{\monthdayonly\formatdate<<&title_date_tex>>} &
       \textbf{\monthdayonly\formatdate<<&previous_scorecard_date_tex>>} &
-      \textbf{Days} & \textbf{Days} & \textbf{Days} &
-      \textbf{Days} & \textbf{Days} \\
+      \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} \\
     \midrule \endhead\label{tab:bod-19-02-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals>>} &
       \textbf{<<#federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_7-14_days>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_14-21_days>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_21-30_days>>} &
+      \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_7-15_days>>} &
+      \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_15-30_days>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_30-90_days>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_highs>>} &
       \textbf{<<#federal_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\npaddplus \numprint{<<&federal_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>}<</federal_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>><<^federal_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\ \ \ 0<</federal_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_7-14_days>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_14-21_days>>} &
-      \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_21-30_days>>} &
+      \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_7-15_days>>} &
+      \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_15-30_days>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_30-90_days>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_highs_more_than_90_days>>}\\
   \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals>>} &
       \textbf{<<#cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} &
+      \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_7-15_days>>} &
+      \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_15-30_days>>} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs>>} &
       \textbf{<<#cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\npaddplus \numprint{<<&cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>}<</cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>><<^cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\ \ \ 0<</cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_7-14_days>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_14-21_days>>} &
-      \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_21-30_days>>} &
+      \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_7-15_days>>} &
+      \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_15-30_days>>} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_30-90_days>>} &
       \textbf{<<&cfo_totals.vuln-scan.metrics.open_highs_more_than_90_days>>}\\
   \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals>>} &
       \textbf{<<#non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</non_cfo_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_7-14_days>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_14-21_days>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_21-30_days>>} &
+      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_7-15_days>>} &
+      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_15-30_days>>} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_30-90_days>>} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_criticals_more_than_90_days>>} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs>>} &
       \textbf{<<#non_cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\npaddplus \numprint{<<&non_cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>}<</non_cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>><<^non_cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\ \ \ 0<</non_cfo_totals.vuln-scan.metrics.open_highs_delta_since_last_scorecard>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_7-14_days>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_14-21_days>>} &
-      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_21-30_days>>} &
+      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_7-15_days>>} &
+      \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_15-30_days>>} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_30-90_days>>} &
       \textbf{<<&non_cfo_totals.vuln-scan.metrics.open_highs_more_than_90_days>>}\\
-  \hhline{===============}
+  \hhline{=============}
   <<#bod_1902_orgs>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> &
       <<#vuln-scan.scanned>><<&vuln-scan.metrics.open_criticals>> &
       <<#vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</vuln-scan.metrics.open_criticals_delta_since_last_scorecard>> &
-      <<&vuln-scan.metrics.open_criticals_7-14_days>> &
-      <<&vuln-scan.metrics.open_criticals_14-21_days>> &
-      <<&vuln-scan.metrics.open_criticals_21-30_days>> &
+      <<&vuln-scan.metrics.open_criticals_7-15_days>> &
+      <<&vuln-scan.metrics.open_criticals_15-30_days>> &
       <<&vuln-scan.metrics.open_criticals_30-90_days>> &
-      <<&vuln-scan.metrics.open_criticals_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{7}{c||}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>> &
+      <<&vuln-scan.metrics.open_criticals_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{6}{c||}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>> &
       <<#vuln-scan.scanned>><<&vuln-scan.metrics.open_highs>> &
       <<#vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\npaddplus \numprint{<<&vuln-scan.metrics.open_highs_delta_since_last_scorecard>>}<</vuln-scan.metrics.open_highs_delta_since_last_scorecard>><<^vuln-scan.metrics.open_highs_delta_since_last_scorecard>>\ \ \ 0<</vuln-scan.metrics.open_highs_delta_since_last_scorecard>> &
-      <<&vuln-scan.metrics.open_highs_7-14_days>> &
-      <<&vuln-scan.metrics.open_highs_14-21_days>> &
-      <<&vuln-scan.metrics.open_highs_21-30_days>> &
+      <<&vuln-scan.metrics.open_highs_7-15_days>> &
+      <<&vuln-scan.metrics.open_highs_15-30_days>> &
       <<&vuln-scan.metrics.open_highs_30-90_days>> &
-      <<&vuln-scan.metrics.open_highs_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{7}{c}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>>\\
+      <<&vuln-scan.metrics.open_highs_more_than_90_days>><</vuln-scan.scanned>><<^vuln-scan.scanned>>\multicolumn{6}{c}{Not currently scanned for vulnerabilities}<</vuln-scan.scanned>>\\
 	<</bod_1902_orgs>>
   \bottomrule
 \end{longtable}

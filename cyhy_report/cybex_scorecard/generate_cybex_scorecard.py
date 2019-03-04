@@ -152,18 +152,52 @@ class ScorecardGenerator(object):
     def __open_tix_opened_in_date_range_pl(self, severity, current_date,
                                            days_until_tix_overdue):
         return [
-               {'$match': {'open':True, 'details.severity':severity, 'false_positive':False}},
-               {'$group': {'_id': {'owner':'$owner'},
-                           'open_tix_opened_less_than_7_days_ago':{'$sum':{'$cond':[{'$gte':['$time_opened', current_date - timedelta(days=7)]}, 1, 0]}},
-                           'open_tix_opened_7-14_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=7)]}, {'$gte':['$time_opened', current_date - timedelta(days=14)]}]}, 1, 0]}},
-                           'open_tix_opened_14-21_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=14)]}, {'$gte':['$time_opened', current_date - timedelta(days=21)]}]}, 1, 0]}},
-                           'open_tix_opened_21-30_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=21)]}, {'$gte':['$time_opened', current_date - timedelta(days=30)]}]}, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=30)]}, {'$gte':['$time_opened', current_date - timedelta(days=90)]}]}, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=90)]}, 1, 0]}},
-                           'open_overdue_tix':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=days_until_tix_overdue)]}, 1, 0]}},
-                           'open_tix_count':{'$sum':1}
+               {'$match': {'open': True, 'details.severity': severity,
+                           'false_positive': False}},
+               {'$group': {'_id': {'owner': '$owner'},
+                           'open_tix_opened_less_than_7_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$gte': ['$time_opened',
+                                         current_date - timedelta(days=7)]
+                                }, 1, 0]}},
+                           'open_tix_opened_7-15_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=7)]}, {
+                                 '$gte': ['$time_opened',
+                                          current_date - timedelta(days=15)]}]
+                                 }, 1, 0]}},
+                           'open_tix_opened_15-30_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=15)]}, {
+                                 '$gte': ['$time_opened',
+                                          current_date - timedelta(days=30)]}]
+                                }, 1, 0]}},
+                           'open_tix_opened_30-90_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=30)]}, {
+                                 '$gte': ['$time_opened',
+                                         current_date - timedelta(days=90)]}]
+                                }, 1, 0]}},
+                           'open_tix_opened_more_than_90_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$lt': ['$time_opened',
+                                        current_date - timedelta(days=90)]
+                                }, 1, 0]}},
+                           'open_overdue_tix': {
+                            '$sum': {'$cond': [{
+                                '$lt': ['$time_opened',
+                                        current_date -
+                                        timedelta(days=days_until_tix_overdue)]
+                                }, 1, 0]}},
+                           'open_tix_count': {'$sum': 1}
                            }
-               }
+                }
                ], database.TICKET_COLLECTION
 
     def __open_tix_opened_in_date_range_for_orgs_pl(self, severity,
@@ -171,19 +205,53 @@ class ScorecardGenerator(object):
                                                     descendant_orgs,
                                                     days_until_tix_overdue):
         return [
-               {'$match': {'open':True, 'details.severity':severity, 'false_positive':False,
-                           'owner':{'$in':[parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner':parent_org},
-                           'open_tix_opened_less_than_7_days_ago':{'$sum':{'$cond':[{'$gte':['$time_opened', current_date - timedelta(days=7)]}, 1, 0]}},
-                           'open_tix_opened_7-14_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=7)]}, {'$gte':['$time_opened', current_date - timedelta(days=14)]}]}, 1, 0]}},
-                           'open_tix_opened_14-21_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=14)]}, {'$gte':['$time_opened', current_date - timedelta(days=21)]}]}, 1, 0]}},
-                           'open_tix_opened_21-30_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=21)]}, {'$gte':['$time_opened', current_date - timedelta(days=30)]}]}, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago':{'$sum':{'$cond':[{'$and':[{'$lt':['$time_opened', current_date - timedelta(days=30)]}, {'$gte':['$time_opened', current_date - timedelta(days=90)]}]}, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=90)]}, 1, 0]}},
-                           'open_overdue_tix':{'$sum':{'$cond':[{'$lt':['$time_opened', current_date - timedelta(days=days_until_tix_overdue)]}, 1, 0]}},
-                           'open_tix_count':{'$sum':1}
+               {'$match': {'open': True, 'details.severity': severity,
+                           'false_positive': False,
+                           'owner': {'$in': [parent_org] + descendant_orgs}}},
+               {'$group': {'_id': {'owner': parent_org},
+                           'open_tix_opened_less_than_7_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$gte': ['$time_opened',
+                                         current_date - timedelta(days=7)]
+                                }, 1, 0]}},
+                           'open_tix_opened_7-15_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=7)]}, {
+                                 '$gte': ['$time_opened',
+                                          current_date - timedelta(days=15)]}]
+                                }, 1, 0]}},
+                           'open_tix_opened_15-30_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=15)]}, {
+                                 '$gte': ['$time_opened',
+                                         current_date - timedelta(days=30)]}]
+                                }, 1, 0]}},
+                           'open_tix_opened_30-90_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$and': [{
+                                 '$lt': ['$time_opened',
+                                         current_date - timedelta(days=30)]}, {
+                                 '$gte': ['$time_opened',
+                                          current_date - timedelta(days=90)]}]
+                                }, 1, 0]}},
+                           'open_tix_opened_more_than_90_days_ago': {
+                            '$sum': {'$cond': [{
+                                '$lt': ['$time_opened',
+                                        current_date - timedelta(days=90)]
+                                }, 1, 0]}},
+                           'open_overdue_tix': {
+                            '$sum': {'$cond': [{
+                                '$lt': ['$time_opened',
+                                        current_date -
+                                        timedelta(days=days_until_tix_overdue)]
+                                }, 1, 0]}},
+                           'open_tix_count':{'$sum': 1}
                            }
-               }
+                }
                ], database.TICKET_COLLECTION
 
     def __active_hosts_pl(self):
@@ -750,18 +818,16 @@ class ScorecardGenerator(object):
                                     'metrics': {'open_criticals':0,
                                                 'open_criticals_on_previous_scorecard':0,
                                                 'open_criticals_0-7_days':0,
-                                                'open_criticals_7-14_days':0,
-                                                'open_criticals_14-21_days':0,
-                                                'open_criticals_21-30_days':0,
+                                                'open_criticals_7-15_days':0,
+                                                'open_criticals_15-30_days':0,
                                                 'open_criticals_30-90_days':0,
                                                 'open_criticals_more_than_90_days':0,
                                                 'open_overdue_criticals': 0,
                                                 'open_highs':0,
                                                 'open_highs_on_previous_scorecard':0,
                                                 'open_highs_0-7_days':0,
-                                                'open_highs_7-14_days':0,
-                                                'open_highs_14-21_days':0,
-                                                'open_highs_21-30_days':0,
+                                                'open_highs_7-15_days':0,
+                                                'open_highs_15-30_days':0,
                                                 'open_highs_30-90_days':0,
                                                 'open_highs_more_than_90_days':0,
                                                 'open_overdue_highs': 0,
@@ -998,9 +1064,8 @@ class ScorecardGenerator(object):
                             for score_field, result_field in [
                             ('open_criticals', 'open_tix_count'),
                             ('open_criticals_0-7_days', 'open_tix_opened_less_than_7_days_ago'),
-                            ('open_criticals_7-14_days', 'open_tix_opened_7-14_days_ago'),
-                            ('open_criticals_14-21_days', 'open_tix_opened_14-21_days_ago'),
-                            ('open_criticals_21-30_days', 'open_tix_opened_21-30_days_ago'),
+                            ('open_criticals_7-15_days', 'open_tix_opened_7-15_days_ago'),
+                            ('open_criticals_15-30_days', 'open_tix_opened_15-30_days_ago'),
                             ('open_criticals_30-90_days', 'open_tix_opened_30-90_days_ago'),
                             ('open_criticals_more_than_90_days', 'open_tix_opened_more_than_90_days_ago'),
                             ('open_overdue_criticals', 'open_overdue_tix')]:
@@ -1012,9 +1077,8 @@ class ScorecardGenerator(object):
                             for score_field, result_field in [
                             ('open_highs', 'open_tix_count'),
                             ('open_highs_0-7_days', 'open_tix_opened_less_than_7_days_ago'),
-                            ('open_highs_7-14_days', 'open_tix_opened_7-14_days_ago'),
-                            ('open_highs_14-21_days', 'open_tix_opened_14-21_days_ago'),
-                            ('open_highs_21-30_days', 'open_tix_opened_21-30_days_ago'),
+                            ('open_highs_7-15_days', 'open_tix_opened_7-15_days_ago'),
+                            ('open_highs_15-30_days', 'open_tix_opened_15-30_days_ago'),
                             ('open_highs_30-90_days', 'open_tix_opened_30-90_days_ago'),
                             ('open_highs_more_than_90_days', 'open_tix_opened_more_than_90_days_ago'),
                             ('open_overdue_highs', 'open_overdue_tix')]:
@@ -1063,7 +1127,7 @@ class ScorecardGenerator(object):
             self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
 
             # initialize vuln-scan metrics to 0
-            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-14_days':0, 'open_criticals_14-21_days':0, 'open_criticals_21-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-14_days':0, 'open_highs_14-21_days':0, 'open_highs_21-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
+            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
 
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
@@ -1082,18 +1146,16 @@ class ScorecardGenerator(object):
             for (scanner, scan_subtype, field) in [('vuln-scan', 'metrics', 'open_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_on_previous_scorecard'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_0-7_days'),
-                                                   ('vuln-scan', 'metrics', 'open_criticals_7-14_days'),
-                                                   ('vuln-scan', 'metrics', 'open_criticals_14-21_days'),
-                                                   ('vuln-scan', 'metrics', 'open_criticals_21-30_days'),
+                                                   ('vuln-scan', 'metrics', 'open_criticals_7-15_days'),
+                                                   ('vuln-scan', 'metrics', 'open_criticals_15-30_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_more_than_90_days'),
                                                    ('vuln-scan', 'metrics', 'open_overdue_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_highs'),
                                                    ('vuln-scan', 'metrics', 'open_highs_on_previous_scorecard'),
                                                    ('vuln-scan', 'metrics', 'open_highs_0-7_days'),
-                                                   ('vuln-scan', 'metrics', 'open_highs_7-14_days'),
-                                                   ('vuln-scan', 'metrics', 'open_highs_14-21_days'),
-                                                   ('vuln-scan', 'metrics', 'open_highs_21-30_days'),
+                                                   ('vuln-scan', 'metrics', 'open_highs_7-15_days'),
+                                                   ('vuln-scan', 'metrics', 'open_highs_15-30_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_more_than_90_days'),
                                                    ('vuln-scan', 'metrics', 'open_overdue_highs'),
@@ -1540,34 +1602,30 @@ class ScorecardGenerator(object):
                          'delta_active_critical_vulns_since_' +
                          prev_scorecard_date_txt,
                          'active_critical_vulns_0-7_days',
-                         'active_critical_vulns_7-14_days',
-                         'active_critical_vulns_14-21_days',
-                         'active_critical_vulns_21-30_days',
+                         'active_critical_vulns_7-15_days',
+                         'active_critical_vulns_15-30_days',
                          'active_critical_vulns_30-90_days',
                          'active_critical_vulns_90+_days',
                          'active_high_vulns',
                          'delta_active_high_vulns_since_' +
                          prev_scorecard_date_txt,
                          'active_high_vulns_0-7_days',
-                         'active_high_vulns_7-14_days',
-                         'active_high_vulns_14-21_days',
-                         'active_high_vulns_21-30_days',
+                         'active_high_vulns_7-15_days',
+                         'active_high_vulns_15-30_days',
                          'active_high_vulns_30-90_days',
                          'active_high_vulns_90+_days')
         data_fields = ('acronym', 'name', 'cfo_act_org', 'open_criticals',
                        'open_criticals_delta_since_last_scorecard',
                        'open_criticals_0-7_days',
-                       'open_criticals_7-14_days',
-                       'open_criticals_14-21_days',
-                       'open_criticals_21-30_days',
+                       'open_criticals_7-15_days',
+                       'open_criticals_15-30_days',
                        'open_criticals_30-90_days',
                        'open_criticals_more_than_90_days',
                        'open_highs',
                        'open_highs_delta_since_last_scorecard',
                        'open_highs_0-7_days',
-                       'open_highs_7-14_days',
-                       'open_highs_14-21_days',
-                       'open_highs_21-30_days',
+                       'open_highs_7-15_days',
+                       'open_highs_15-30_days',
                        'open_highs_30-90_days',
                        'open_highs_more_than_90_days')
 
@@ -1583,17 +1641,15 @@ class ScorecardGenerator(object):
                       'open_criticals',
                       'open_criticals_delta_since_last_scorecard',
                       'open_criticals_0-7_days',
-                      'open_criticals_7-14_days',
-                      'open_criticals_14-21_days',
-                      'open_criticals_21-30_days',
+                      'open_criticals_7-15_days',
+                      'open_criticals_15-30_days',
                       'open_criticals_30-90_days',
                       'open_criticals_more_than_90_days',
                       'open_highs',
                       'open_highs_delta_since_last_scorecard',
                       'open_highs_0-7_days',
-                      'open_highs_7-14_days',
-                      'open_highs_14-21_days',
-                      'open_highs_21-30_days',
+                      'open_highs_7-15_days',
+                      'open_highs_15-30_days',
                       'open_highs_30-90_days',
                       'open_highs_more_than_90_days'):
                         org[vuln_scan_key] = org['vuln-scan']['metrics'].get(
@@ -1603,17 +1659,15 @@ class ScorecardGenerator(object):
                     for vuln_scan_key in (
                       'open_criticals_delta_since_last_scorecard',
                       'open_criticals_0-7_days',
-                      'open_criticals_7-14_days',
-                      'open_criticals_14-21_days',
-                      'open_criticals_21-30_days',
+                      'open_criticals_7-15_days',
+                      'open_criticals_15-30_days',
                       'open_criticals_30-90_days',
                       'open_criticals_more_than_90_days',
                       'open_highs',
                       'open_highs_delta_since_last_scorecard',
                       'open_highs_0-7_days',
-                      'open_highs_7-14_days',
-                      'open_highs_14-21_days',
-                      'open_highs_21-30_days',
+                      'open_highs_7-15_days',
+                      'open_highs_15-30_days',
                       'open_highs_30-90_days',
                       'open_highs_more_than_90_days'):
                         org[vuln_scan_key] = 'N/A'
@@ -1776,12 +1830,10 @@ class ScorecardGenerator(object):
             x['vuln-scan']['metrics'].get('open_highs_more_than_90_days'),
             x['vuln-scan']['metrics'].get('open_criticals_30-90_days'),
             x['vuln-scan']['metrics'].get('open_highs_30-90_days'),
-            x['vuln-scan']['metrics'].get('open_criticals_21-30_days'),
-            x['vuln-scan']['metrics'].get('open_highs_21-30_days'),
-            x['vuln-scan']['metrics'].get('open_criticals_14-21_days'),
-            x['vuln-scan']['metrics'].get('open_highs_14-21_days'),
-            x['vuln-scan']['metrics'].get('open_criticals_7-14_days'),
-            x['vuln-scan']['metrics'].get('open_highs_7-14_days'),
+            x['vuln-scan']['metrics'].get('open_criticals_15-30_days'),
+            x['vuln-scan']['metrics'].get('open_highs_15-30_days'),
+            x['vuln-scan']['metrics'].get('open_criticals_7-15_days'),
+            x['vuln-scan']['metrics'].get('open_highs_7-15_days'),
             x['vuln-scan'].get('scanned')),
             reverse=True)
         result['strong_hsts_all'] = self.__strong_hsts_all
