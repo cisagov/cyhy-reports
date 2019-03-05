@@ -16,24 +16,23 @@ Options:
   -n --nolog                     Do not log that this report was created.
   --version                      Show version.
 
-CYHY_DB_SECTION and SCAN_DB_SECTION refer to sections within /etc/cyhy/cyhy.conf
+CYHY_DB_SECTION and SCAN_DB_SECTION refer to sections
+within /etc/cyhy/cyhy.conf
 '''
 
 # standard python libraries
 import sys
 import os
 import copy
-from datetime import datetime, timedelta
-from dateutil import parser, relativedelta, tz
-import time
+from datetime import timedelta
+from dateutil import parser
 import json
 import codecs
 import tempfile
 import shutil
 import subprocess
-import re
 import csv
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 import random
 
 # third-party libraries (install with pip)
@@ -43,19 +42,21 @@ import pandas as pd
 import numpy as np
 from bson import ObjectId
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
 import requests
 
 # intra-project modules
 from cyhy.core import *
 from cyhy.util import *
-from cyhy.db import database, queries, CHDatabase, scheduler
+from cyhy.db import database, scheduler
 import graphs
 
 # constants
 SCORING_ENGINE_VERSION = '1.0'
-CURRENTLY_SCANNED_DAYS = 14  # Number of days in the past that an org's CyHy tally doc was last changed; a.k.a. a 'currently-scanned' org
-# BEFORE_THE_DAWN_OF_CYHY = time_to_utc(parser.parse("20000101"))
+
+# Number of days in the past that an org's CyHy tally doc was last changed;
+# a.k.a. a 'currently-scanned' org
+CURRENTLY_SCANNED_DAYS = 14
+
 CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
 
@@ -74,22 +75,22 @@ REPORT_TEX = 'cybex_scorecard.tex'
 ASSETS_DIR_SRC = '../assets'
 ASSETS_DIR_DST = 'assets'
 LATEX_ESCAPE_MAP = {
-    '$':'\\$',
-    '%':'\\%',
-    '&':'\\&',
-    '#':'\\#',
-    '_':'\\_',
-    '{':'\\{',
-    '}':'\\}',
-    '[':'{[}',
-    ']':'{]}',
-    "'":"{'}",
-    '\\':'\\textbackslash{}',
-    '~':'\\textasciitilde{}',
-    '<':'\\textless{}',
-    '>':'\\textgreater{}',
-    '^':'\\textasciicircum{}',
-    '`':'{}`',
+    '$': '\\$',
+    '%': '\\%',
+    '&': '\\&',
+    '#': '\\#',
+    '_': '\\_',
+    '{': '\\{',
+    '}': '\\}',
+    '[': '{[}',
+    ']': '{]}',
+    "'": "{'}",
+    '\\': '\\textbackslash{}',
+    '~': '\\textasciitilde{}',
+    '<': '\\textless{}',
+    '>': '\\textgreater{}',
+    '^': '\\textasciicircum{}',
+    '`': '{}`',
     '\n': '\\newline{}',
 }
 
@@ -97,14 +98,18 @@ ED1901_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-certs-by-agency.csv'
 EMAIL_SECURITY_SUMMARY_CSV_FILE = 'cybex-email-security-summary.csv'
 BOD_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-bod-results-by-agency.csv'
 BOD_1902_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-vuln-results-by-agency.csv'
-WEB_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-web-security-results-by-agency.csv'
-EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = 'cybex-email-security-results-by-agency.csv'
+WEB_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = \
+    'cybex-web-security-results-by-agency.csv'
+EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE = \
+    'cybex-email-security-results-by-agency.csv'
 
-TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 10      # Number of Trustymail scans to fetch summary data for
+# Number of Trustymail scans to fetch summary data for
+TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT = 10
 BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 
 OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/ocsp-crl.csv'
 OCSP_FILE = '/tmp/ocsp-crl.csv'
+
 
 class ScorecardGenerator(object):
     def __init__(self, cyhy_db, scan_db, ocsp_file,
@@ -113,13 +118,13 @@ class ScorecardGenerator(object):
         self.__cyhy_db = cyhy_db
         self.__scan_db = scan_db
         self.__generated_time = utcnow()
-        self.__results = dict() # reusable query results
+        self.__results = dict()  # reusable query results
         self.__requests = None
         self.__tallies = []
         self.__all_cybex_orgs_with_descendants = []
         self.__debug = debug
         self.__draft = not final
-        self.__scorecard_doc = {'scores':[]}
+        self.__scorecard_doc = {'scores': []}
         self.__cfo_act_orgs = []
         self.__orgs_with_recently_issued_certs = []
         self.__orgs_with_no_recently_issued_certs = []
@@ -134,7 +139,9 @@ class ScorecardGenerator(object):
         self.__dmarc_reject_all = []
         self.__dmarc_reject_some = []
         self.__dmarc_reject_none = []
-        self.__previous_scorecard_data = json.load(codecs.open(previous_scorecard_json_file,'r', encoding='utf-8'))
+        self.__previous_scorecard_data = json.load(codecs.open(
+                                            previous_scorecard_json_file, 'r',
+                                            encoding='utf-8'))
         self.__scorecard_oid = ObjectId()
         self.__log_scorecard_to_db = log_scorecard
         self.__anonymize = anonymize
@@ -256,58 +263,84 @@ class ScorecardGenerator(object):
 
     def __active_hosts_pl(self):
         return [
-               {'$match': {'state.up':True}},
-               {'$group': {'_id': {'owner':'$owner'},
-                           'active_hosts_count':{'$sum':1}
-                          }
-               }
+               {'$match': {'state.up': True}},
+               {'$group': {'_id': {'owner': '$owner'},
+                           'active_hosts_count': {'$sum': 1}
+                           }
+                }
                ], database.HOST_COLLECTION
 
     def __active_hosts_for_orgs_pl(self, parent_org, descendant_orgs):
         return [
-               {'$match': {'state.up':True, 'owner':{'$in':[parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner':parent_org},
-                           'active_hosts_count':{'$sum':1}
-                          }
-               }
+               {'$match': {'state.up': True,
+                           'owner': {'$in': [parent_org] + descendant_orgs}}},
+               {'$group': {'_id': {'owner': parent_org},
+                           'active_hosts_count': {'$sum': 1}
+                           }
+                }
                ], database.HOST_COLLECTION
 
-    def __load_ticket_age_data(self, start_date, severity, graph_bucket_cutoff_days, org_list):
+    def __load_ticket_age_data(self, start_date, severity,
+                               graph_bucket_cutoff_days, org_list):
         tomorrow = self.__generated_time + timedelta(days=1)
-        days_to_graph = pd.to_datetime(pd.date_range(start_date, self.__generated_time), utc=True)
+        days_to_graph = pd.to_datetime(pd.date_range(start_date,
+                                                     self.__generated_time),
+                                       utc=True)
 
         # Calculate Buckets
-        tix = self.__cyhy_db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':org_list},
-                                '$or':[{'time_closed':{'$gte':start_date}}, {'time_closed':None}]},
-                                {'_id':False, 'time_opened':True, 'time_closed':True})
+        tix = self.__cyhy_db.TicketDoc.find(
+            {'details.severity': severity,
+             'false_positive': False,
+             'owner': {'$in': org_list},
+             '$or': [{'time_closed': {'$gte': start_date}},
+                     {'time_closed': None}]},
+            {'_id': False,
+             'time_opened': True,
+             'time_closed': True})
         tix = list(tix)
         if len(tix):
             df = DataFrame(tix)
-            df.time_closed = df.time_closed.fillna(tomorrow, downcast='infer')  # for accounting purposes, say all open tix will close tomorrow
-            df.time_closed = pd.to_datetime(df.time_closed, utc=True)   # convert times to datetime64
+            # for accounting purposes, say all open tix will close tomorrow
+            df.time_closed = df.time_closed.fillna(tomorrow, downcast='infer')
+            # convert times to datetime64
+            df.time_closed = pd.to_datetime(df.time_closed, utc=True)
             df.time_opened = pd.to_datetime(df.time_opened, utc=True)
 
-            results_df = DataFrame(index=days_to_graph, columns=['young','old','total'])
+            results_df = DataFrame(index=days_to_graph,
+                                   columns=['young', 'old', 'total'])
             old_delta = np.timedelta64(graph_bucket_cutoff_days, 'D')
 
             for start_of_day, values in results_df.iterrows():
-                end_of_day = start_of_day + np.timedelta64(1, 'D') - np.timedelta64(1, 'ns')
-                open_on_day_mask = (df.time_opened <= end_of_day) & (df.time_closed > start_of_day)
+                end_of_day = start_of_day + \
+                             np.timedelta64(1, 'D') - \
+                             np.timedelta64(1, 'ns')
+                open_on_day_mask = (df.time_opened <= end_of_day) & \
+                                   (df.time_closed > start_of_day)
                 age_on_date = start_of_day - df.time_opened
-                age_on_date_masked = age_on_date.mask(open_on_day_mask == False)
+                age_on_date_masked = age_on_date.mask(
+                                        open_on_day_mask is False)
                 values['total'] = open_on_day_mask.value_counts().get(True, 0)
-                values['young'] = (age_on_date_masked < old_delta).value_counts().get(True, 0)
-                values['old'] = (age_on_date_masked >= old_delta).value_counts().get(True, 0)
+                values['young'] = (age_on_date_masked <
+                                   old_delta).value_counts().get(True, 0)
+                values['old'] = (age_on_date_masked >=
+                                 old_delta).value_counts().get(True, 0)
             return results_df
         else:
             return DataFrame([])
 
     def __load_open_tickets(self, severity, org_list):
-        return list(self.__cyhy_db.tickets.find({'open':True, 'owner':{'$in':self.__all_cybex_orgs_with_descendants}, 'details.severity':severity, 'false_positive':False}, {'time_opened':1}))
+        return list(self.__cyhy_db.tickets.find(
+            {'open': True,
+             'owner': {
+                '$in': self.__all_cybex_orgs_with_descendants},
+             'details.severity': severity,
+             'false_positive': False},
+            {'time_opened': 1}))
 
     def __run_vuln_scan_queries(self, cybex_orgs):
-        # If an org has descendants, we only want the top-level org to show up in the Scorecard
-        # Make list of orgs that have children and their request docs so their child data can be accumulated later
+        # If an org has descendants, we only want the top-level org to show up
+        # in the Scorecard.  Make list of orgs that have children and their
+        # request docs so their child data can be accumulated later.
         orgs_with_descendants = []
         requests_with_descendants = []
         self.__results['vuln-scan'] = {'addresses': []}
@@ -316,248 +349,511 @@ class ScorecardGenerator(object):
                 orgs_with_descendants.append(r['_id'])
                 requests_with_descendants.append(r)
             else:
-                # Grab the number of addresses for every org that has no descendants
-                # For consistency and ease of processing later,
-                #  store # of addresses in same format as pipeline queries below
-                self.__results['vuln-scan']['addresses'].append({'_id':{'owner':r['_id']}, 'addresses_count':len(r.networks)})
+                # Grab the number of addresses for every org that has no
+                # descendants.  For consistency and ease of processing later,
+                # store number of addresses in same format as pipeline
+                # queries below.
+                self.__results['vuln-scan']['addresses'].append(
+                    {'_id': {'owner': r['_id']},
+                     'addresses_count': len(r.networks)})
 
         # Get relevant critical-severity ticket data
         pipeline_collection = self.__open_tix_opened_in_date_range_pl(
                                 CRITICAL_SEVERITY, self.__generated_time,
                                 DAYS_UNTIL_OVERDUE_CRITICAL)
-        self.__results['vuln-scan']['open_critical_ticket_counts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+        self.__results['vuln-scan']['open_critical_ticket_counts'] = \
+            database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         # Get relevant high-severity ticket data
         pipeline_collection = self.__open_tix_opened_in_date_range_pl(
                                 HIGH_SEVERITY, self.__generated_time,
                                 DAYS_UNTIL_OVERDUE_HIGH)
-        self.__results['vuln-scan']['open_high_ticket_counts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+        self.__results['vuln-scan']['open_high_ticket_counts'] = \
+            database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         pipeline_collection = self.__active_hosts_pl()
-        self.__results['vuln-scan']['active_hosts'] = database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+        self.__results['vuln-scan']['active_hosts'] = \
+            database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
         # Throw out data from orgs with descendants
-        # list(self.__results[results_field]) iterates over a *copy* of the list so items can be properly removed from the original
-        for results_field in ['open_critical_ticket_counts', 'open_high_ticket_counts', 'active_hosts']:
-                              for r in list(self.__results['vuln-scan'][results_field]):
-                                  if r['_id']['owner'] in orgs_with_descendants:
-                                      self.__results['vuln-scan'][results_field].remove(r)
+        # list(self.__results[results_field]) iterates over a *copy* of the
+        # list so items can be properly removed from the original
+        for results_field in ['open_critical_ticket_counts',
+                              'open_high_ticket_counts',
+                              'active_hosts']:
+            for r in list(self.__results['vuln-scan'][results_field]):
+                if r['_id']['owner'] in orgs_with_descendants:
+                    self.__results['vuln-scan'][results_field].remove(r)
 
         # Pull grouped data for orgs with descendants and add it to results
         for r in requests_with_descendants:
-            descendants = self.__cyhy_db.RequestDoc.get_all_descendants(r['_id'])
+            descendants = self.__cyhy_db.RequestDoc.get_all_descendants(
+                r['_id'])
 
-            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(CRITICAL_SEVERITY, self.__generated_time, r['_id'], descendants, DAYS_UNTIL_OVERDUE_CRITICAL)
-            self.__results['vuln-scan']['open_critical_ticket_counts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+            pipeline_collection = \
+                self.__open_tix_opened_in_date_range_for_orgs_pl(
+                    CRITICAL_SEVERITY, self.__generated_time, r['_id'],
+                    descendants, DAYS_UNTIL_OVERDUE_CRITICAL)
+            self.__results['vuln-scan']['open_critical_ticket_counts'] += \
+                database.run_pipeline_cursor(pipeline_collection,
+                                             self.__cyhy_db)
 
-            pipeline_collection = self.__open_tix_opened_in_date_range_for_orgs_pl(HIGH_SEVERITY, self.__generated_time, r['_id'], descendants, DAYS_UNTIL_OVERDUE_HIGH)
-            self.__results['vuln-scan']['open_high_ticket_counts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+            pipeline_collection = \
+                self.__open_tix_opened_in_date_range_for_orgs_pl(
+                    HIGH_SEVERITY, self.__generated_time, r['_id'],
+                    descendants, DAYS_UNTIL_OVERDUE_HIGH)
+            self.__results['vuln-scan']['open_high_ticket_counts'] += \
+                database.run_pipeline_cursor(pipeline_collection,
+                                             self.__cyhy_db)
 
-            pipeline_collection = self.__active_hosts_for_orgs_pl(r['_id'], descendants)
-            self.__results['vuln-scan']['active_hosts'] += database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+            pipeline_collection = self.__active_hosts_for_orgs_pl(
+                r['_id'], descendants)
+            self.__results['vuln-scan']['active_hosts'] += \
+                database.run_pipeline_cursor(pipeline_collection,
+                                             self.__cyhy_db)
 
-            address_count = len(r.networks)         # Top-level org count of addresses (networks)
-            for descendant_id in descendants:       # Iterate through descendants and grab count of addresses
-                address_count += len(self.__cyhy_db.RequestDoc.get_by_owner(descendant_id).networks)
-            self.__results['vuln-scan']['addresses'].append({'_id':{'owner':r['_id']}, 'addresses_count':address_count})
+            # Top-level org count of addresses (networks)
+            address_count = len(r.networks)
+            # Iterate through descendants and grab count of addresses
+            for descendant_id in descendants:
+                address_count += len(self.__cyhy_db.RequestDoc.get_by_owner(
+                    descendant_id).networks)
+            self.__results['vuln-scan']['addresses'].append(
+                {'_id': {'owner': r['_id']},
+                 'addresses_count': address_count})
 
     def __run_trustymail_queries(self, cybex_orgs):
         # Latest Trustymail metrics for base domains
-        self.__results['latest_cybex_trustymail_base_domains'] = [ i['domain'] for i in self.__scan_db.trustymail.find({'latest':True,
-                                                                                                                        'is_base_domain':True,
-                                                                                                                        'agency.id': {'$in':cybex_orgs}},
-                                                                                                                       {'_id':0, 'domain':1}) ]
+        self.__results['latest_cybex_trustymail_base_domains'] = [
+            i['domain'] for i in self.__scan_db.trustymail.find(
+                {'latest': True,
+                 'is_base_domain': True,
+                 'agency.id': {'$in': cybex_orgs}},
+                {'_id': 0, 'domain': 1})]
 
-        self.__results['trustymail_base_domains'] = list(self.__scan_db.trustymail.aggregate([
-                    {'$match': {'latest':True, 'domain':{'$in':self.__results['latest_cybex_trustymail_base_domains']}}},
-                    # Pull in data from sslyze_scan collection so weak crypto status can be determined
-                    {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
-                                 'foreignField':'domain', 'as':'sslyze_data'}},
-                    {'$project': {'agency.id':'$agency.id', 'scan_date':'$scan_date', 'live':'$live', 'valid_spf':'$valid_spf',
-                                  'valid_dmarc':'$valid_dmarc', 'dmarc_policy':'$dmarc_policy',
-                                  'has_bod1801_dmarc_rua_uri': {'$cond': [{'$eq': [{'$filter': {'input':'$aggregate_report_uris',
-                                                                                                'as': 'agg_report_uri',
-                                                                                                'cond': {'$eq': ['$$agg_report_uri.uri', BOD1801_DMARC_RUA_URI]}}}, []]}, False, True]},
-                                  'domain_supports_smtp':'$domain_supports_smtp',
-                                  'domain_supports_starttls':'$domain_supports_starttls',
-                                  'is_missing_starttls': {'$and': [{'$eq': ['$domain_supports_smtp', True]},
-                                                                   {'$eq': ['$domain_supports_starttls', False]}]},
-                                  # has_weak_mail_crypto projection can be simplified by
-                                  # changing $lookup above to use an uncorrelated subquery (Mongo 3.6 or later)
-                                  'has_weak_mail_crypto': {'$cond': [{'$eq': [{'$filter': {'input':'$sslyze_data',
-                                                                                           'as':'sslyze',
-                                                                                           'cond': {'$and': [{'$eq': ['$$sslyze.latest', True]},
-                                                                                                             {'$or': [ {'$eq': ['$$sslyze.scanned_port', 25]},
-                                                                                                                       {'$eq': ['$$sslyze.scanned_port', 587]},
-                                                                                                                       {'$eq': ['$$sslyze.scanned_port', 465]} ]},
-                                                                                                             {'$or': [ {'$eq': ['$$sslyze.sslv2', True]},
-                                                                                                                       {'$eq': ['$$sslyze.sslv3', True]},
-                                                                                                                       {'$eq': ['$$sslyze.any_3des', True]},
-                                                                                                                       {'$eq': ['$$sslyze.any_rc4', True]} ]}]}
-                                                                                            }}, []]}, False, True]} }},
-                    {'$group': {'_id': '$agency.id',
-                                'earliest_scan_date': {'$min': '$scan_date'},
-                                'domain_count': {'$sum': 1},
-                                'live_domain_count': {'$sum': {'$cond': [ {'$eq': ['$live', True]},1,0 ] }},
-                                'live_valid_dmarc_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                         {'$eq': ['$valid_dmarc', True]}] },1,0] }},
-                                'live_dmarc_reject_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                          {'$eq': ['$valid_dmarc', True]},
-                                                                                          {'$eq': ['$dmarc_policy', 'reject']}] },1,0] }},
-                                'live_has_bod1801_dmarc_uri_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                   {'$eq': ['$valid_dmarc', True]},
-                                                                                                   {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}] },1,0] }},
-                                'live_valid_spf_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                       {'$eq': ['$valid_spf', True]}] },1,0] }},
-                                'live_missing_starttls_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                              {'$eq': ['$is_missing_starttls', True]}] },1,0] }},
-                                'live_no_weak_crypto_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                            {'$eq': ['$has_weak_mail_crypto', False]}] },1,0] }},
-                                'live_bod1801_dmarc_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                     {'$eq': ['$valid_dmarc', True]},
-                                                                                                     {'$eq': ['$dmarc_policy', 'reject']},
-                                                                                                     {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}] },1,0] }},
-                                'live_bod1801_email_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                     {'$eq': ['$valid_dmarc', True]},
-                                                                                                     {'$eq': ['$dmarc_policy', 'reject']},
-                                                                                                     {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                                                                                                     {'$eq': ['$is_missing_starttls', False]},
-                                                                                                     {'$eq': ['$valid_spf', True]},
-                                                                                                     {'$eq': ['$has_weak_mail_crypto', False]}] },1,0] }} }},
-                    {'$project': {'_id':1, 'earliest_scan_date':1, 'domain_count':1, 'live_domain_count':1,
-                                  'live_valid_dmarc_count':1, 'live_dmarc_reject_count':1,
-                                  'live_has_bod1801_dmarc_uri_count':1,
-                                  'live_valid_spf_count':1, 'live_missing_starttls_count':1,
-                                  'live_no_weak_crypto_count':1,
-                                  'live_bod1801_dmarc_compliant_count':1, 'live_bod1801_email_compliant_count':1,
-                                  'live_supports_starttls_count': {'$subtract': ['$live_domain_count',
-                                                                                 '$live_missing_starttls_count']},
-                                  'live_bod1801_dmarc_non_compliant_count': {'$subtract': ['$live_domain_count',
-                                                                                           '$live_bod1801_dmarc_compliant_count']},
-                                  'live_bod1801_email_non_compliant_count': {'$subtract': ['$live_domain_count',
-                                                                                           '$live_bod1801_email_compliant_count']} }},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['trustymail_base_domains'] = list(
+            self.__scan_db.trustymail.aggregate([
+                {'$match':
+                    {'latest': True,
+                     'domain':
+                        {'$in': self.__results[
+                            'latest_cybex_trustymail_base_domains']}}},
+                # Pull in data from sslyze_scan collection so weak crypto
+                # status can be determined
+                {'$lookup':
+                    {'from': 'sslyze_scan', 'localField': 'domain',
+                     'foreignField': 'domain', 'as': 'sslyze_data'}},
+                {'$project':
+                    {'agency.id': '$agency.id',
+                     'scan_date': '$scan_date',
+                     'live': '$live',
+                     'valid_spf': '$valid_spf',
+                     'valid_dmarc': '$valid_dmarc',
+                     'dmarc_policy': '$dmarc_policy',
+                     'has_bod1801_dmarc_rua_uri':
+                        {'$cond': [
+                            {'$eq': [
+                                {'$filter': {
+                                    'input': '$aggregate_report_uris',
+                                    'as': 'agg_report_uri',
+                                    'cond': {
+                                        '$eq': [
+                                            '$$agg_report_uri.uri',
+                                            BOD1801_DMARC_RUA_URI
+                                            ]}}
+                                 }, []]}, False, True]},
+                     'domain_supports_smtp': '$domain_supports_smtp',
+                     'domain_supports_starttls': '$domain_supports_starttls',
+                     'is_missing_starttls':
+                        {'$and': [
+                            {'$eq': ['$domain_supports_smtp', True]},
+                            {'$eq': ['$domain_supports_starttls', False]}]},
+                     # has_weak_mail_crypto projection can be simplified by
+                     # changing $lookup above to use an uncorrelated
+                     # subquery (Mongo 3.6 or later)
+                     'has_weak_mail_crypto':
+                        {'$cond': [
+                            {'$eq': [
+                                {'$filter': {
+                                    'input': '$sslyze_data',
+                                    'as': 'sslyze',
+                                    'cond': {
+                                        '$and': [
+                                            {'$eq': ['$$sslyze.latest', True]},
+                                            {'$or': [
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    25]},
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    587]},
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    465]}]},
+                                            {'$or': [
+                                                {'$eq': [
+                                                    '$$sslyze.sslv2', True]},
+                                                {'$eq': [
+                                                    '$$sslyze.sslv3', True]},
+                                                {'$eq': [
+                                                    '$$sslyze.any_3des',
+                                                    True]},
+                                                {'$eq': [
+                                                    '$$sslyze.any_rc4', True]}
+                                                    ]}]}
+                                             }}, []]}, False, True]}}},
+                {'$group':
+                    {'_id': '$agency.id',
+                     'earliest_scan_date': {'$min': '$scan_date'},
+                     'domain_count': {'$sum': 1},
+                     'live_domain_count':
+                        {'$sum': {'$cond': [
+                            {'$eq': ['$live', True]},
+                            1, 0]}},
+                     'live_valid_dmarc_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_dmarc', True]}]},
+                            1, 0]}},
+                     'live_dmarc_reject_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_dmarc', True]},
+                            {'$eq': ['$dmarc_policy', 'reject']}]},
+                            1, 0]}},
+                     'live_has_bod1801_dmarc_uri_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_dmarc', True]},
+                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]},
+                            1, 0]}},
+                     'live_valid_spf_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_spf', True]}]},
+                            1, 0]}},
+                     'live_missing_starttls_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$is_missing_starttls', True]}]},
+                            1, 0]}},
+                     'live_no_weak_crypto_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$has_weak_mail_crypto', False]}]},
+                            1, 0]}},
+                     'live_bod1801_dmarc_compliant_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_dmarc', True]},
+                            {'$eq': ['$dmarc_policy', 'reject']},
+                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]},
+                            1, 0]}},
+                     'live_bod1801_email_compliant_count':
+                        {'$sum': {'$cond': [{'$and': [
+                            {'$eq': ['$live', True]},
+                            {'$eq': ['$valid_dmarc', True]},
+                            {'$eq': ['$dmarc_policy', 'reject']},
+                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                            {'$eq': ['$is_missing_starttls', False]},
+                            {'$eq': ['$valid_spf', True]},
+                            {'$eq': ['$has_weak_mail_crypto', False]}]},
+                            1, 0]}}}},
+                {'$project':
+                    {'_id': 1,
+                     'earliest_scan_date': 1,
+                     'domain_count': 1,
+                     'live_domain_count': 1,
+                     'live_valid_dmarc_count': 1,
+                     'live_dmarc_reject_count': 1,
+                     'live_has_bod1801_dmarc_uri_count': 1,
+                     'live_valid_spf_count': 1,
+                     'live_missing_starttls_count': 1,
+                     'live_no_weak_crypto_count': 1,
+                     'live_bod1801_dmarc_compliant_count': 1,
+                     'live_bod1801_email_compliant_count': 1,
+                     'live_supports_starttls_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_missing_starttls_count']},
+                     'live_bod1801_dmarc_non_compliant_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_bod1801_dmarc_compliant_count']},
+                     'live_bod1801_email_non_compliant_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_bod1801_email_compliant_count']}}},
+                {'$sort': {'_id': 1}}
+                ], cursor={}))
 
-        # Latest Trustymail metrics for base domains and subdomains that support SMTP
-        self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains'] = [ i['domain'] for i in self.__scan_db.trustymail.find(
-                                                                                                            {'latest':True,
-                                                                                                             'agency.id': {'$in':cybex_orgs},
-                                                                                                             '$or': [{'is_base_domain':True},
-                                                                                                                     {'domain_supports_smtp':True}]},
-                                                                                                            {'_id':0, 'domain':1}) ]
+        # Latest Trustymail metrics for base domains and subdomains that
+        # support SMTP
+        self.__results[
+            'latest_cybex_trustymail_base_domains_and_smtp_subdomains'] = [
+                i['domain'] for i in self.__scan_db.trustymail.find(
+                    {'latest': True,
+                     'agency.id': {'$in': cybex_orgs},
+                     '$or': [
+                        {'is_base_domain': True},
+                        {'domain_supports_smtp': True}]},
+                    {'_id': 0, 'domain': 1})]
 
-        self.__results['trustymail_base_domains_and_smtp_subdomains'] = list(self.__scan_db.trustymail.aggregate([
-                    {'$match': {'latest':True, 'domain':{'$in':self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']}}},
-                    # Pull in data from sslyze_scan collection so weak crypto status can be determined
-                    {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
-                                 'foreignField':'domain', 'as':'sslyze_data'}},
-                    {'$project': {'agency.id':'$agency.id', 'live':'$live', 'valid_spf':'$valid_spf',
-                                  'valid_dmarc':'$valid_dmarc', 'valid_dmarc_base_domain':'$valid_dmarc_base_domain',
-                                  'dmarc_policy':'$dmarc_policy',
-                                  'has_bod1801_dmarc_rua_uri': {'$cond': [{'$eq': [{'$filter': {'input':'$aggregate_report_uris',
-                                                                                                'as': 'agg_report_uri',
-                                                                                                'cond': {'$eq': ['$$agg_report_uri.uri', BOD1801_DMARC_RUA_URI]}}}, []]}, False, True]},
-                                  'domain_supports_smtp':'$domain_supports_smtp',
-                                  'domain_supports_starttls':'$domain_supports_starttls',
-                                  'is_missing_starttls':{'$and': [{'$eq': ['$domain_supports_smtp', True]},
-                                                                  {'$eq': ['$domain_supports_starttls', False]}] },
-                                  # has_weak_mail_crypto projection can be simplified by
-                                  # changing $lookup above to use an uncorrelated subquery (Mongo 3.6 or later)
-                                  'has_weak_mail_crypto': {'$cond': [{'$eq': [{'$filter': {'input':'$sslyze_data',
-                                                                                           'as':'sslyze',
-                                                                                           'cond': {'$and': [{'$eq': ['$$sslyze.latest', True]},
-                                                                                                             {'$or': [ {'$eq': ['$$sslyze.scanned_port', 25]},
-                                                                                                                       {'$eq': ['$$sslyze.scanned_port', 587]},
-                                                                                                                       {'$eq': ['$$sslyze.scanned_port', 465]} ]},
-                                                                                                             {'$or': [ {'$eq': ['$$sslyze.sslv2', True]},
-                                                                                                                       {'$eq': ['$$sslyze.sslv3', True]},
-                                                                                                                       {'$eq': ['$$sslyze.any_3des', True]},
-                                                                                                                       {'$eq': ['$$sslyze.any_rc4', True]} ]}]}
-                                                                                            }}, []]}, False, True]} }},
-                    {'$group': {'_id': '$agency.id',
-                                'domain_count': {'$sum': 1},
-                                'live_domain_count': {'$sum': {'$cond': [ {'$eq': ['$live', True]},1,0] }},
-                                # live_valid_dmarc_count here means either you have your own valid DMARC record or your base domain does
-                                'live_valid_dmarc_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                         {'$or': [{'$eq': ['$valid_dmarc', True]},
-                                                                                                  {'$eq': ['$valid_dmarc_base_domain', True]}]
-                                                                                         }] },1,0] }},
-                                # once again, either you or your base domain have to have valid DMARC to get credit
-                                'live_dmarc_reject_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                          {'$or': [{'$eq': ['$valid_dmarc', True]},
-                                                                                                   {'$eq': ['$valid_dmarc_base_domain', True]}]},
-                                                                                          {'$eq': ['$dmarc_policy', 'reject']}] },1,0] }},
-                                # once again, either you or your base domain have to have valid DMARC to get credit
-                                'live_has_bod1801_dmarc_uri_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                   {'$or': [{'$eq': ['$valid_dmarc', True]},
-                                                                                                            {'$eq': ['$valid_dmarc_base_domain', True]}]},
-                                                                                                   {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}] },1,0] }},
-                                # Even though the BOD says SPF is required for base (2nd-level) domains, we are also measuring it for mail-sending hosts (in live_valid_spf_count); more info about this in CYHY-592
-                                'live_valid_spf_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                       {'$eq': ['$valid_spf', True]}] },1,0] }},
-                                'live_missing_starttls_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                              {'$eq': ['$is_missing_starttls', True]}] },1,0] }},
-                                'live_no_weak_crypto_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                            {'$eq': ['$has_weak_mail_crypto', False]}] },1,0] }},
-                                'live_bod1801_dmarc_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                     {'$or': [{'$eq': ['$valid_dmarc', True]},
-                                                                                                              {'$eq': ['$valid_dmarc_base_domain', True]}]},
-                                                                                                     {'$eq': ['$dmarc_policy', 'reject']},
-                                                                                                     {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}] },1,0] }},
-                                'live_bod1801_email_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$live', True]},
-                                                                                                     {'$or': [{'$eq': ['$valid_dmarc', True]},
-                                                                                                              {'$eq': ['$valid_dmarc_base_domain', True]}]},
-                                                                                                     {'$eq': ['$dmarc_policy', 'reject']},
-                                                                                                     {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                                                                                                     {'$eq': ['$is_missing_starttls', False]},
-                                                                                                     {'$eq': ['$valid_spf', True]},
-                                                                                                     {'$eq': ['$has_weak_mail_crypto', False]}] },1,0] }} }},
-                    {'$project': {'_id':1, 'domain_count':1, 'live_domain_count':1,
-                                  'live_valid_dmarc_count':1, 'live_dmarc_reject_count':1,
-                                  'live_has_bod1801_dmarc_uri_count':1,
-                                  'live_valid_spf_count':1, 'live_missing_starttls_count':1,
-                                  'live_no_weak_crypto_count':1,
-                                  'live_bod1801_dmarc_compliant_count':1, 'live_bod1801_email_compliant_count':1,
-                                  'live_supports_starttls_count': {'$subtract': ['$live_domain_count',
-                                                                                 '$live_missing_starttls_count']},
-                                  'live_bod1801_dmarc_non_compliant_count': {'$subtract': ['$live_domain_count',
-                                                                                           '$live_bod1801_dmarc_compliant_count']},
-                                  'live_bod1801_email_non_compliant_count': {'$subtract': ['$live_domain_count',
-                                                                                           '$live_bod1801_email_compliant_count']} }},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['trustymail_base_domains_and_smtp_subdomains'] = list(
+            self.__scan_db.trustymail.aggregate([
+                {'$match':
+                    {'latest': True,
+                     'domain':
+                        {'$in': self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']}}},
+                # Pull in data from sslyze_scan collection so weak crypto
+                # status can be determined
+                {'$lookup':
+                    {'from': 'sslyze_scan', 'localField': 'domain',
+                     'foreignField': 'domain', 'as': 'sslyze_data'}},
+                {'$project':
+                    {'agency.id': '$agency.id',
+                     'live': '$live',
+                     'valid_spf': '$valid_spf',
+                     'valid_dmarc': '$valid_dmarc',
+                     'valid_dmarc_base_domain': '$valid_dmarc_base_domain',
+                     'dmarc_policy': '$dmarc_policy',
+                     'has_bod1801_dmarc_rua_uri':
+                        {'$cond': [
+                            {'$eq': [
+                                {'$filter':
+                                    {'input': '$aggregate_report_uris',
+                                     'as': 'agg_report_uri',
+                                     'cond':
+                                        {'$eq': [
+                                            '$$agg_report_uri.uri',
+                                            BOD1801_DMARC_RUA_URI
+                                            ]}}
+                                 }, []]}, False, True]},
+                     'domain_supports_smtp':' $domain_supports_smtp',
+                     'domain_supports_starttls': '$domain_supports_starttls',
+                     'is_missing_starttls':
+                        {'$and': [
+                            {'$eq': ['$domain_supports_smtp', True]},
+                            {'$eq': ['$domain_supports_starttls', False]}]},
+                     # has_weak_mail_crypto projection can be simplified by
+                     # changing $lookup above to use an uncorrelated subquery
+                     # (Mongo 3.6 or later)
+                     'has_weak_mail_crypto':
+                        {'$cond': [
+                            {'$eq': [
+                                {'$filter':
+                                    {'input': '$sslyze_data',
+                                     'as': 'sslyze',
+                                     'cond':
+                                        {'$and': [
+                                            {'$eq': ['$$sslyze.latest', True]},
+                                            {'$or': [
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    25]},
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    587]},
+                                                {'$eq': [
+                                                    '$$sslyze.scanned_port',
+                                                    465]}]},
+                                            {'$or': [
+                                                {'$eq': [
+                                                    '$$sslyze.sslv2', True]},
+                                                {'$eq': [
+                                                    '$$sslyze.sslv3', True]},
+                                                {'$eq': [
+                                                    '$$sslyze.any_3des',
+                                                    True]},
+                                                {'$eq': [
+                                                    '$$sslyze.any_rc4', True]}
+                                                    ]}]}
+                                     }}, []]}, False, True]}}},
+                {'$group':
+                    {'_id': '$agency.id',
+                     'domain_count': {'$sum': 1},
+                     'live_domain_count':
+                        {'$sum': {'$cond': [
+                            {'$eq': ['$live', True]}, 1, 0]}},
+                     # live_valid_dmarc_count here means either you have your
+                     # own valid DMARC record or your base domain does
+                     'live_valid_dmarc_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]
+                                 }]}, 1, 0]}},
+                     # once again, either you or your base domain have to
+                     # have valid DMARC to get credit
+                     'live_dmarc_reject_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]},
+                                {'$eq': ['$dmarc_policy', 'reject']}]
+                             }, 1, 0]}},
+                     # once again, either you or your base domain have to
+                     # have valid DMARC to get credit
+                     'live_has_bod1801_dmarc_uri_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]},
+                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]
+                             }, 1, 0]}},
+                     # Even though the BOD says SPF is required for base
+                     # (2nd-level) domains, we are also measuring it for
+                     # mail-sending hosts (in live_valid_spf_count);
+                     # more info about this in CYHY-592
+                     'live_valid_spf_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$eq': ['$valid_spf', True]}]
+                             }, 1, 0]}},
+                     'live_missing_starttls_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$eq': ['$is_missing_starttls', True]}]
+                             }, 1, 0]}},
+                     'live_no_weak_crypto_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$eq': ['$has_weak_mail_crypto', False]}]
+                             }, 1, 0]}},
+                     'live_bod1801_dmarc_compliant_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]},
+                                {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]
+                             }, 1, 0]}},
+                     'live_bod1801_email_compliant_count':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]},
+                                {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                                {'$eq': ['$is_missing_starttls', False]},
+                                {'$eq': ['$valid_spf', True]},
+                                {'$eq': ['$has_weak_mail_crypto', False]}]
+                             }, 1, 0]}}}},
+                {'$project':
+                    {'_id': 1,
+                     'domain_count': 1,
+                     'live_domain_count': 1,
+                     'live_valid_dmarc_count': 1,
+                     'live_dmarc_reject_count': 1,
+                     'live_has_bod1801_dmarc_uri_count': 1,
+                     'live_valid_spf_count': 1,
+                     'live_missing_starttls_count': 1,
+                     'live_no_weak_crypto_count': 1,
+                     'live_bod1801_dmarc_compliant_count': 1,
+                     'live_bod1801_email_compliant_count': 1,
+                     'live_supports_starttls_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_missing_starttls_count']},
+                     'live_bod1801_dmarc_non_compliant_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_bod1801_dmarc_compliant_count']},
+                     'live_bod1801_email_non_compliant_count':
+                        {'$subtract': [
+                            '$live_domain_count',
+                            '$live_bod1801_email_compliant_count']}}},
+                {'$sort': {'_id': 1}}
+                ], cursor={}))
 
         # Trustymail DMARC summary Metrics (live base domains only)
-        self.__results['trustymail_dmarc_summary'] = list(self.__scan_db.trustymail.aggregate([
-                    {'$match': {'agency.id': {'$in':cybex_orgs}, 'live':True, 'is_base_domain': True}},
-                    {'$project': {'domain':'$domain',
-                                  'scan_date':'$scan_date',
-                                  'dmarc_policy':'$dmarc_policy',
-                                  'valid_dmarc':'$valid_dmarc',
-                                  'dmarc_record':'$dmarc_record',
-                                  # Filter aggregate_report_uris to search for BOD1801_DMARC_RUA_URI in the uri field, then
-                                  # check if the resulting array is empty (has_bod1801_dmarc_rua_uri = False), else it's True
-                                  'has_bod1801_dmarc_rua_uri': {'$cond': [{'$eq': [{'$filter': {'input':'$aggregate_report_uris',
-                                                                                                'as': 'agg_report_uri',
-                                                                                                'cond': {'$eq': ['$$agg_report_uri.uri', BOD1801_DMARC_RUA_URI]}}}, []]}, False, True]},
-                                  }},
-                    {'$group': {'_id': '$scan_date',
-                                'base_domain_count': {'$sum': 1},
-                                'dmarc_policy_none': {'$sum': {'$cond': [{'$and': [{'$eq': ['$dmarc_policy', 'none']},
-                                                                                   {'$eq': ['$valid_dmarc', True]}] },1,0] }},
-                                'dmarc_policy_quarantine': {'$sum': {'$cond': [{'$and': [{'$eq': ['$dmarc_policy', 'quarantine']},
-                                                                                         {'$eq': ['$valid_dmarc', True]}] },1,0] }},
-                                'dmarc_policy_reject': {'$sum': {'$cond': [{'$and': [{'$eq': ['$dmarc_policy', 'reject']},
-                                                                                     {'$eq': ['$valid_dmarc', True]}] },1,0] }},
-                                'dmarc_correct_rua': {'$sum': {'$cond': [{'$and': [{'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                                                                                   {'$eq': ['$valid_dmarc', True]}] },1,0] }},
-                                'invalid_dmarc_record': {'$sum': {'$cond': [{'$and': [{'$eq': ['$dmarc_record', True]},
-                                                                                     {'$eq': ['$valid_dmarc', False]}] },1,0] }},
-                                'no_dmarc_record': {'$sum': {'$cond': [{'$eq': ['$dmarc_record', False]},1,0] }}}},
-                    {'$sort': {'_id':-1}},      # Reverse sort + limit = most-recent n results
-                    {'$limit': TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT}
-                    ], cursor={}))
+        self.__results['trustymail_dmarc_summary'] = list(
+            self.__scan_db.trustymail.aggregate([
+                {'$match':
+                    {'agency.id': {'$in': cybex_orgs},
+                     'live': True,
+                     'is_base_domain': True}},
+                {'$project':
+                    {'domain': '$domain',
+                     'scan_date': '$scan_date',
+                     'dmarc_policy': '$dmarc_policy',
+                     'valid_dmarc': '$valid_dmarc',
+                     'dmarc_record': '$dmarc_record',
+                     # Filter aggregate_report_uris to search for
+                     # BOD1801_DMARC_RUA_URI in the uri field, then
+                     # check if the resulting array is empty
+                     # (has_bod1801_dmarc_rua_uri == False), else it's True
+                     'has_bod1801_dmarc_rua_uri':
+                        {'$cond': [
+                            {'$eq': [
+                                {'$filter':
+                                    {'input': '$aggregate_report_uris',
+                                     'as': 'agg_report_uri',
+                                     'cond':
+                                        {'$eq': [
+                                            '$$agg_report_uri.uri',
+                                            BOD1801_DMARC_RUA_URI
+                                            ]}}
+                                 }, []]}, False, True]},
+                     }},
+                {'$group':
+                    {'_id': '$scan_date',
+                     'base_domain_count': {'$sum': 1},
+                     'dmarc_policy_none':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$dmarc_policy', 'none']},
+                                {'$eq': ['$valid_dmarc', True]}]
+                             }, 1, 0]}},
+                     'dmarc_policy_quarantine':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$dmarc_policy', 'quarantine']},
+                                {'$eq': ['$valid_dmarc', True]}]
+                             }, 1, 0]}},
+                     'dmarc_policy_reject':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$valid_dmarc', True]}]
+                             }, 1, 0]}},
+                     'dmarc_correct_rua':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                                {'$eq': ['$valid_dmarc', True]}]
+                             }, 1, 0]}},
+                     'invalid_dmarc_record':
+                        {'$sum': {'$cond': [
+                            {'$and': [
+                                {'$eq': ['$dmarc_record', True]},
+                                {'$eq': ['$valid_dmarc', False]}]
+                             }, 1, 0]}},
+                     'no_dmarc_record':
+                        {'$sum': {'$cond': [
+                            {'$eq': ['$dmarc_record', False]}, 1, 0]}}}},
+                # Reverse sort + limit = most-recent n results
+                {'$sort': {'_id': -1}},
+                {'$limit': TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT}
+                ], cursor={}))
 
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
