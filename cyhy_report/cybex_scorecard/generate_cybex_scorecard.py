@@ -2123,6 +2123,7 @@ class ScorecardGenerator(object):
         result['overall_bod_orgs'] = sorted(self.__scorecard_doc['scores'],
                                             key=lambda x: (
             x['vuln-scan']['metrics'].get('open_overdue_criticals'),
+            x['vuln-scan']['metrics'].get('open_criticals_more_than_15_days'),
             x['vuln-scan']['metrics'].get('open_criticals'),
             x['vuln-scan']['metrics'].get('open_overdue_highs'),
             x['vuln-scan']['metrics'].get('open_highs'),
