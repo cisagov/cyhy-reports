@@ -1118,6 +1118,7 @@ class ScorecardGenerator(object):
                                                 'open_criticals_15-30_days':0,
                                                 'open_criticals_30-90_days':0,
                                                 'open_criticals_more_than_90_days':0,
+                                                'open_criticals_more_than_15_days':0, # Temporary
                                                 'open_overdue_criticals': 0,
                                                 'open_highs':0,
                                                 'open_highs_on_previous_scorecard':0,
@@ -1391,6 +1392,13 @@ class ScorecardGenerator(object):
                     score['vuln-scan']['metrics']['open_criticals'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_criticals_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard']
 
+                    # Temporary field, only needed until BOD 19-02 is published
+                    vuln_scan_metrics = score['vuln-scan']['metrics']
+                    vuln_scan_metrics['open_criticals_more_than_15_days'] = \
+                        vuln_scan_metrics['open_criticals_15-30_days'] + \
+                        vuln_scan_metrics['open_criticals_30-90_days'] + \
+                        vuln_scan_metrics['open_criticals_more_than_90_days']
+
                     score['vuln-scan']['metrics']['open_highs'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_on_previous_scorecard']
 
@@ -1423,7 +1431,7 @@ class ScorecardGenerator(object):
             self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
 
             # initialize vuln-scan metrics to 0
-            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
+            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_criticals_more_than_15_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
 
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
@@ -1446,6 +1454,7 @@ class ScorecardGenerator(object):
                                                    ('vuln-scan', 'metrics', 'open_criticals_15-30_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_criticals_more_than_90_days'),
+                                                   ('vuln-scan', 'metrics', 'open_criticals_more_than_15_days'),
                                                    ('vuln-scan', 'metrics', 'open_overdue_criticals'),
                                                    ('vuln-scan', 'metrics', 'open_highs'),
                                                    ('vuln-scan', 'metrics', 'open_highs_on_previous_scorecard'),
@@ -1795,7 +1804,7 @@ class ScorecardGenerator(object):
         self.__generate_ed1901_results_by_agency_attachment()
         self.__generate_email_security_summary_attachment()
         self.__generate_bod_results_by_agency_attachment()
-        self.__generate_bod1902_results_by_agency_attachment()
+        self.__generate_bod1501_results_by_agency_attachment()
         self.__generate_web_security_results_by_agency_attachment()
         self.__generate_email_security_results_by_agency_attachment()
 
@@ -1833,6 +1842,7 @@ class ScorecardGenerator(object):
     def __generate_bod_results_by_agency_attachment(self):
         header_fields = ('acronym', 'name', 'cfo_act',
                          'active_critical_vulns',
+                         'active_critical_vulns_15+_days',
                          'overdue_critical_vulns_{}+_days'.format(
                             DAYS_UNTIL_OVERDUE_CRITICAL),
                          'active_high_vulns',
@@ -1842,6 +1852,7 @@ class ScorecardGenerator(object):
                          'bod_18-01_email_compliant_%')
         data_fields = ('acronym', 'name', 'cfo_act_org',
                        'open_criticals',
+                       'open_criticals_more_than_15_days',
                        'open_overdue_criticals',
                        'open_highs',
                        'open_overdue_highs',
@@ -1857,6 +1868,7 @@ class ScorecardGenerator(object):
             for org in copy.deepcopy(self.__scorecard_doc['scores']):
                 if org['vuln-scan']['scanned']:
                     for vuln_scan_key in ('open_criticals',
+                                          'open_criticals_more_than_15_days',
                                           'open_overdue_criticals',
                                           'open_highs',
                                           'open_overdue_highs'):
@@ -1889,7 +1901,7 @@ class ScorecardGenerator(object):
 
                 data_writer.writerow(org)
 
-    def __generate_bod1902_results_by_agency_attachment(self):
+    def __generate_bod1501_results_by_agency_attachment(self):
         prev_scorecard_date_txt = parser.parse(
                                     self.__previous_scorecard_data[
                                       'generated_time']).strftime('%Y-%m-%d')
