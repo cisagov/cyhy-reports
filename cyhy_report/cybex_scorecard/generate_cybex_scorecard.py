@@ -62,7 +62,7 @@ HIGH_SEVERITY = 3
 
 # Number of days a vulnerability can be active until it's considered
 # "overdue" to be mitigated
-DAYS_UNTIL_OVERDUE_CRITICAL = 15
+DAYS_UNTIL_OVERDUE_CRITICAL = 30
 DAYS_UNTIL_OVERDUE_HIGH = 30
 
 # Do not include the orgs below (based on _id) in the Scorecard

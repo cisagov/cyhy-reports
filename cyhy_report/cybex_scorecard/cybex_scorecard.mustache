@@ -357,7 +357,7 @@ opacity=0.04
 \label{sec:executive-summary}
 {\textcolor{cisa-blue}{\CISAHeadingOne{Executive Summary}}} \\
 
-This weekly scorecard, created by the National Cybersecurity Assessments and Technical Services (NCATS) team at the Cybersecurity and Infrastructure Security Agency (\href{https://cisa.gov/}{\underline{CISA}}), provides summary metrics for Binding Operational Directive (BOD) \href{https://cyber.dhs.gov/bod/19-02/}{\underline{19-02}} (``Critical and High Vulnerability Mitigation") and \href{https://cyber.dhs.gov/bod/18-01/}{\underline{18-01}} (``Enhance Email and Web Security"), as well as newly-added certificate counts per Emergency Directive (ED) \href{https://cyber.dhs.gov/ed/19-01/}{\underline{19-01}}.\\
+This weekly scorecard, created by the National Cybersecurity Assessments and Technical Services (NCATS) team at the Cybersecurity and Infrastructure Security Agency (\href{https://cisa.gov/}{\underline{CISA}}), provides summary metrics for Binding Operational Directive (BOD) \href{https://cyber.dhs.gov/bod/15-01/}{\underline{15-01}} (``Critical Vulnerability Mitigation") and \href{https://cyber.dhs.gov/bod/18-01/}{\underline{18-01}} (``Enhance Email and Web Security"), as well as newly-added certificate counts per Emergency Directive (ED) \href{https://cyber.dhs.gov/ed/19-01/}{\underline{19-01}}.\\
 
 Notes:
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
@@ -379,7 +379,7 @@ If there are questions, comments, or concerns about this scorecard, please conta
 {\textcolor{cisa-dark-gray}{\CISAHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
   \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_criticals_overdue>> days.
-  \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_highs_overdue>> days.
+  \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated as quickly as possible.
   \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known HTTP-responsive hosts.
   \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" and \\ ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a Valid SPF record, and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known Live Domains or SMTP Subdomains.
 \end{itemize}
@@ -391,7 +391,7 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 \setlength{\tabcolsep}{6pt}
 \begin{longtable}{>{\raggedright}p{3.5in}||rr|rr||rr}
   \toprule
-    & \multicolumn{4}{c||}{\textbf{BOD 19-02}} &
+    & \multicolumn{4}{c||}{\textbf{BOD 15-01}} &
       \multicolumn{2}{c}{\textbf{BOD 18-01}}\\
     & \multicolumn{4}{c||}{\textbf{Active Vulnerabilities}} &
       \multicolumn{2}{c}{\textbf{Email and Web Security}}\\
@@ -447,11 +447,11 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 \newpage
 \begin{landscape}
 \BgThispage
-\hiddensection{BOD 19-02 Status}
-\label{sec:bod-19-02-status}
+\hiddensection{BOD 15-01 Status}
+\label{sec:bod-15-01-status}
 \begin{center}
 {\textcolor{cisa-blue}{\CISAHeadingOne{<<&scorecard_name>> Cyber Exposure Scorecard\ \textemdash \ \usvardate\formatdate<<&title_date_tex>>\\
-BOD 19-02 Status}}}
+BOD 15-01 Status}}}
 \end{center}
 
 \vspace*{-7mm}
@@ -516,14 +516,14 @@ BOD 19-02 Status}}}
 
 \newpage
 \begin{landscape}
-\hiddensection{BOD 19-02 Results by Agency}
-\label{sec:bod-19-02-results-by-agency}
-{\textcolor{cisa-blue}{\CISAHeadingOne{BOD 19-02 Results by Agency}}}
+\hiddensection{BOD 15-01 Results by Agency}
+\label{sec:bod-15-01-results-by-agency}
+{\textcolor{cisa-blue}{\CISAHeadingOne{BOD 15-01 Results by Agency}}}
 
 {\textcolor{cisa-dark-gray}{\CISAHeadingTwo{Field Descriptions}}}
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
   \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_criticals_overdue>> days.
-  \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_highs_overdue>> days.
+  \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated as quickly as possible.
 \end{itemize}
 
 \vspace*{3mm}
@@ -545,7 +545,7 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
       \textbf{\monthdayonly\formatdate<<&title_date_tex>>} &
       \textbf{\monthdayonly\formatdate<<&previous_scorecard_date_tex>>} &
       \textbf{Days} & \textbf{Days} & \textbf{Days} & \textbf{Days} \\
-    \midrule \endhead\label{tab:bod-19-02-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
+    \midrule \endhead\label{tab:bod-15-01-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals>>} &
       \textbf{<<#federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\npaddplus \numprint{<<&federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>}<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>><<^federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>\ \ \ 0<</federal_totals.vuln-scan.metrics.open_criticals_delta_since_last_scorecard>>} &
       \textbf{<<&federal_totals.vuln-scan.metrics.open_criticals_7-15_days>>} &
@@ -1019,7 +1019,7 @@ The table below is sorted in descending order on the ``New Certificates (Past 7 
 If your PDF viewer supports embedded attachments, you will see a paperclip icon below for each attached file.
 \begin{itemize}[topsep=-6pt, itemsep=0pt]
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-bod-results-by-agency.csv]{cybex-bod-results-by-agency.csv} cybex-bod-results-by-agency.csv : Data from the \hyperref[sec:overall-bod-results-by-agency]{\underline{Overall BOD Results by Agency}} table
-  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-vuln-results-by-agency.csv]{cybex-vuln-results-by-agency.csv} cybex-vuln-results-by-agency.csv : Data from the \hyperref[sec:bod-19-02-results-by-agency]{\underline{BOD 19-02 Results by Agency}} table
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-vuln-results-by-agency.csv]{cybex-vuln-results-by-agency.csv} cybex-vuln-results-by-agency.csv : Data from the \hyperref[sec:bod-15-01-results-by-agency]{\underline{BOD 15-01 Results by Agency}} table
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-web-security-results-by-agency.csv]{cybex-web-security-results-by-agency.csv} cybex-web-security-results-by-agency.csv : Data from the \hyperref[sec:web-security-results-by-agency]{\underline{Web Security Results by Agency}} table
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-email-security-summary.csv]{cybex-email-security-summary.csv} cybex-email-security-summary.csv : Data from the \hyperref[sec:email-security-summary-metrics]{\underline{Email Security Summary Metrics}} table
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=cybex-email-security-results-by-agency.csv]{cybex-email-security-results-by-agency.csv} cybex-email-security-results-by-agency.csv : Data from the \hyperref[sec:email-security-results-by-agency]{\underline{Email Security Results by Agency}} table
