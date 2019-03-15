@@ -1846,7 +1846,7 @@ class ScorecardGenerator(object):
                          'overdue_critical_vulns_{}+_days'.format(
                             DAYS_UNTIL_OVERDUE_CRITICAL),
                          'active_high_vulns',
-                         'overdue_high_vulns_{}+_days'.format(
+                         'active_high_vulns_{}+_days'.format(
                             DAYS_UNTIL_OVERDUE_HIGH),
                          'bod_18-01_web_compliant_%',
                          'bod_18-01_email_compliant_%')
