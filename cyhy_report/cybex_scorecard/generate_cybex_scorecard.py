@@ -2088,7 +2088,7 @@ class ScorecardGenerator(object):
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_supports_starttls_pct_int'],
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_valid_spf_pct_int'],
                              self.__results['federal_totals']['trustymail']['base_domains_and_smtp_subdomains']['live_no_weak_crypto_pct_int']],
-            label_list=['Valid\nDMARC', 'DMARC\np=reject', 'Reports DMARC\nto CISA', 'Supports\nSTARTTLS', 'Valid\nSPF', 'No SSLv2/v3,\n3DES,RC4'],
+            label_list=['Valid\nDMARC', 'DMARC policy\nof reject', 'Reports DMARC\nto CISA', 'Supports\nSTARTTLS', 'Valid\nSPF', 'No SSLv2/v3,\n3DES,RC4'],
             fill_color=graphs.DARK_BLUE,
             title='BOD 18-01 Email Components')
         bod_1801_email_bar.plot(filename='figure_bod1801_email_components')
