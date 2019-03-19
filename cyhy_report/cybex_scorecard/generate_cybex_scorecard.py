@@ -1286,7 +1286,8 @@ class ScorecardGenerator(object):
                             if score['trustymail'][trustymail_result_set][score_percent] == 1.0:
                                 score['trustymail'][trustymail_result_set][perfect_flag] = True
 
-                        # Set flag for DMARC p=reject adoption (None, Some, All)
+                        # Set flag for DMARC policy of reject adoption
+                        # (None, Some, All)
                         if trustymail_result['live_dmarc_reject_count'] == 0:
                             score['trustymail'][trustymail_result_set]['dmarc_reject_none'] = True
                             # Special case: Only do this for base_domains_and_smtp_subdomains
@@ -1863,7 +1864,7 @@ class ScorecardGenerator(object):
                 header_row.append(summary_item['_id'].strftime('%Y-%m-%d'))
             data_writer.writerow(header_row)
             # write remaining CSV data
-            for (row_title, summary_field) in [('p=none', 'dmarc_policy_none'), ('p=quarantine', 'dmarc_policy_quarantine'), ('p=reject', 'dmarc_policy_reject'), ('reports_dmarc_to_cisa', 'dmarc_correct_rua'), ('invalid_dmarc_record', 'invalid_dmarc_record'), ('no_dmarc_record', 'no_dmarc_record'), ('domains_tested', 'base_domain_count')]:
+            for (row_title, summary_field) in [('p=none', 'dmarc_policy_none'), ('p=quarantine', 'dmarc_policy_quarantine'), ('policy_of_reject', 'dmarc_policy_reject'), ('reports_dmarc_to_cisa', 'dmarc_correct_rua'), ('invalid_dmarc_record', 'invalid_dmarc_record'), ('no_dmarc_record', 'no_dmarc_record'), ('domains_tested', 'base_domain_count')]:
                 data_row = [row_title]
                 for summary_item in trustymail_dmarc_summary:
                     data_row.append(summary_item[summary_field])
@@ -2027,7 +2028,7 @@ class ScorecardGenerator(object):
                 data_writer.writerow(org)
 
     def __generate_email_security_results_by_agency_attachment(self):
-        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_reject', 'dmarc_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'valid_spf_record', 'valid_spf_record_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
+        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_policy_of_reject', 'dmarc_policy_of_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'valid_spf_record', 'valid_spf_record_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
         data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_valid_spf_count', 'live_valid_spf_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct')
         with open(EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
