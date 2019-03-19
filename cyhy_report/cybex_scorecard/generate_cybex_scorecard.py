@@ -450,6 +450,8 @@ class ScorecardGenerator(object):
                      'valid_spf': '$valid_spf',
                      'valid_dmarc': '$valid_dmarc',
                      'dmarc_policy': '$dmarc_policy',
+                     'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
+                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
                      'has_bod1801_dmarc_rua_uri':
                         {'$cond': [
                             {'$eq': [
@@ -519,7 +521,9 @@ class ScorecardGenerator(object):
                         {'$sum': {'$cond': [{'$and': [
                             {'$eq': ['$live', True]},
                             {'$eq': ['$valid_dmarc', True]},
-                            {'$eq': ['$dmarc_policy', 'reject']}]},
+                            {'$eq': ['$dmarc_policy', 'reject']},
+                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                            {'$eq': ['$dmarc_policy_percentage', 100]}]},
                             1, 0]}},
                      'live_has_bod1801_dmarc_uri_count':
                         {'$sum': {'$cond': [{'$and': [
@@ -547,6 +551,8 @@ class ScorecardGenerator(object):
                             {'$eq': ['$live', True]},
                             {'$eq': ['$valid_dmarc', True]},
                             {'$eq': ['$dmarc_policy', 'reject']},
+                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                            {'$eq': ['$dmarc_policy_percentage', 100]},
                             {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]},
                             1, 0]}},
                      'live_bod1801_email_compliant_count':
@@ -554,6 +560,8 @@ class ScorecardGenerator(object):
                             {'$eq': ['$live', True]},
                             {'$eq': ['$valid_dmarc', True]},
                             {'$eq': ['$dmarc_policy', 'reject']},
+                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                            {'$eq': ['$dmarc_policy_percentage', 100]},
                             {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
                             {'$eq': ['$is_missing_starttls', False]},
                             {'$eq': ['$valid_spf', True]},
@@ -617,6 +625,8 @@ class ScorecardGenerator(object):
                      'valid_dmarc': '$valid_dmarc',
                      'valid_dmarc_base_domain': '$valid_dmarc_base_domain',
                      'dmarc_policy': '$dmarc_policy',
+                     'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
+                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
                      'has_bod1801_dmarc_rua_uri':
                         {'$cond': [
                             {'$eq': [
@@ -696,7 +706,9 @@ class ScorecardGenerator(object):
                                     {'$eq': ['$valid_dmarc', True]},
                                     {'$eq': ['$valid_dmarc_base_domain',
                                              True]}]},
-                                {'$eq': ['$dmarc_policy', 'reject']}]
+                                {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                {'$eq': ['$dmarc_policy_percentage', 100]}]
                              }, 1, 0]}},
                      # once again, either you or your base domain have to
                      # have valid DMARC to get credit
@@ -741,6 +753,8 @@ class ScorecardGenerator(object):
                                     {'$eq': ['$valid_dmarc_base_domain',
                                              True]}]},
                                 {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                {'$eq': ['$dmarc_policy_percentage', 100]},
                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]
                              }, 1, 0]}},
                      'live_bod1801_email_compliant_count':
@@ -752,6 +766,8 @@ class ScorecardGenerator(object):
                                     {'$eq': ['$valid_dmarc_base_domain',
                                              True]}]},
                                 {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                {'$eq': ['$dmarc_policy_percentage', 100]},
                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
                                 {'$eq': ['$is_missing_starttls', False]},
                                 {'$eq': ['$valid_spf', True]},
@@ -795,6 +811,18 @@ class ScorecardGenerator(object):
                     {'domain': '$domain',
                      'scan_date': '$scan_date',
                      'dmarc_policy': '$dmarc_policy',
+                     # Since dmarc_subdomain_policy was added to our data
+                     # recently (https://github.com/cisagov/saver/pull/39)
+                     # and we don't have historical data, we default its value
+                     # to 'reject' when it doesn't exist in the data. This
+                     # gives results closest to what we had prior to adding
+                     # dmarc_subdomain_policy.
+                     # The $ifNull expression below can be removed in
+                     # 9 weeks when we have enough historical data
+                     # containing this field.
+                     'dmarc_subdomain_policy': {'$ifNull': [
+                        '$dmarc_subdomain_policy', 'reject']},
+                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
                      'valid_dmarc': '$valid_dmarc',
                      'dmarc_record': '$dmarc_record',
                      # Filter aggregate_report_uris to search for
@@ -833,7 +861,9 @@ class ScorecardGenerator(object):
                         {'$sum': {'$cond': [
                             {'$and': [
                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$valid_dmarc', True]}]
+                                {'$eq': ['$valid_dmarc', True]},
+                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                {'$eq': ['$dmarc_policy_percentage', 100]}]
                              }, 1, 0]}},
                      'dmarc_correct_rua':
                         {'$sum': {'$cond': [
