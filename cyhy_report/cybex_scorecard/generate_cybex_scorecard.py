@@ -1545,7 +1545,7 @@ class ScorecardGenerator(object):
 
             # Calculate open_highs_delta_since_last_scorecard
             if self.__results[total_id]['vuln-scan']['metrics'].get(
-              'open_highs_delta_since_last_scorecard'):
+              'open_highs_on_previous_scorecard'):
                 self.__results[total_id]['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = self.__results[total_id]['vuln-scan']['metrics']['open_highs'] - self.__results[total_id]['vuln-scan']['metrics']['open_highs_on_previous_scorecard']
             else:
                 self.__results[total_id]['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = self.__results[total_id]['vuln-scan']['metrics']['open_highs']
