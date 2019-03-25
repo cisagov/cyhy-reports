@@ -990,17 +990,16 @@ class ScorecardGenerator(object):
 
         return {d['_id'].lower(): d['agency']['id'] for d in domains}
 
-    def __accumulate_federal_cert_totals(self, results, certificate,
+    def __accumulate_federal_cert_totals(self, certificate,
                                          field_to_accumulate):
-        results['federal_totals'][field_to_accumulate] += 1
+        self.__results['federal_totals']['cert-scan'][field_to_accumulate] += 1
 
-        if certificate['cfo_act_org'] == True:
-            results['cfo_totals'][field_to_accumulate] += 1
+        if certificate['cfo_act_org'] is True:
+            self.__results['cfo_totals']['cert-scan'][field_to_accumulate] += 1
 
-        if certificate['non_cfo_act_org'] == True:
-            results['non_cfo_totals'][field_to_accumulate] += 1
-
-        return results
+        if certificate['non_cfo_act_org'] is True:
+            self.__results['non_cfo_totals']['cert-scan'][
+                field_to_accumulate] += 1
 
     def __create_cert_summary_by_org(self, certificates, current_fy_start):
         '''
@@ -1018,6 +1017,18 @@ class ScorecardGenerator(object):
                            'certs_issued_past_30_days_count',
                            'certs_issued_past_7_days_count']:
                            results[org][metric] = 0
+
+        # Initialize federal totals (used for all metrics, not just cert-scan)
+        for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
+            self.__results[total_id] = dict()
+
+            # initialize cert-scan metrics to 0
+            self.__results[total_id]['cert-scan'] = {
+                'unexpired_certs_count': 0,
+                'certs_issued_current_fy_count': 0,
+                'certs_issued_past_30_days_count': 0,
+                'certs_issued_past_7_days_count': 0
+            }
 
         for cert in certificates:
             cert['cfo_act_org'] = False
@@ -1043,25 +1054,29 @@ class ScorecardGenerator(object):
             if cert['not_after'] > self.__generated_time:
                 for org in orgs_owning_subjects:
                     results[org]['unexpired_certs_count'] += 1
-                results = self.__accumulate_federal_cert_totals(results, cert, 'unexpired_certs_count')
+                self.__accumulate_federal_cert_totals(
+                    cert, 'unexpired_certs_count')
 
             # Was cert issued in this fiscal year?
             if cert['sct_or_not_before'] > current_fy_start:
                 for org in orgs_owning_subjects:
                     results[org]['certs_issued_current_fy_count'] += 1
-                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_current_fy_count')
+                self.__accumulate_federal_cert_totals(
+                    cert, 'certs_issued_current_fy_count')
 
             # Was cert issued in the past 30 days?
             if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=30):
                 for org in orgs_owning_subjects:
                     results[org]['certs_issued_past_30_days_count'] += 1
-                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_30_days_count')
+                self.__accumulate_federal_cert_totals(
+                    cert, 'certs_issued_past_30_days_count')
 
             # Was cert issued in the past 7 days?
             if cert['sct_or_not_before'] > self.__generated_time - timedelta(days=7):
                 for org in orgs_owning_subjects:
                     results[org]['certs_issued_past_7_days_count'] += 1
-                results = self.__accumulate_federal_cert_totals(results, cert, 'certs_issued_past_7_days_count')
+                self.__accumulate_federal_cert_totals(
+                    cert, 'certs_issued_past_7_days_count')
 
         return results
 
@@ -1456,11 +1471,6 @@ class ScorecardGenerator(object):
     def __calculate_federal_totals(self):
         # Build Federal/CFO Act/Non-CFO Act totals
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
-            self.__results[total_id] = dict()
-
-            # Copy previously-calculated cert-scan totals
-            self.__results[total_id]['cert-scan'] = self.__results['cert-scan'][total_id]
-
             # initialize vuln-scan metrics to 0
             self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_criticals_more_than_15_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
 
