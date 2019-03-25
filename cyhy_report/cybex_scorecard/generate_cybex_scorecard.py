@@ -1040,11 +1040,19 @@ class ScorecardGenerator(object):
                 if org_id:
                     orgs_owning_subjects.add(org_id)
 
-                # Reminder: It is possible for a cert to contain subjects for
-                # *BOTH* CFO Act and Non-CFO Act orgs
-                #
-                # Assumption: Every org in this Scorecard is a Federal org and
-                # each one is either a "CFO Act" org or a "Non-CFO Act" org
+            # Reminder: It is possible for a cert to contain subjects for
+            # *BOTH* CFO Act and Non-CFO Act orgs. This explains why
+            # the total number of Federal certs can be less than the sum of
+            # CFO Act and Non-CFO Act total certs.
+            #
+            # It is also possible for a cert to contain subjects for
+            # multiple CFO Act or multiple Non-CFO Act orgs. This explains why
+            # the total number of CFO Act/Non-CFO Act certs can be less than
+            # the sum of certs for the agencies in those groups.
+            #
+            # Assumption: Every org in this Scorecard is a Federal org and
+            # each one is either a "CFO Act" org or a "Non-CFO Act" org
+            for org_id in orgs_owning_subjects:
                 if org_id in self.__cfo_act_orgs:
                     cert['cfo_act_org'] = True
                 else:
