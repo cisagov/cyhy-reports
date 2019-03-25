@@ -994,10 +994,10 @@ class ScorecardGenerator(object):
                                          field_to_accumulate):
         self.__results['federal_totals']['cert-scan'][field_to_accumulate] += 1
 
-        if certificate['cfo_act_org'] is True:
+        if certificate['cfo_act_org']:
             self.__results['cfo_totals']['cert-scan'][field_to_accumulate] += 1
 
-        if certificate['non_cfo_act_org'] is True:
+        if certificate['non_cfo_act_org']:
             self.__results['non_cfo_totals']['cert-scan'][
                 field_to_accumulate] += 1
 
