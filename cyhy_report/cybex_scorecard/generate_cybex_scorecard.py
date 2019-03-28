@@ -576,6 +576,10 @@ class ScorecardGenerator(object):
                      'live_dmarc_reject_count': 1,
                      'live_has_bod1801_dmarc_uri_count': 1,
                      'live_valid_spf_count': 1,
+                     # For base domains, live_spf_covered_count is the same
+                     # thing as live_valid_spf_count. It is included here for
+                     # consistency in processing the query results.
+                     'live_spf_covered_count': '$live_valid_spf_count',
                      'live_missing_starttls_count': 1,
                      'live_no_weak_crypto_count': 1,
                      'live_bod1801_dmarc_compliant_count': 1,
@@ -621,6 +625,8 @@ class ScorecardGenerator(object):
                 {'$project':
                     {'agency.id': '$agency.id',
                      'live': '$live',
+                     'is_base_domain': '$is_base_domain',
+                     'spf_record': '$spf_record',
                      'valid_spf': '$valid_spf',
                      'valid_dmarc': '$valid_dmarc',
                      'valid_dmarc_base_domain': '$valid_dmarc_base_domain',
@@ -732,6 +738,26 @@ class ScorecardGenerator(object):
                                 {'$eq': ['$live', True]},
                                 {'$eq': ['$valid_spf', True]}]
                              }, 1, 0]}},
+                     # live_spf_covered_count was added with CYHY-754 to give
+                     # credit for non-base domains without SPF records that
+                     # are "covered" by a DMARC policy of reject
+                     'live_spf_covered_count':
+                        {'$sum': {'$cond': [{'$or': [
+                            {'$and': [
+                                {'$eq': ['$live', True]},
+                                {'$eq': ['$valid_spf', True]}]},
+                            {'$and': [
+                                {'$eq': ['$is_base_domain', False]},
+                                {'$eq': ['$live', True]},
+                                {'$eq': ['$spf_record', False]},
+                                {'$or': [
+                                    {'$eq': ['$valid_dmarc', True]},
+                                    {'$eq': ['$valid_dmarc_base_domain',
+                                             True]}]},
+                                {'$eq': ['$dmarc_policy', 'reject']},
+                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                {'$eq': ['$dmarc_policy_percentage', 100]}]}]},
+                            1, 0]}},
                      'live_missing_starttls_count':
                         {'$sum': {'$cond': [
                             {'$and': [
@@ -770,7 +796,21 @@ class ScorecardGenerator(object):
                                 {'$eq': ['$dmarc_policy_percentage', 100]},
                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
                                 {'$eq': ['$is_missing_starttls', False]},
-                                {'$eq': ['$valid_spf', True]},
+                                {'$or': [
+                                    {'$eq': ['$valid_spf', True]},
+                                    {'$and': [
+                                        {'$eq': ['$is_base_domain', False]},
+                                        {'$eq': ['$spf_record', False]},
+                                        {'$or': [
+                                            {'$eq': ['$valid_dmarc', True]},
+                                            {'$eq': [
+                                                '$valid_dmarc_base_domain',
+                                                True]}]},
+                                        {'$eq': ['$dmarc_policy', 'reject']},
+                                        {'$eq': ['$dmarc_subdomain_policy',
+                                                 'reject']},
+                                        {'$eq': ['$dmarc_policy_percentage',
+                                                 100]}]}]},
                                 {'$eq': ['$has_weak_mail_crypto', False]}]
                              }, 1, 0]}}}},
                 {'$project':
@@ -781,6 +821,7 @@ class ScorecardGenerator(object):
                      'live_dmarc_reject_count': 1,
                      'live_has_bod1801_dmarc_uri_count': 1,
                      'live_valid_spf_count': 1,
+                     'live_spf_covered_count': 1,
                      'live_missing_starttls_count': 1,
                      'live_no_weak_crypto_count': 1,
                      'live_bod1801_dmarc_compliant_count': 1,
