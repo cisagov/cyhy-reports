@@ -1232,7 +1232,9 @@ class ScorecardGenerator(object):
                                                       'live_missing_starttls_count':0,
                                                       'live_valid_spf_count':0,
                                                       'live_valid_spf_pct':0.0, 'live_valid_spf_pct_str':'0.0%',
-                                                      'all_live_spf_valid':False,
+                                                      'live_spf_covered_count':0,
+                                                      'live_spf_covered_pct':0.0, 'live_spf_covered_pct_str':'0.0%',
+                                                      'all_live_spf_covered':False,
                                                       'live_valid_dmarc_count':0,
                                                       'live_valid_dmarc_pct':0.0, 'live_valid_dmarc_pct_str':'0.0%',
                                                       'all_live_dmarc_valid':False,
@@ -1261,7 +1263,9 @@ class ScorecardGenerator(object):
                                                       'live_missing_starttls_count':0,
                                                       'live_valid_spf_count':0,
                                                       'live_valid_spf_pct':0.0, 'live_valid_spf_pct_str':'0.0%',
-                                                      'all_live_spf_valid':False,
+                                                      'live_spf_covered_count':0,
+                                                      'live_spf_covered_pct':0.0, 'live_spf_covered_pct_str':'0.0%',
+                                                      'all_live_spf_covered':False,
                                                       'live_valid_dmarc_count':0,
                                                       'live_valid_dmarc_pct':0.0, 'live_valid_dmarc_pct_str':'0.0%',
                                                       'all_live_dmarc_valid':False,
@@ -1328,13 +1332,13 @@ class ScorecardGenerator(object):
                 for trustymail_result in self.__results['trustymail_' + trustymail_result_set]:
                     if trustymail_result['_id'] == score['owner']:  # Found info for the current org
                         score['trustymail']['scanned'] = True
-                        for metric in ('domain_count', 'live_domain_count', 'live_valid_dmarc_count', 'live_dmarc_reject_count', 'live_has_bod1801_dmarc_uri_count', 'live_valid_spf_count', 'live_missing_starttls_count', 'live_no_weak_crypto_count', 'live_bod1801_dmarc_compliant_count', 'live_bod1801_email_compliant_count', 'live_supports_starttls_count', 'live_bod1801_dmarc_non_compliant_count', 'live_bod1801_email_non_compliant_count'):
+                        for metric in ('domain_count', 'live_domain_count', 'live_valid_dmarc_count', 'live_dmarc_reject_count', 'live_has_bod1801_dmarc_uri_count', 'live_valid_spf_count', 'live_spf_covered_count', 'live_missing_starttls_count', 'live_no_weak_crypto_count', 'live_bod1801_dmarc_compliant_count', 'live_bod1801_email_compliant_count', 'live_supports_starttls_count', 'live_bod1801_dmarc_non_compliant_count', 'live_bod1801_email_non_compliant_count'):
                             score['trustymail'][trustymail_result_set][metric] = trustymail_result[metric]
 
                         # Calculate trustymail summary percentages
                         if trustymail_result['live_domain_count']:
                             current_live_domain_count = trustymail_result['live_domain_count']
-                            for metric in ['live_valid_dmarc', 'live_dmarc_reject', 'live_has_bod1801_dmarc_uri', 'live_supports_starttls', 'live_valid_spf', 'live_no_weak_crypto', 'live_bod1801_email_compliant']:
+                            for metric in ['live_valid_dmarc', 'live_dmarc_reject', 'live_has_bod1801_dmarc_uri', 'live_supports_starttls', 'live_spf_covered', 'live_no_weak_crypto', 'live_bod1801_email_compliant']:
                                 current_metric_count = trustymail_result[metric + '_count']
                                 score['trustymail'][trustymail_result_set][metric + '_pct'] = current_metric_count / float(current_live_domain_count)
                                 score['trustymail'][trustymail_result_set][metric + '_pct_str'] = '{0:.1%}'.format(score['trustymail'][trustymail_result_set][metric + '_pct'])
@@ -1344,7 +1348,7 @@ class ScorecardGenerator(object):
                                                               ('live_dmarc_reject_pct', 'all_live_dmarc_reject'),
                                                               ('live_has_bod1801_dmarc_uri_pct', 'all_live_has_bod1801_dmarc_uri'),
                                                               ('live_supports_starttls_pct', 'all_live_supports_starttls'),
-                                                              ('live_valid_spf_pct', 'all_live_spf_valid'),
+                                                              ('live_spf_covered_pct', 'all_live_spf_covered'),
                                                               ('live_no_weak_crypto_pct', 'all_live_no_weak_crypto'),
                                                               ('live_bod1801_email_compliant_pct', 'all_live_bod1801_email_compliant')]:
                             if score['trustymail'][trustymail_result_set][score_percent] == 1.0:
@@ -1526,7 +1530,7 @@ class ScorecardGenerator(object):
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
             for trustymail_result_set in ['base_domains', 'base_domains_and_smtp_subdomains']:
-                self.__results[total_id]['trustymail'][trustymail_result_set] = {'domain_count':0, 'live_domain_count':0, 'live_valid_dmarc_count':0, 'live_dmarc_reject_count':0, 'live_has_bod1801_dmarc_uri_count':0, 'live_bod1801_dmarc_compliant_count':0, 'live_bod1801_dmarc_non_compliant_count':0, 'live_supports_starttls_count':0, 'live_missing_starttls_count':0, 'live_valid_spf_count':0, 'live_no_weak_crypto_count':0, 'live_bod1801_email_compliant_count':0, 'live_bod1801_email_non_compliant_count':0}
+                self.__results[total_id]['trustymail'][trustymail_result_set] = {'domain_count':0, 'live_domain_count':0, 'live_valid_dmarc_count':0, 'live_dmarc_reject_count':0, 'live_has_bod1801_dmarc_uri_count':0, 'live_bod1801_dmarc_compliant_count':0, 'live_bod1801_dmarc_non_compliant_count':0, 'live_supports_starttls_count':0, 'live_missing_starttls_count':0, 'live_valid_spf_count':0, 'live_spf_covered_count':0, 'live_no_weak_crypto_count':0, 'live_bod1801_email_compliant_count':0, 'live_bod1801_email_non_compliant_count':0}
 
             # initialize https-scan metrics to 0
             self.__results[total_id]['https-scan'] = {'live_domains': {'live_domain_count':0, 'live_supports_https_count':0, 'live_enforces_https_count':0, 'live_uses_strong_hsts_count':0, 'live_no_weak_crypto_count':0, 'live_bod1801_web_compliant_count':0, 'live_missing_https_hsts_count':0}}
@@ -1579,6 +1583,7 @@ class ScorecardGenerator(object):
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_supports_starttls_count'),
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_missing_starttls_count'),
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_valid_spf_count'),
+                                                   ('trustymail', 'base_domains_and_smtp_subdomains', 'live_spf_covered_count'),
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_no_weak_crypto_count'),
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_bod1801_email_compliant_count'),
                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_bod1801_email_non_compliant_count'),
@@ -1619,6 +1624,7 @@ class ScorecardGenerator(object):
                                                     ('trustymail', 'base_domains', 'live_bod1801_email_compliant'),
                                                     ('trustymail', 'base_domains_and_smtp_subdomains', 'live_supports_starttls'),
                                                     ('trustymail', 'base_domains_and_smtp_subdomains', 'live_valid_spf'),
+                                                    ('trustymail', 'base_domains_and_smtp_subdomains', 'live_spf_covered'),
                                                     ('trustymail', 'base_domains_and_smtp_subdomains', 'live_valid_dmarc'),
                                                     ('trustymail', 'base_domains_and_smtp_subdomains', 'live_has_bod1801_dmarc_uri'),
                                                     ('trustymail', 'base_domains_and_smtp_subdomains', 'live_dmarc_reject'),
@@ -2243,7 +2249,7 @@ class ScorecardGenerator(object):
         result['dmarc_reject_none'] = self.__dmarc_reject_none
 
         result['all_orgs_bod1801_email_compliant'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['trustymail']['base_domains_and_smtp_subdomains'].get('live_bod1801_email_compliant_pct'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_dmarc_reject_pct'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_valid_dmarc_pct'),
-        x['trustymail']['base_domains_and_smtp_subdomains'].get('live_has_bod1801_dmarc_uri_pct'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_valid_spf_pct'),
+        x['trustymail']['base_domains_and_smtp_subdomains'].get('live_has_bod1801_dmarc_uri_pct'), x['trustymail']['base_domains_and_smtp_subdomains'].get('live_spf_covered_pct'),
         x['trustymail']['base_domains_and_smtp_subdomains'].get('live_supports_starttls_pct'),
         x['trustymail']['base_domains_and_smtp_subdomains'].get('live_no_weak_crypto_pct'),
         x['trustymail']['base_domains_and_smtp_subdomains'].get('live_domain_count')), reverse=True)
