@@ -159,126 +159,304 @@ class ScorecardGenerator(object):
     def __open_tix_opened_in_date_range_pl(self, severity, current_date,
                                            days_until_tix_overdue):
         return [
-               {'$match': {'open': True, 'details.severity': severity,
-                           'false_positive': False}},
-               {'$group': {'_id': {'owner': '$owner'},
-                           'open_tix_opened_less_than_7_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$gte': ['$time_opened',
-                                         current_date - timedelta(days=7)]
-                                }, 1, 0]}},
-                           'open_tix_opened_7-15_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=7)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=15)]}]
-                                 }, 1, 0]}},
-                           'open_tix_opened_15-30_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=15)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=30)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=30)]}, {
-                                 '$gte': ['$time_opened',
-                                         current_date - timedelta(days=90)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date - timedelta(days=90)]
-                                }, 1, 0]}},
-                           'open_overdue_tix': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date -
-                                        timedelta(days=days_until_tix_overdue)]
-                                }, 1, 0]}},
-                           'open_tix_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'open': True,
+                    'details.severity': severity,
+                    'false_positive': False
                 }
-               ], database.TICKET_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'open_tix_opened_less_than_7_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gte': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=7)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_7-15_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=7)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_15-30_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_30-90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=90)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_more_than_90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=90)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_overdue_tix': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=days_until_tix_overdue)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
 
     def __open_tix_opened_in_date_range_for_orgs_pl(self, severity,
                                                     current_date, parent_org,
                                                     descendant_orgs,
                                                     days_until_tix_overdue):
         return [
-               {'$match': {'open': True, 'details.severity': severity,
-                           'false_positive': False,
-                           'owner': {'$in': [parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner': parent_org},
-                           'open_tix_opened_less_than_7_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$gte': ['$time_opened',
-                                         current_date - timedelta(days=7)]
-                                }, 1, 0]}},
-                           'open_tix_opened_7-15_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=7)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=15)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_15-30_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=15)]}, {
-                                 '$gte': ['$time_opened',
-                                         current_date - timedelta(days=30)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=30)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=90)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date - timedelta(days=90)]
-                                }, 1, 0]}},
-                           'open_overdue_tix': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date -
-                                        timedelta(days=days_until_tix_overdue)]
-                                }, 1, 0]}},
-                           'open_tix_count':{'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'open': True,
+                    'details.severity': severity,
+                    'false_positive': False,
+                    'owner': {
+                        '$in': [parent_org] + descendant_orgs
+                    }
                 }
-               ], database.TICKET_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {
+                        'owner': parent_org
+                    },
+                    'open_tix_opened_less_than_7_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gte': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=7)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_7-15_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=7)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_15-30_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_30-90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=90)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_more_than_90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=90)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_overdue_tix': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=days_until_tix_overdue)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
 
     def __active_hosts_pl(self):
         return [
-               {'$match': {'state.up': True}},
-               {'$group': {'_id': {'owner': '$owner'},
-                           'active_hosts_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'state.up': True
                 }
-               ], database.HOST_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'active_hosts_count': {'$sum': 1}
+                }
+            }
+        ], database.HOST_COLLECTION
 
     def __active_hosts_for_orgs_pl(self, parent_org, descendant_orgs):
         return [
-               {'$match': {'state.up': True,
-                           'owner': {'$in': [parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner': parent_org},
-                           'active_hosts_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'state.up': True,
+                    'owner': {'$in': [parent_org] + descendant_orgs}
                 }
-               ], database.HOST_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': parent_org},
+                    'active_hosts_count': {'$sum': 1}
+                }
+            }
+        ], database.HOST_COLLECTION
 
     def __load_ticket_age_data(self, start_date, severity,
                                graph_bucket_cutoff_days, org_list):
@@ -289,14 +467,25 @@ class ScorecardGenerator(object):
 
         # Calculate Buckets
         tix = self.__cyhy_db.TicketDoc.find(
-            {'details.severity': severity,
-             'false_positive': False,
-             'owner': {'$in': org_list},
-             '$or': [{'time_closed': {'$gte': start_date}},
-                     {'time_closed': None}]},
-            {'_id': False,
-             'time_opened': True,
-             'time_closed': True})
+            {
+                'details.severity': severity,
+                'false_positive': False,
+                'owner': {'$in': org_list},
+                '$or': [
+                    {
+                        'time_closed': {'$gte': start_date}
+                    },
+                    {
+                        'time_closed': None
+                    }
+                ]
+            },
+            {
+                '_id': False,
+                'time_opened': True,
+                'time_closed': True
+            }
+        )
         tix = list(tix)
         if len(tix):
             df = DataFrame(tix)
@@ -330,12 +519,18 @@ class ScorecardGenerator(object):
 
     def __load_open_tickets(self, severity, org_list):
         return list(self.__cyhy_db.tickets.find(
-            {'open': True,
-             'owner': {
-                '$in': self.__all_cybex_orgs_with_descendants},
-             'details.severity': severity,
-             'false_positive': False},
-            {'time_opened': 1}))
+            {
+                'open': True,
+                'owner': {
+                    '$in': self.__all_cybex_orgs_with_descendants
+                },
+                'details.severity': severity,
+                'false_positive': False
+            },
+            {
+                'time_opened': 1
+            }
+        ))
 
     def __run_vuln_scan_queries(self, cybex_orgs):
         # If an org has descendants, we only want the top-level org to show up
@@ -1194,40 +1389,119 @@ class ScorecardGenerator(object):
     def __run_sslyze_scan_queries(self, cybex_orgs):
         # Query sslyze-scans for weak crypto in domains (includes both web and email servers)
         # Used in 'BOD Results by Agency' section
-        latest_cybex_hostnames = list(set(self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']) |
-                                      set(self.__results['latest_cybex_https_scan_live_hostnames']))
+        latest_cybex_hostnames = list(set(
+            self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']
+        ) | set(
+            self.__results['latest_cybex_https_scan_live_hostnames']
+        ))
 
-        self.__results['sslyze-scan'] = list(self.__scan_db.sslyze_scan.aggregate([
-                    {'$match': {'latest':True, 'domain':{'$in':latest_cybex_hostnames},
-                                'scanned_port': {'$in':[25, 587, 465, 443]}}},    # 25, 587, 465 = SMTP (email)    443 = HTTPS (web)
-                    {'$project': {'agency_id':'$agency.id', 'domain':'$domain',
-                                  'sslv2':'$sslv2', 'sslv3':'$sslv3',
-                                  'any_rc4':'$any_rc4', 'any_3des':'$any_3des'}},
-                    {'$group': {'_id':{'domain':'$domain', 'agency_id':'$agency_id'},
-                                'ports_with_weak_crypto_count': {'$sum': {'$cond': [{'$or': [{'$eq': ['$sslv2', True]},
-                                                                                             {'$eq': ['$sslv3', True]},
-                                                                                             {'$eq': ['$any_rc4', True]},
-                                                                                             {'$eq': ['$any_3des', True]}]}, 1,0]}} }},
-                    {'$project': {'domain':'$id.domain',
-                                  'agency_id':'$id.agency_id',
-                                  'domain_has_weak_crypto': {'$cond': [{'$gt': ['$ports_with_weak_crypto_count', 0]}, True, False]} }},
-                    {'$group': {'_id':'$_id.agency_id',
-                                'domain_count': {'$sum': 1},
-                                'domains_with_weak_crypto_count': {'$sum': {'$cond': [{'$eq': ['$domain_has_weak_crypto', True]},1,0] }}}},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['sslyze-scan'] = list(self.__scan_db.sslyze_scan.aggregate(
+            [
+                {
+                    '$match': {
+                        'latest':True,
+                        'domain': {
+                            '$in':latest_cybex_hostnames
+                        },
+                        'scanned_port': {
+                            '$in': [25, 587, 465, 443]
+                        }
+                    }
+                },    # 25, 587, 465 = SMTP (email)    443 = HTTPS (web)
+                {
+                    '$project': {
+                        'agency_id': '$agency.id',
+                        'domain': '$domain',
+                        'sslv2': '$sslv2',
+                        'sslv3': '$sslv3',
+                        'any_rc4': '$any_rc4',
+                        'any_3des': '$any_3des'
+                    }
+                },
+                {
+                    '$group': {
+                        '_id':{
+                            'domain':'$domain',
+                            'agency_id':'$agency_id'
+                        },
+                        'ports_with_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$or': [
+                                            {
+                                                '$eq': ['$sslv2', True]
+                                            },
+                                            {
+                                                '$eq': ['$sslv3', True]
+                                            },
+                                            {
+                                                '$eq': ['$any_rc4', True]
+                                            },
+                                            {
+                                                '$eq': ['$any_3des', True]
+                                            }
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    '$project': {
+                        'domain': '$id.domain',
+                        'agency_id': '$id.agency_id',
+                        'domain_has_weak_crypto': {
+                            '$cond': [
+                                {
+                                    '$gt': ['$ports_with_weak_crypto_count', 0]
+                                },
+                                True,
+                                False
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$_id.agency_id',
+                        'domain_count': {'$sum': 1},
+                        'domains_with_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_has_weak_crypto', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    '$sort': {'_id':1}
+                }
+            ], cursor={}
+        ))
 
     def __create_domain_to_org_map(self, org_list):
         '''
         Map each domain (owned by an org in org_list) to the org that owns it
         '''
 
-        domains = self.__scan_db.domains.find({
-            'agency.id': {'$in': org_list}
-        }, {
-            '_id': True,
-            'agency.id': True
-        })
+        domains = self.__scan_db.domains.find(
+            {
+                'agency.id': {'$in': org_list}
+            },
+            {
+                '_id': True,
+                'agency.id': True
+            }
+        )
 
         return {d['_id'].lower(): d['agency']['id'] for d in domains}
 
@@ -1348,28 +1622,47 @@ class ScorecardGenerator(object):
 
         current_fy_start = report_dates(now=self.__generated_time)['fy_start']
 
-        relevant_certs = self.__scan_db.certs.find({
-            'trimmed_subjects': {
-                '$in': cybex_domains
+        relevant_certs = self.__scan_db.certs.find(
+            {
+                'trimmed_subjects': {
+                    '$in': cybex_domains
+                },
+                '$or': [
+                    {
+                        'not_after': {
+                            '$gt': self.__generated_time
+                        }
+                    },
+                    {
+                        'sct_or_not_before': {
+                            '$gte': current_fy_start
+                        }
+                    },
+                    {
+                        'sct_or_not_before': {
+                            '$gte': self.__generated_time - timedelta(days=30)
+                        }
+                    }
+                ]
             },
-            '$or': [
-                {'not_after': {'$gt': self.__generated_time}},
-                {'sct_or_not_before': {'$gte': current_fy_start}},
-                {'sct_or_not_before': {'$gte': self.__generated_time -
-                                               timedelta(days=30)}}
-            ]
-        }, {
-            '_id': False,
-            'not_after': True,
-            'trimmed_subjects': True,
-            'sct_or_not_before': True
-        })
+            {
+                '_id': False,
+                'not_after': True,
+                'trimmed_subjects': True,
+                'sct_or_not_before': True
+            }
+        )
 
-        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
+        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs,
+                                                                        current_fy_start)
 
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
-        self.__requests = list(self.__cyhy_db.RequestDoc.find({'report_types':REPORT_TYPE.CYBEX}))
+        self.__requests = list(self.__cyhy_db.RequestDoc.find(
+            {
+                'report_types': REPORT_TYPE.CYBEX
+            }
+        ))
         cybex_orgs = []
         for r in self.__requests:
             cybex_orgs.append(r['_id'])
@@ -1377,7 +1670,7 @@ class ScorecardGenerator(object):
             self.__all_cybex_orgs_with_descendants += self.__cyhy_db.RequestDoc.get_all_descendants(r['_id'])
 
         # Build up list of CYBEX org tallies that were updated within past CURRENTLY_SCANNED_DAYS days
-        for tally in list(self.__cyhy_db.TallyDoc.find({'_id':{'$in':cybex_orgs}})):
+        for tally in list(self.__cyhy_db.TallyDoc.find({'_id': {'$in': cybex_orgs}})):
             if tally['last_change'] >= self.__generated_time - timedelta(days=CURRENTLY_SCANNED_DAYS):
                 self.__tallies.append(tally)                # Append the tally if it's been changed recently
             else:       # Check if this org has any descendants with tallies that have been changed recently
@@ -1389,8 +1682,8 @@ class ScorecardGenerator(object):
                             break                           # No need to check any other descendants
 
         # Get list of 'CFO Act' orgs
-        if self.__cyhy_db.RequestDoc.find_one({'_id':'FED_CFO_ACT'}):
-            self.__cfo_act_orgs = self.__cyhy_db.RequestDoc.find_one({'_id':'FED_CFO_ACT'})['children']
+        if self.__cyhy_db.RequestDoc.find_one({'_id': 'FED_CFO_ACT'}):
+            self.__cfo_act_orgs = self.__cyhy_db.RequestDoc.find_one({'_id': 'FED_CFO_ACT'})['children'] 
         else:
             self.__cfo_act_orgs = []
 
