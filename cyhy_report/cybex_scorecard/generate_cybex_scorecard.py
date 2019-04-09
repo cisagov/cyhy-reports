@@ -1026,6 +1026,16 @@ class ScorecardGenerator(object):
                                         },
                                         {
                                             '$eq': ['$hsts_base_domain_preloaded', True]
+                                        },
+                                        {
+                                            '$and': [
+                                                {
+                                                    '$eq': ['$https_full_connection', False]
+                                                },
+                                                {
+                                                    '$eq': ['$https_client_auth_required', True]
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
