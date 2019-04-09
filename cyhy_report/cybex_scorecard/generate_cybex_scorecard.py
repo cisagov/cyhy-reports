@@ -929,67 +929,257 @@ class ScorecardGenerator(object):
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
         # Drop domains that are OCSP sites, since they are to be excluded
-        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({
-            'latest': True,
-            'live': True,
-            'agency.id': {'$in': cybex_orgs},
-            # I get an error in Python 3 if I just use
-            # self.__ocsp_exclusions.keys() here.  This is because in
-            # Python 3 dict.keys() returns a view, not an actual list.
-            #
-            # Since we're moving to Python 3 eventually, it seems
-            # reasonable to leave the explicit list(...) in.
-            #
-            # TODO: Update this comment after moving to Python 3.
-            'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
-        }, {'_id':0, 'domain':1})]
+        self.__results['latest_cybex_https_scan_live_hostnames'] = [
+            i['domain']
+            for i in self.__scan_db.https_scan.find({
+                    'latest': True,
+                    'live': True,
+                    'agency.id': {
+                        '$in': cybex_orgs
+                    },
+                    # I get an error in Python 3 if I just use
+                    # self.__ocsp_exclusions.keys() here.  This is
+                    # because in Python 3 dict.keys() returns a view,
+                    # not an actual list.
+                    #
+                    # Since we're moving to Python 3 eventually, it
+                    # seems reasonable to leave the explicit list(...)
+                    # in.
+                    #
+                    # TODO: Update this comment after moving to Python
+                    # 3.
+                    'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
+            }, {
+                '_id': 0,
+                'domain': 1
+            })
+        ]
 
-        self.__results['https-scan'] = list(self.__scan_db.https_scan.aggregate([
-                    {'$match': {'latest':True, 'domain': {'$in':self.__results['latest_cybex_https_scan_live_hostnames']}}},
-                    # Pull in data from sslyze_scan collection so weak crypto status can be determined
-                    {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
-                                 'foreignField':'domain', 'as':'sslyze_data'}},
-                    {'$project': {'agency.id':'$agency.id', 'scan_date':'$scan_date',
-                                  # If hsts_base_domain_preloaded is True, a domain automatically gets credit for:
-                                  #  supporting HTTPS, enforcing HTTPS, and having strong HSTS
-                                  # Even if pshtt says that the domain does not support HTTPS, enforce HTTPS, or have strong HSTS
-                                  'domain_supports_https': {'$cond': [{'$or': [{'$eq': ['$domain_supports_https', True]},
-                                                                               {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  'domain_enforces_https': {'$cond': [{'$or': [{'$eq': ['$domain_enforces_https', True]},
-                                                                               {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  'domain_uses_strong_hsts': {'$cond': [{'$or': [{'$eq': ['$domain_uses_strong_hsts', True]},
-                                                                                 {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  # has_weak_web_crypto projection can be simplified by
-                                  # changing $lookup above to use an uncorrelated subquery (Mongo 3.6 or later)
-                                  'has_weak_web_crypto': {'$cond': [{'$eq': [{'$filter': {'input':'$sslyze_data',
-                                                                                          'as':'sslyze',
-                                                                                          'cond': {'$and': [{'$eq': ['$$sslyze.latest', True]},
-                                                                                                            {'$eq': ['$$sslyze.scanned_port', 443]},
-                                                                                                            {'$or': [ {'$eq': ['$$sslyze.sslv2', True]},
-                                                                                                                      {'$eq': ['$$sslyze.sslv3', True]},
-                                                                                                                      {'$eq': ['$$sslyze.any_3des', True]},
-                                                                                                                      {'$eq': ['$$sslyze.any_rc4', True]} ]}]}
-                                                                                         }}, []]}, False, True]} }},
-                    {'$group': {'_id': '$agency.id',
-                                'earliest_scan_date': {'$min': '$scan_date'},
-                                'live_domain_count': {'$sum': 1},
-                                'live_supports_https_count': {'$sum': {'$cond': [ {'$eq': ['$domain_supports_https', True]},1,0 ] }},
-                                'live_enforces_https_count': {'$sum': {'$cond': [ {'$eq': ['$domain_enforces_https', True]},1,0 ] }},
-                                'live_uses_strong_hsts_count': {'$sum': {'$cond': [ {'$eq': ['$domain_uses_strong_hsts', True]},1,0 ] }},
-                                'live_no_weak_crypto_count': {'$sum': {'$cond': [ {'$eq': ['$has_weak_web_crypto', False]},1,0 ] }},
-                                'live_bod1801_web_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$domain_supports_https', True]},
-                                                                                                   {'$eq': ['$domain_enforces_https', True]},
-                                                                                                   {'$eq': ['$domain_uses_strong_hsts', True]},
-                                                                                                   {'$eq': ['$has_weak_web_crypto', False]}] },1,0] }}}},
-                    # Calculate how many live domains are not BOD 18-01 Compliant:
-                    {'$project': {'_id':1, 'earliest_scan_date':1, 'live_domain_count':1,
-                                  'live_supports_https_count':1, 'live_enforces_https_count':1,
-                                  'live_uses_strong_hsts_count':1, 'live_no_weak_crypto_count':1,
-                                  'live_bod1801_web_compliant_count':1,
-                                  'live_missing_https_hsts_count': {'$subtract': ['$live_domain_count',
-                                                                                  '$live_uses_strong_hsts_count']}}},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['https-scan'] = list(
+            self.__scan_db.https_scan.aggregate([
+                {
+                    '$match': {
+                        'latest': True,
+                        'domain': {
+                            '$in': self.__results['latest_cybex_https_scan_live_hostnames']
+                        }
+                    }
+                },
+                # Pull in data from sslyze_scan collection so weak
+                # crypto status can be determined
+                {
+                    '$lookup': {
+                        'from': 'sslyze_scan',
+                        'localField': 'domain',
+                        'foreignField': 'domain',
+                        'as':'sslyze_data'
+                    }
+                },
+                {
+                    '$project': {
+                        'agency.id': '$agency.id',
+                        'scan_date': '$scan_date',
+                        # If hsts_base_domain_preloaded is True, a
+                        # domain automatically gets credit for
+                        # supporting HTTPS, enforcing HTTPS, and
+                        # having strong HSTS Even if pshtt says that
+                        # the domain does not support HTTPS, enforce
+                        # HTTPS, or have strong HSTS
+                        'domain_supports_https': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_supports_https', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        'domain_enforces_https': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_enforces_https', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        'domain_uses_strong_hsts': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_uses_strong_hsts', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        # has_weak_web_crypto projection can be
+                        # simplified by changing $lookup above to use
+                        # an uncorrelated subquery (Mongo 3.6 or
+                        # later)
+                        'has_weak_web_crypto': {
+                            '$cond': [
+                                {
+                                    '$eq': [
+                                        {
+                                            '$filter': {
+                                                'input': '$sslyze_data',
+                                                'as':'sslyze',
+                                                'cond': {
+                                                    '$and': [
+                                                        {
+                                                            '$eq': ['$$sslyze.latest', True]
+                                                        },
+                                                        {
+                                                            '$eq': ['$$sslyze.scanned_port', 443]
+                                                        },
+                                                        {
+                                                            '$or': [
+                                                                {
+                                                                    '$eq': ['$$sslyze.sslv2', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.sslv3', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.any_3des', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.any_rc4', True]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        []
+                                    ]
+                                },
+                                False,
+                                True
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$agency.id',
+                        'earliest_scan_date': {
+                            '$min': '$scan_date'
+                        },
+                        'live_domain_count': {
+                            '$sum': 1
+                        },
+                        'live_supports_https_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_supports_https', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_enforces_https_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_enforces_https', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_uses_strong_hsts_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_uses_strong_hsts', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_no_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$has_weak_web_crypto', False]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_bod1801_web_compliant_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$domain_supports_https', True]},
+                                            {'$eq': ['$domain_enforces_https', True]},
+                                            {'$eq': ['$domain_uses_strong_hsts', True]},
+                                            {'$eq': ['$has_weak_web_crypto', False]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                # Calculate how many live domains are not BOD 18-01
+                # Compliant:
+                {
+                    '$project': {
+                        '_id': 1,
+                        'earliest_scan_date': 1,
+                        'live_domain_count': 1,
+                        'live_supports_https_count': 1,
+                        'live_enforces_https_count': 1,
+                        'live_uses_strong_hsts_count': 1,
+                        'live_no_weak_crypto_count': 1,
+                        'live_bod1801_web_compliant_count': 1,
+                        'live_missing_https_hsts_count': {
+                            '$subtract': [
+                                '$live_domain_count',
+                                '$live_uses_strong_hsts_count'
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$sort': {
+                        '_id': 1
+                    }
+                }
+            ], cursor={})
+        )
 
     def __run_sslyze_scan_queries(self, cybex_orgs):
         # Query sslyze-scans for weak crypto in domains (includes both web and email servers)
