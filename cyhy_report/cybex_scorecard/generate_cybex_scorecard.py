@@ -159,126 +159,304 @@ class ScorecardGenerator(object):
     def __open_tix_opened_in_date_range_pl(self, severity, current_date,
                                            days_until_tix_overdue):
         return [
-               {'$match': {'open': True, 'details.severity': severity,
-                           'false_positive': False}},
-               {'$group': {'_id': {'owner': '$owner'},
-                           'open_tix_opened_less_than_7_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$gte': ['$time_opened',
-                                         current_date - timedelta(days=7)]
-                                }, 1, 0]}},
-                           'open_tix_opened_7-15_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=7)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=15)]}]
-                                 }, 1, 0]}},
-                           'open_tix_opened_15-30_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=15)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=30)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=30)]}, {
-                                 '$gte': ['$time_opened',
-                                         current_date - timedelta(days=90)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date - timedelta(days=90)]
-                                }, 1, 0]}},
-                           'open_overdue_tix': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date -
-                                        timedelta(days=days_until_tix_overdue)]
-                                }, 1, 0]}},
-                           'open_tix_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'open': True,
+                    'details.severity': severity,
+                    'false_positive': False
                 }
-               ], database.TICKET_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'open_tix_opened_less_than_7_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gte': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=7)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_7-15_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=7)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_15-30_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_30-90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=90)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_more_than_90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=90)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_overdue_tix': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=days_until_tix_overdue)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
 
     def __open_tix_opened_in_date_range_for_orgs_pl(self, severity,
                                                     current_date, parent_org,
                                                     descendant_orgs,
                                                     days_until_tix_overdue):
         return [
-               {'$match': {'open': True, 'details.severity': severity,
-                           'false_positive': False,
-                           'owner': {'$in': [parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner': parent_org},
-                           'open_tix_opened_less_than_7_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$gte': ['$time_opened',
-                                         current_date - timedelta(days=7)]
-                                }, 1, 0]}},
-                           'open_tix_opened_7-15_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=7)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=15)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_15-30_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=15)]}, {
-                                 '$gte': ['$time_opened',
-                                         current_date - timedelta(days=30)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_30-90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$and': [{
-                                 '$lt': ['$time_opened',
-                                         current_date - timedelta(days=30)]}, {
-                                 '$gte': ['$time_opened',
-                                          current_date - timedelta(days=90)]}]
-                                }, 1, 0]}},
-                           'open_tix_opened_more_than_90_days_ago': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date - timedelta(days=90)]
-                                }, 1, 0]}},
-                           'open_overdue_tix': {
-                            '$sum': {'$cond': [{
-                                '$lt': ['$time_opened',
-                                        current_date -
-                                        timedelta(days=days_until_tix_overdue)]
-                                }, 1, 0]}},
-                           'open_tix_count':{'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'open': True,
+                    'details.severity': severity,
+                    'false_positive': False,
+                    'owner': {
+                        '$in': [parent_org] + descendant_orgs
+                    }
                 }
-               ], database.TICKET_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {
+                        'owner': parent_org
+                    },
+                    'open_tix_opened_less_than_7_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gte': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=7)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_7-15_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=7)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_15-30_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=15)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_30-90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$and': [
+                                        {
+                                            '$lt': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=30)
+                                            ]
+                                        },
+                                        {
+                                            '$gte': [
+                                                '$time_opened',
+                                                current_date - timedelta(days=90)
+                                            ]
+                                        }
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_opened_more_than_90_days_ago': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=90)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_overdue_tix': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$lt': [
+                                        '$time_opened',
+                                        current_date - timedelta(days=days_until_tix_overdue)
+                                    ]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    'open_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
 
     def __active_hosts_pl(self):
         return [
-               {'$match': {'state.up': True}},
-               {'$group': {'_id': {'owner': '$owner'},
-                           'active_hosts_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'state.up': True
                 }
-               ], database.HOST_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'active_hosts_count': {'$sum': 1}
+                }
+            }
+        ], database.HOST_COLLECTION
 
     def __active_hosts_for_orgs_pl(self, parent_org, descendant_orgs):
         return [
-               {'$match': {'state.up': True,
-                           'owner': {'$in': [parent_org] + descendant_orgs}}},
-               {'$group': {'_id': {'owner': parent_org},
-                           'active_hosts_count': {'$sum': 1}
-                           }
+            {
+                '$match': {
+                    'state.up': True,
+                    'owner': {'$in': [parent_org] + descendant_orgs}
                 }
-               ], database.HOST_COLLECTION
+            },
+            {
+                '$group': {
+                    '_id': {'owner': parent_org},
+                    'active_hosts_count': {'$sum': 1}
+                }
+            }
+        ], database.HOST_COLLECTION
 
     def __load_ticket_age_data(self, start_date, severity,
                                graph_bucket_cutoff_days, org_list):
@@ -289,14 +467,25 @@ class ScorecardGenerator(object):
 
         # Calculate Buckets
         tix = self.__cyhy_db.TicketDoc.find(
-            {'details.severity': severity,
-             'false_positive': False,
-             'owner': {'$in': org_list},
-             '$or': [{'time_closed': {'$gte': start_date}},
-                     {'time_closed': None}]},
-            {'_id': False,
-             'time_opened': True,
-             'time_closed': True})
+            {
+                'details.severity': severity,
+                'false_positive': False,
+                'owner': {'$in': org_list},
+                '$or': [
+                    {
+                        'time_closed': {'$gte': start_date}
+                    },
+                    {
+                        'time_closed': None
+                    }
+                ]
+            },
+            {
+                '_id': False,
+                'time_opened': True,
+                'time_closed': True
+            }
+        )
         tix = list(tix)
         if len(tix):
             df = DataFrame(tix)
@@ -330,12 +519,18 @@ class ScorecardGenerator(object):
 
     def __load_open_tickets(self, severity, org_list):
         return list(self.__cyhy_db.tickets.find(
-            {'open': True,
-             'owner': {
-                '$in': self.__all_cybex_orgs_with_descendants},
-             'details.severity': severity,
-             'false_positive': False},
-            {'time_opened': 1}))
+            {
+                'open': True,
+                'owner': {
+                    '$in': self.__all_cybex_orgs_with_descendants
+                },
+                'details.severity': severity,
+                'false_positive': False
+            },
+            {
+                'time_opened': 1
+            }
+        ))
 
     def __run_vuln_scan_queries(self, cybex_orgs):
         # If an org has descendants, we only want the top-level org to show up
@@ -425,609 +620,1377 @@ class ScorecardGenerator(object):
     def __run_trustymail_queries(self, cybex_orgs):
         # Latest Trustymail metrics for base domains
         self.__results['latest_cybex_trustymail_base_domains'] = [
-            i['domain'] for i in self.__scan_db.trustymail.find(
-                {'latest': True,
-                 'is_base_domain': True,
-                 'agency.id': {'$in': cybex_orgs}},
-                {'_id': 0, 'domain': 1})]
+            i['domain']
+            for i in self.__scan_db.trustymail.find(
+                    {
+                        'latest': True,
+                        'is_base_domain': True,
+                        'agency.id': {
+                            '$in': cybex_orgs
+                        }
+                    },
+                    {
+                        '_id': 0,
+                        'domain': 1
+                    }
+            )
+        ]
 
         self.__results['trustymail_base_domains'] = list(
-            self.__scan_db.trustymail.aggregate([
-                {'$match':
-                    {'latest': True,
-                     'domain':
-                        {'$in': self.__results[
-                            'latest_cybex_trustymail_base_domains']}}},
-                # Pull in data from sslyze_scan collection so weak crypto
-                # status can be determined
-                {'$lookup':
-                    {'from': 'sslyze_scan', 'localField': 'domain',
-                     'foreignField': 'domain', 'as': 'sslyze_data'}},
-                {'$project':
-                    {'agency.id': '$agency.id',
-                     'scan_date': '$scan_date',
-                     'live': '$live',
-                     'valid_spf': '$valid_spf',
-                     'valid_dmarc': '$valid_dmarc',
-                     'dmarc_policy': '$dmarc_policy',
-                     'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
-                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
-                     'has_bod1801_dmarc_rua_uri':
-                        {'$cond': [
-                            {'$eq': [
-                                {'$filter': {
-                                    'input': '$aggregate_report_uris',
-                                    'as': 'agg_report_uri',
-                                    'cond': {
+            self.__scan_db.trustymail.aggregate(
+                [
+                    {
+                        '$match': {
+                            'latest': True,
+                            'domain': {
+                                '$in': self.__results[
+                                    'latest_cybex_trustymail_base_domains'
+                                ]
+                            }
+                        }
+                    },
+                    # Pull in data from sslyze_scan collection so weak
+                    # crypto status can be determined
+                    {
+                        '$lookup': {
+                            'from': 'sslyze_scan',
+                            'localField': 'domain',
+                            'foreignField': 'domain',
+                            'as': 'sslyze_data'
+                        }
+                    },
+                    {
+                        '$project': {
+                            'agency.id': '$agency.id',
+                            'scan_date': '$scan_date',
+                            'live': '$live',
+                            'valid_spf': '$valid_spf',
+                            'valid_dmarc': '$valid_dmarc',
+                            'dmarc_policy': '$dmarc_policy',
+                            'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
+                            'dmarc_policy_percentage': '$dmarc_policy_percentage',
+                            'has_bod1801_dmarc_rua_uri': {
+                                '$cond': [
+                                    {
                                         '$eq': [
-                                            '$$agg_report_uri.uri',
-                                            BOD1801_DMARC_RUA_URI
-                                            ]}}
-                                 }, []]}, False, True]},
-                     'domain_supports_smtp': '$domain_supports_smtp',
-                     'domain_supports_starttls': '$domain_supports_starttls',
-                     'is_missing_starttls':
-                        {'$and': [
-                            {'$eq': ['$domain_supports_smtp', True]},
-                            {'$eq': ['$domain_supports_starttls', False]}]},
-                     # has_weak_mail_crypto projection can be simplified by
-                     # changing $lookup above to use an uncorrelated
-                     # subquery (Mongo 3.6 or later)
-                     'has_weak_mail_crypto':
-                        {'$cond': [
-                            {'$eq': [
-                                {'$filter': {
-                                    'input': '$sslyze_data',
-                                    'as': 'sslyze',
-                                    'cond': {
-                                        '$and': [
-                                            {'$eq': ['$$sslyze.latest', True]},
-                                            {'$or': [
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    25]},
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    587]},
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    465]}]},
-                                            {'$or': [
-                                                {'$eq': [
-                                                    '$$sslyze.sslv2', True]},
-                                                {'$eq': [
-                                                    '$$sslyze.sslv3', True]},
-                                                {'$eq': [
-                                                    '$$sslyze.any_3des',
-                                                    True]},
-                                                {'$eq': [
-                                                    '$$sslyze.any_rc4', True]}
-                                                    ]}]}
-                                             }}, []]}, False, True]}}},
-                {'$group':
-                    {'_id': '$agency.id',
-                     'earliest_scan_date': {'$min': '$scan_date'},
-                     'domain_count': {'$sum': 1},
-                     'live_domain_count':
-                        {'$sum': {'$cond': [
-                            {'$eq': ['$live', True]},
-                            1, 0]}},
-                     'live_valid_dmarc_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_dmarc', True]}]},
-                            1, 0]}},
-                     'live_dmarc_reject_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_dmarc', True]},
-                            {'$eq': ['$dmarc_policy', 'reject']},
-                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                            {'$eq': ['$dmarc_policy_percentage', 100]}]},
-                            1, 0]}},
-                     'live_has_bod1801_dmarc_uri_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_dmarc', True]},
-                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]},
-                            1, 0]}},
-                     'live_valid_spf_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_spf', True]}]},
-                            1, 0]}},
-                     'live_missing_starttls_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$is_missing_starttls', True]}]},
-                            1, 0]}},
-                     'live_no_weak_crypto_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$has_weak_mail_crypto', False]}]},
-                            1, 0]}},
-                     'live_bod1801_dmarc_compliant_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_dmarc', True]},
-                            {'$eq': ['$dmarc_policy', 'reject']},
-                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                            {'$eq': ['$dmarc_policy_percentage', 100]},
-                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]},
-                            1, 0]}},
-                     'live_bod1801_email_compliant_count':
-                        {'$sum': {'$cond': [{'$and': [
-                            {'$eq': ['$live', True]},
-                            {'$eq': ['$valid_dmarc', True]},
-                            {'$eq': ['$dmarc_policy', 'reject']},
-                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                            {'$eq': ['$dmarc_policy_percentage', 100]},
-                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                            {'$eq': ['$is_missing_starttls', False]},
-                            {'$eq': ['$valid_spf', True]},
-                            {'$eq': ['$has_weak_mail_crypto', False]}]},
-                            1, 0]}}}},
-                {'$project':
-                    {'_id': 1,
-                     'earliest_scan_date': 1,
-                     'domain_count': 1,
-                     'live_domain_count': 1,
-                     'live_valid_dmarc_count': 1,
-                     'live_dmarc_reject_count': 1,
-                     'live_has_bod1801_dmarc_uri_count': 1,
-                     'live_valid_spf_count': 1,
-                     # For base domains, live_spf_covered_count is the same
-                     # thing as live_valid_spf_count. It is included here for
-                     # consistency in processing the query results.
-                     'live_spf_covered_count': '$live_valid_spf_count',
-                     'live_missing_starttls_count': 1,
-                     'live_no_weak_crypto_count': 1,
-                     'live_bod1801_dmarc_compliant_count': 1,
-                     'live_bod1801_email_compliant_count': 1,
-                     'live_supports_starttls_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_missing_starttls_count']},
-                     'live_bod1801_dmarc_non_compliant_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_bod1801_dmarc_compliant_count']},
-                     'live_bod1801_email_non_compliant_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_bod1801_email_compliant_count']}}},
-                {'$sort': {'_id': 1}}
-                ], cursor={}))
+                                            {
+                                                '$filter': {
+                                                    'input': '$aggregate_report_uris',
+                                                    'as': 'agg_report_uri',
+                                                    'cond': {
+                                                        '$eq': [
+                                                            '$$agg_report_uri.uri',
+                                                            BOD1801_DMARC_RUA_URI
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            []
+                                        ]
+                                    },
+                                    False,
+                                    True
+                                ]
+                            },
+                            'domain_supports_smtp': '$domain_supports_smtp',
+                            'domain_supports_starttls': '$domain_supports_starttls',
+                            'is_missing_starttls':
+                            {
+                                '$and': [
+                                    {'$eq': ['$domain_supports_smtp', True]},
+                                    {'$eq': ['$domain_supports_starttls', False]}
+                                ]
+                            },
+                            # has_weak_mail_crypto projection can be
+                            # simplified by changing $lookup above to
+                            # use an uncorrelated subquery (Mongo 3.6
+                            # or later)
+                            'has_weak_mail_crypto':
+                            {
+                                '$cond': [
+                                    {
+                                        '$eq': [
+                                            {
+                                                '$filter': {
+                                                    'input': '$sslyze_data',
+                                                    'as': 'sslyze',
+                                                    'cond': {
+                                                        '$and': [
+                                                            {'$eq': ['$$sslyze.latest', True]},
+                                                            {
+                                                                '$or': [
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            25
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            587
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            465
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                '$or': [
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.sslv2',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.sslv3',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.any_3des',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.any_rc4',
+                                                                            True
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            []
+                                        ]
+                                    },
+                                    False,
+                                    True
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        '$group' : {
+                            '_id': '$agency.id',
+                            'earliest_scan_date': {'$min': '$scan_date'},
+                            'domain_count': {'$sum': 1},
+                            'live_domain_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$eq': ['$live', True]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_valid_dmarc_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_dmarc', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_dmarc_reject_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_dmarc', True]},
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_has_bod1801_dmarc_uri_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_dmarc', True]},
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_valid_spf_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_spf', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_missing_starttls_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$is_missing_starttls', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_no_weak_crypto_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$has_weak_mail_crypto', False]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_bod1801_dmarc_compliant_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_dmarc', True]},
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]},
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_bod1801_email_compliant_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_dmarc', True]},
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]},
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                                                {'$eq': ['$is_missing_starttls', False]},
+                                                {'$eq': ['$valid_spf', True]},
+                                                {'$eq': ['$has_weak_mail_crypto', False]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        '$project': {
+                            '_id': 1,
+                            'earliest_scan_date': 1,
+                            'domain_count': 1,
+                            'live_domain_count': 1,
+                            'live_valid_dmarc_count': 1,
+                            'live_dmarc_reject_count': 1,
+                            'live_has_bod1801_dmarc_uri_count': 1,
+                            'live_valid_spf_count': 1,
+                            # For base domains, live_spf_covered_count
+                            # is the same thing as
+                            # live_valid_spf_count. It is included
+                            # here for consistency in processing the
+                            # query results.
+                            'live_spf_covered_count': '$live_valid_spf_count',
+                            'live_missing_starttls_count': 1,
+                            'live_no_weak_crypto_count': 1,
+                            'live_bod1801_dmarc_compliant_count': 1,
+                            'live_bod1801_email_compliant_count': 1,
+                            'live_supports_starttls_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_missing_starttls_count'
+                                ]
+                            },
+                            'live_bod1801_dmarc_non_compliant_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_bod1801_dmarc_compliant_count'
+                                ]
+                            },
+                            'live_bod1801_email_non_compliant_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_bod1801_email_compliant_count'
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        '$sort': {'_id': 1}
+                    }
+                ], cursor={}
+            )
+        )
 
         # Latest Trustymail metrics for base domains and subdomains that
         # support SMTP
         self.__results[
-            'latest_cybex_trustymail_base_domains_and_smtp_subdomains'] = [
-                i['domain'] for i in self.__scan_db.trustymail.find(
-                    {'latest': True,
-                     'agency.id': {'$in': cybex_orgs},
-                     '$or': [
-                        {'is_base_domain': True},
-                        {'domain_supports_smtp': True}]},
-                    {'_id': 0, 'domain': 1})]
+            'latest_cybex_trustymail_base_domains_and_smtp_subdomains'
+        ] = [
+            i['domain']
+            for i in self.__scan_db.trustymail.find(
+                    {
+                        'latest': True,
+                        'agency.id': {'$in': cybex_orgs},
+                        '$or': [
+                            {'is_base_domain': True},
+                            {'domain_supports_smtp': True}
+                        ]
+                    },
+                    {
+                        '_id': 0,
+                        'domain': 1
+                    }
+            )
+        ]
 
         self.__results['trustymail_base_domains_and_smtp_subdomains'] = list(
-            self.__scan_db.trustymail.aggregate([
-                {'$match':
-                    {'latest': True,
-                     'domain':
-                        {'$in': self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']}}},
-                # Pull in data from sslyze_scan collection so weak crypto
-                # status can be determined
-                {'$lookup':
-                    {'from': 'sslyze_scan', 'localField': 'domain',
-                     'foreignField': 'domain', 'as': 'sslyze_data'}},
-                {'$project':
-                    {'agency.id': '$agency.id',
-                     'live': '$live',
-                     'is_base_domain': '$is_base_domain',
-                     'spf_record': '$spf_record',
-                     'valid_spf': '$valid_spf',
-                     'valid_dmarc': '$valid_dmarc',
-                     'valid_dmarc_base_domain': '$valid_dmarc_base_domain',
-                     'dmarc_policy': '$dmarc_policy',
-                     'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
-                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
-                     'has_bod1801_dmarc_rua_uri':
-                        {'$cond': [
-                            {'$eq': [
-                                {'$filter':
-                                    {'input': '$aggregate_report_uris',
-                                     'as': 'agg_report_uri',
-                                     'cond':
-                                        {'$eq': [
-                                            '$$agg_report_uri.uri',
-                                            BOD1801_DMARC_RUA_URI
-                                            ]}}
-                                 }, []]}, False, True]},
-                     'domain_supports_smtp':' $domain_supports_smtp',
-                     'domain_supports_starttls': '$domain_supports_starttls',
-                     'is_missing_starttls':
-                        {'$and': [
-                            {'$eq': ['$domain_supports_smtp', True]},
-                            {'$eq': ['$domain_supports_starttls', False]}]},
-                     # has_weak_mail_crypto projection can be simplified by
-                     # changing $lookup above to use an uncorrelated subquery
-                     # (Mongo 3.6 or later)
-                     'has_weak_mail_crypto':
-                        {'$cond': [
-                            {'$eq': [
-                                {'$filter':
-                                    {'input': '$sslyze_data',
-                                     'as': 'sslyze',
-                                     'cond':
-                                        {'$and': [
-                                            {'$eq': ['$$sslyze.latest', True]},
-                                            {'$or': [
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    25]},
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    587]},
-                                                {'$eq': [
-                                                    '$$sslyze.scanned_port',
-                                                    465]}]},
-                                            {'$or': [
-                                                {'$eq': [
-                                                    '$$sslyze.sslv2', True]},
-                                                {'$eq': [
-                                                    '$$sslyze.sslv3', True]},
-                                                {'$eq': [
-                                                    '$$sslyze.any_3des',
-                                                    True]},
-                                                {'$eq': [
-                                                    '$$sslyze.any_rc4', True]}
-                                                    ]}]}
-                                     }}, []]}, False, True]}}},
-                {'$group':
-                    {'_id': '$agency.id',
-                     'domain_count': {'$sum': 1},
-                     'live_domain_count':
-                        {'$sum': {'$cond': [
-                            {'$eq': ['$live', True]}, 1, 0]}},
-                     # live_valid_dmarc_count here means either you have your
-                     # own valid DMARC record or your base domain does
-                     'live_valid_dmarc_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]
-                                 }]}, 1, 0]}},
-                     # once again, either you or your base domain have to
-                     # have valid DMARC to get credit
-                     'live_dmarc_reject_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]},
-                                {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                                {'$eq': ['$dmarc_policy_percentage', 100]}]
-                             }, 1, 0]}},
-                     # once again, either you or your base domain have to
-                     # have valid DMARC to get credit
-                     'live_has_bod1801_dmarc_uri_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]},
-                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]
-                             }, 1, 0]}},
-                     # Even though the BOD says SPF is required for base
-                     # (2nd-level) domains, we are also measuring it for
-                     # mail-sending hosts (in live_valid_spf_count);
-                     # more info about this in CYHY-592
-                     'live_valid_spf_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$eq': ['$valid_spf', True]}]
-                             }, 1, 0]}},
-                     # live_spf_covered_count was added with CYHY-754 to give
-                     # credit for non-base domains without SPF records that
-                     # are "covered" by a DMARC policy of reject
-                     'live_spf_covered_count':
-                        {'$sum': {'$cond': [{'$or': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$eq': ['$valid_spf', True]}]},
-                            {'$and': [
-                                {'$eq': ['$is_base_domain', False]},
-                                {'$eq': ['$live', True]},
-                                {'$eq': ['$spf_record', False]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]},
-                                {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                                {'$eq': ['$dmarc_policy_percentage', 100]}]}]},
-                            1, 0]}},
-                     'live_missing_starttls_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$eq': ['$is_missing_starttls', True]}]
-                             }, 1, 0]}},
-                     'live_no_weak_crypto_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$eq': ['$has_weak_mail_crypto', False]}]
-                             }, 1, 0]}},
-                     'live_bod1801_dmarc_compliant_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]},
-                                {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                                {'$eq': ['$dmarc_policy_percentage', 100]},
-                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}]
-                             }, 1, 0]}},
-                     'live_bod1801_email_compliant_count':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$live', True]},
-                                {'$or': [
-                                    {'$eq': ['$valid_dmarc', True]},
-                                    {'$eq': ['$valid_dmarc_base_domain',
-                                             True]}]},
-                                {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                                {'$eq': ['$dmarc_policy_percentage', 100]},
-                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                                {'$eq': ['$is_missing_starttls', False]},
-                                {'$or': [
-                                    {'$eq': ['$valid_spf', True]},
-                                    {'$and': [
-                                        {'$eq': ['$is_base_domain', False]},
-                                        {'$eq': ['$spf_record', False]},
-                                        {'$or': [
-                                            {'$eq': ['$valid_dmarc', True]},
-                                            {'$eq': [
-                                                '$valid_dmarc_base_domain',
-                                                True]}]},
-                                        {'$eq': ['$dmarc_policy', 'reject']},
-                                        {'$eq': ['$dmarc_subdomain_policy',
-                                                 'reject']},
-                                        {'$eq': ['$dmarc_policy_percentage',
-                                                 100]}]}]},
-                                {'$eq': ['$has_weak_mail_crypto', False]}]
-                             }, 1, 0]}}}},
-                {'$project':
-                    {'_id': 1,
-                     'domain_count': 1,
-                     'live_domain_count': 1,
-                     'live_valid_dmarc_count': 1,
-                     'live_dmarc_reject_count': 1,
-                     'live_has_bod1801_dmarc_uri_count': 1,
-                     'live_valid_spf_count': 1,
-                     'live_spf_covered_count': 1,
-                     'live_missing_starttls_count': 1,
-                     'live_no_weak_crypto_count': 1,
-                     'live_bod1801_dmarc_compliant_count': 1,
-                     'live_bod1801_email_compliant_count': 1,
-                     'live_supports_starttls_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_missing_starttls_count']},
-                     'live_bod1801_dmarc_non_compliant_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_bod1801_dmarc_compliant_count']},
-                     'live_bod1801_email_non_compliant_count':
-                        {'$subtract': [
-                            '$live_domain_count',
-                            '$live_bod1801_email_compliant_count']}}},
-                {'$sort': {'_id': 1}}
-                ], cursor={}))
+            self.__scan_db.trustymail.aggregate(
+                [
+                    {
+                        '$match': {
+                            'latest': True,
+                            'domain': {
+                                '$in': self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']
+                            }
+                        }
+                    },
+                    # Pull in data from sslyze_scan collection so weak
+                    # crypto status can be determined
+                    {
+                        '$lookup': {
+                            'from': 'sslyze_scan',
+                            'localField': 'domain',
+                            'foreignField': 'domain',
+                            'as': 'sslyze_data'
+                        }
+                    },
+                    {
+                        '$project': {
+                            'agency.id': '$agency.id',
+                            'live': '$live',
+                            'is_base_domain': '$is_base_domain',
+                            'spf_record': '$spf_record',
+                            'valid_spf': '$valid_spf',
+                            'valid_dmarc': '$valid_dmarc',
+                            'valid_dmarc_base_domain': '$valid_dmarc_base_domain',
+                            'dmarc_policy': '$dmarc_policy',
+                            'dmarc_subdomain_policy': '$dmarc_subdomain_policy',
+                            'dmarc_policy_percentage': '$dmarc_policy_percentage',
+                            'has_bod1801_dmarc_rua_uri': {
+                                '$cond': [
+                                    {
+                                        '$eq': [
+                                            {
+                                                '$filter': {
+                                                    'input': '$aggregate_report_uris',
+                                                    'as': 'agg_report_uri',
+                                                    'cond': {
+                                                        '$eq': [
+                                                            '$$agg_report_uri.uri',
+                                                            BOD1801_DMARC_RUA_URI
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            []
+                                        ]
+                                    },
+                                    False,
+                                    True
+                                ]
+                            },
+                            'domain_supports_smtp':' $domain_supports_smtp',
+                            'domain_supports_starttls': '$domain_supports_starttls',
+                            'is_missing_starttls': {
+                                '$and': [
+                                    {'$eq': ['$domain_supports_smtp', True]},
+                                    {'$eq': ['$domain_supports_starttls', False]}
+                                ]
+                            },
+                            # has_weak_mail_crypto projection can be
+                            # simplified by changing $lookup above to
+                            # use an uncorrelated subquery (Mongo 3.6
+                            # or later)
+                            'has_weak_mail_crypto': {
+                                '$cond': [
+                                    {
+                                        '$eq': [
+                                            {
+                                                '$filter': {
+                                                    'input': '$sslyze_data',
+                                                    'as': 'sslyze',
+                                                    'cond': {
+                                                        '$and': [
+                                                            {'$eq': ['$$sslyze.latest', True]},
+                                                            {
+                                                                '$or': [
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            25
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            587
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.scanned_port',
+                                                                            465
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                '$or': [
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.sslv2',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.sslv3',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.any_3des',
+                                                                            True
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        '$eq': [
+                                                                            '$$sslyze.any_rc4',
+                                                                            True
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            []
+                                        ]
+                                    },
+                                    False,
+                                    True
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        '$group': {
+                            '_id': '$agency.id',
+                            'domain_count': {'$sum': 1},
+                            'live_domain_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$eq': ['$live', True]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            # live_valid_dmarc_count here means either
+                            # you have your own valid DMARC record or
+                            # your base domain does
+                            'live_valid_dmarc_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {
+                                                    '$or': [
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc',
+                                                                True
+                                                            ]
+                                                        },
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc_base_domain',
+                                                                True
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            # once again, either you or your base
+                            # domain have to have valid DMARC to get
+                            # credit
+                            'live_dmarc_reject_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {
+                                                    '$or': [
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc',
+                                                                True
+                                                            ]
+                                                        },
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc_base_domain',
+                                                                True
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            # once again, either you or your base
+                            # domain have to have valid DMARC to get
+                            # credit
+                            'live_has_bod1801_dmarc_uri_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {
+                                                    '$or': [
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc',
+                                                                True
+                                                            ]
+                                                        },
+                                                        {
+                                                            '$eq': [
+                                                                '$valid_dmarc_base_domain',
+                                                                True
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            # Even though the BOD says SPF is required
+                            # for base (2nd-level) domains, we are
+                            # also measuring it for mail-sending hosts
+                            # (in live_valid_spf_count); more info
+                            # about this in CYHY-592
+                            'live_valid_spf_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$valid_spf', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            # live_spf_covered_count was added with
+                            # CYHY-754 to give credit for non-base
+                            # domains without SPF records that are
+                            # "covered" by a DMARC policy of reject
+                            'live_spf_covered_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$or': [
+                                                {
+                                                    '$and': [
+                                                        {'$eq': ['$live', True]},
+                                                        {'$eq': ['$valid_spf', True]}
+                                                    ]
+                                                },
+                                                {
+                                                    '$and': [
+                                                        {'$eq': ['$is_base_domain', False]},
+                                                        {'$eq': ['$live', True]},
+                                                        {'$eq': ['$spf_record', False]},
+                                                        {
+                                                            '$or': [
+                                                                {'$eq': ['$valid_dmarc', True]},
+                                                                {'$eq': ['$valid_dmarc_base_domain', True]}
+                                                            ]
+                                                        },
+                                                        {'$eq': ['$dmarc_policy', 'reject']},
+                                                        {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                        {'$eq': ['$dmarc_policy_percentage', 100]}
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_missing_starttls_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$is_missing_starttls', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_no_weak_crypto_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {'$eq': ['$has_weak_mail_crypto', False]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_bod1801_dmarc_compliant_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {
+                                                    '$or': [
+                                                        {'$eq': ['$valid_dmarc', True]},
+                                                        {'$eq': ['$valid_dmarc_base_domain', True]}
+                                                    ]
+                                                },
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]},
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            },
+                            'live_bod1801_email_compliant_count': {
+                                '$sum': {
+                                    '$cond': [
+                                        {
+                                            '$and': [
+                                                {'$eq': ['$live', True]},
+                                                {
+                                                    '$or': [
+                                                        {'$eq': ['$valid_dmarc', True]},
+                                                        {'$eq': ['$valid_dmarc_base_domain', True]}
+                                                    ]
+                                                },
+                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {'$eq': ['$dmarc_policy_percentage', 100]},
+                                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                                                {'$eq': ['$is_missing_starttls', False]},
+                                                {
+                                                    '$or': [
+                                                        {'$eq': ['$valid_spf', True]},
+                                                        {
+                                                            '$and': [
+                                                                {'$eq': ['$is_base_domain', False]},
+                                                                {'$eq': ['$spf_record', False]},
+                                                                {
+                                                                    '$or': [
+                                                                        {'$eq': ['$valid_dmarc', True]},
+                                                                        {'$eq': ['$valid_dmarc_base_domain', True]}
+                                                                    ]
+                                                                },
+                                                                {'$eq': ['$dmarc_policy', 'reject']},
+                                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                                {'$eq': ['$dmarc_policy_percentage', 100]}
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {'$eq': ['$has_weak_mail_crypto', False]}
+                                            ]
+                                        },
+                                        1,
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        '$project': {
+                            '_id': 1,
+                            'domain_count': 1,
+                            'live_domain_count': 1,
+                            'live_valid_dmarc_count': 1,
+                            'live_dmarc_reject_count': 1,
+                            'live_has_bod1801_dmarc_uri_count': 1,
+                            'live_valid_spf_count': 1,
+                            'live_spf_covered_count': 1,
+                            'live_missing_starttls_count': 1,
+                            'live_no_weak_crypto_count': 1,
+                            'live_bod1801_dmarc_compliant_count': 1,
+                            'live_bod1801_email_compliant_count': 1,
+                            'live_supports_starttls_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_missing_starttls_count'
+                                ]
+                            },
+                            'live_bod1801_dmarc_non_compliant_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_bod1801_dmarc_compliant_count'
+                                ]
+                            },
+                            'live_bod1801_email_non_compliant_count': {
+                                '$subtract': [
+                                    '$live_domain_count',
+                                    '$live_bod1801_email_compliant_count'
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        '$sort': {'_id': 1}
+                    }
+                ],
+                cursor={}
+            )
+        )
 
         # Trustymail DMARC summary Metrics (live base domains only)
         self.__results['trustymail_dmarc_summary'] = list(
             self.__scan_db.trustymail.aggregate([
-                {'$match':
-                    {'agency.id': {'$in': cybex_orgs},
-                     'live': True,
-                     'is_base_domain': True}},
-                {'$project':
-                    {'domain': '$domain',
-                     'scan_date': '$scan_date',
-                     'dmarc_policy': '$dmarc_policy',
-                     # Since dmarc_subdomain_policy was added to our data
-                     # recently (https://github.com/cisagov/saver/pull/39)
-                     # and we don't have historical data, we default its value
-                     # to 'reject' when it doesn't exist in the data. This
-                     # gives results closest to what we had prior to adding
-                     # dmarc_subdomain_policy.
-                     # The $ifNull expression below can be removed in
-                     # 9 weeks when we have enough historical data
-                     # containing this field.
-                     'dmarc_subdomain_policy': {'$ifNull': [
-                        '$dmarc_subdomain_policy', 'reject']},
-                     'dmarc_policy_percentage': '$dmarc_policy_percentage',
-                     'valid_dmarc': '$valid_dmarc',
-                     'dmarc_record': '$dmarc_record',
-                     # Filter aggregate_report_uris to search for
-                     # BOD1801_DMARC_RUA_URI in the uri field, then
-                     # check if the resulting array is empty
-                     # (has_bod1801_dmarc_rua_uri == False), else it's True
-                     'has_bod1801_dmarc_rua_uri':
-                        {'$cond': [
-                            {'$eq': [
-                                {'$filter':
-                                    {'input': '$aggregate_report_uris',
-                                     'as': 'agg_report_uri',
-                                     'cond':
-                                        {'$eq': [
-                                            '$$agg_report_uri.uri',
-                                            BOD1801_DMARC_RUA_URI
-                                            ]}}
-                                 }, []]}, False, True]},
-                     }},
-                {'$group':
-                    {'_id': '$scan_date',
-                     'base_domain_count': {'$sum': 1},
-                     'dmarc_policy_none':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$dmarc_policy', 'none']},
-                                {'$eq': ['$valid_dmarc', True]}]
-                             }, 1, 0]}},
-                     'dmarc_policy_quarantine':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$dmarc_policy', 'quarantine']},
-                                {'$eq': ['$valid_dmarc', True]}]
-                             }, 1, 0]}},
-                     'dmarc_policy_reject':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$dmarc_policy', 'reject']},
-                                {'$eq': ['$valid_dmarc', True]},
-                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
-                                {'$eq': ['$dmarc_policy_percentage', 100]}]
-                             }, 1, 0]}},
-                     'dmarc_correct_rua':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
-                                {'$eq': ['$valid_dmarc', True]}]
-                             }, 1, 0]}},
-                     'invalid_dmarc_record':
-                        {'$sum': {'$cond': [
-                            {'$and': [
-                                {'$eq': ['$dmarc_record', True]},
-                                {'$eq': ['$valid_dmarc', False]}]
-                             }, 1, 0]}},
-                     'no_dmarc_record':
-                        {'$sum': {'$cond': [
-                            {'$eq': ['$dmarc_record', False]}, 1, 0]}}}},
+                {
+                    '$match': {
+                        'agency.id': {'$in': cybex_orgs},
+                        'live': True,
+                        'is_base_domain': True
+                    }
+                },
+                {
+                    '$project': {
+                        'domain': '$domain',
+                        'scan_date': '$scan_date',
+                        'dmarc_policy': '$dmarc_policy',
+                        # Since dmarc_subdomain_policy was added to
+                        # our data recently
+                        # (https://github.com/cisagov/saver/pull/39)
+                        # and we don't have historical data, we
+                        # default its value to 'reject' when it
+                        # doesn't exist in the data. This gives
+                        # results closest to what we had prior to
+                        # adding dmarc_subdomain_policy.
+                        #
+                        # The $ifNull expression below can be removed
+                        # in 9 weeks when we have enough historical
+                        # data containing this field.
+                        'dmarc_subdomain_policy': {
+                            '$ifNull': [
+                                '$dmarc_subdomain_policy', 'reject'
+                            ]
+                        },
+                        'dmarc_policy_percentage': '$dmarc_policy_percentage',
+                        'valid_dmarc': '$valid_dmarc',
+                        'dmarc_record': '$dmarc_record',
+                        # Filter aggregate_report_uris to search for
+                        # BOD1801_DMARC_RUA_URI in the uri field, then
+                        # check if the resulting array is empty
+                        # (has_bod1801_dmarc_rua_uri == False), else
+                        # it's True
+                        'has_bod1801_dmarc_rua_uri': {
+                            '$cond': [
+                                {
+                                    '$eq': [
+                                        {
+                                            '$filter': {
+                                                'input': '$aggregate_report_uris',
+                                                'as': 'agg_report_uri',
+                                                'cond': {
+                                                    '$eq': [
+                                                        '$$agg_report_uri.uri',
+                                                        BOD1801_DMARC_RUA_URI
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        []
+                                    ]
+                                },
+                                False,
+                                True
+                            ]
+                        },
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$scan_date',
+                        'base_domain_count': {'$sum': 1},
+                        'dmarc_policy_none': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$dmarc_policy', 'none']},
+                                            {'$eq': ['$valid_dmarc', True]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'dmarc_policy_quarantine': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$dmarc_policy', 'quarantine']},
+                                            {'$eq': ['$valid_dmarc', True]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'dmarc_policy_reject': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$dmarc_policy', 'reject']},
+                                            {'$eq': ['$valid_dmarc', True]},
+                                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                            {'$eq': ['$dmarc_policy_percentage', 100]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'dmarc_correct_rua': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
+                                            {'$eq': ['$valid_dmarc', True]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'invalid_dmarc_record': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$dmarc_record', True]},
+                                            {'$eq': ['$valid_dmarc', False]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'no_dmarc_record': {
+                            '$sum': {
+                                '$cond': [
+                                    {'$eq': ['$dmarc_record', False]},
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
                 # Reverse sort + limit = most-recent n results
-                {'$sort': {'_id': -1}},
-                {'$limit': TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT}
-                ], cursor={}))
+                {
+                    '$sort': {'_id': -1}
+                },
+                {
+                    '$limit': TRUSTYMAIL_SUMMARY_SCAN_DATE_COUNT
+                }
+            ], cursor={})
+        )
 
     def __run_https_scan_queries(self, cybex_orgs):
         # https-scan queries:
         # Drop domains that are OCSP sites, since they are to be excluded
-        self.__results['latest_cybex_https_scan_live_hostnames'] = [ i['domain'] for i in self.__scan_db.https_scan.find({
-            'latest': True,
-            'live': True,
-            'agency.id': {'$in': cybex_orgs},
-            # I get an error in Python 3 if I just use
-            # self.__ocsp_exclusions.keys() here.  This is because in
-            # Python 3 dict.keys() returns a view, not an actual list.
-            #
-            # Since we're moving to Python 3 eventually, it seems
-            # reasonable to leave the explicit list(...) in.
-            #
-            # TODO: Update this comment after moving to Python 3.
-            'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
-        }, {'_id':0, 'domain':1})]
+        self.__results['latest_cybex_https_scan_live_hostnames'] = [
+            i['domain']
+            for i in self.__scan_db.https_scan.find({
+                    'latest': True,
+                    'live': True,
+                    'agency.id': {
+                        '$in': cybex_orgs
+                    },
+                    # I get an error in Python 3 if I just use
+                    # self.__ocsp_exclusions.keys() here.  This is
+                    # because in Python 3 dict.keys() returns a view,
+                    # not an actual list.
+                    #
+                    # Since we're moving to Python 3 eventually, it
+                    # seems reasonable to leave the explicit list(...)
+                    # in.
+                    #
+                    # TODO: Update this comment after moving to Python
+                    # 3.
+                    'domain': {'$nin': list(self.__ocsp_exclusions.keys())}
+            }, {
+                '_id': 0,
+                'domain': 1
+            })
+        ]
 
-        self.__results['https-scan'] = list(self.__scan_db.https_scan.aggregate([
-                    {'$match': {'latest':True, 'domain': {'$in':self.__results['latest_cybex_https_scan_live_hostnames']}}},
-                    # Pull in data from sslyze_scan collection so weak crypto status can be determined
-                    {'$lookup': {'from':'sslyze_scan', 'localField':'domain',
-                                 'foreignField':'domain', 'as':'sslyze_data'}},
-                    {'$project': {'agency.id':'$agency.id', 'scan_date':'$scan_date',
-                                  # If hsts_base_domain_preloaded is True, a domain automatically gets credit for:
-                                  #  supporting HTTPS, enforcing HTTPS, and having strong HSTS
-                                  # Even if pshtt says that the domain does not support HTTPS, enforce HTTPS, or have strong HSTS
-                                  'domain_supports_https': {'$cond': [{'$or': [{'$eq': ['$domain_supports_https', True]},
-                                                                               {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  'domain_enforces_https': {'$cond': [{'$or': [{'$eq': ['$domain_enforces_https', True]},
-                                                                               {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  'domain_uses_strong_hsts': {'$cond': [{'$or': [{'$eq': ['$domain_uses_strong_hsts', True]},
-                                                                                 {'$eq': ['$hsts_base_domain_preloaded', True]}]}, True, False]},
-                                  # has_weak_web_crypto projection can be simplified by
-                                  # changing $lookup above to use an uncorrelated subquery (Mongo 3.6 or later)
-                                  'has_weak_web_crypto': {'$cond': [{'$eq': [{'$filter': {'input':'$sslyze_data',
-                                                                                          'as':'sslyze',
-                                                                                          'cond': {'$and': [{'$eq': ['$$sslyze.latest', True]},
-                                                                                                            {'$eq': ['$$sslyze.scanned_port', 443]},
-                                                                                                            {'$or': [ {'$eq': ['$$sslyze.sslv2', True]},
-                                                                                                                      {'$eq': ['$$sslyze.sslv3', True]},
-                                                                                                                      {'$eq': ['$$sslyze.any_3des', True]},
-                                                                                                                      {'$eq': ['$$sslyze.any_rc4', True]} ]}]}
-                                                                                         }}, []]}, False, True]} }},
-                    {'$group': {'_id': '$agency.id',
-                                'earliest_scan_date': {'$min': '$scan_date'},
-                                'live_domain_count': {'$sum': 1},
-                                'live_supports_https_count': {'$sum': {'$cond': [ {'$eq': ['$domain_supports_https', True]},1,0 ] }},
-                                'live_enforces_https_count': {'$sum': {'$cond': [ {'$eq': ['$domain_enforces_https', True]},1,0 ] }},
-                                'live_uses_strong_hsts_count': {'$sum': {'$cond': [ {'$eq': ['$domain_uses_strong_hsts', True]},1,0 ] }},
-                                'live_no_weak_crypto_count': {'$sum': {'$cond': [ {'$eq': ['$has_weak_web_crypto', False]},1,0 ] }},
-                                'live_bod1801_web_compliant_count': {'$sum': {'$cond': [ {'$and': [{'$eq': ['$domain_supports_https', True]},
-                                                                                                   {'$eq': ['$domain_enforces_https', True]},
-                                                                                                   {'$eq': ['$domain_uses_strong_hsts', True]},
-                                                                                                   {'$eq': ['$has_weak_web_crypto', False]}] },1,0] }}}},
-                    # Calculate how many live domains are not BOD 18-01 Compliant:
-                    {'$project': {'_id':1, 'earliest_scan_date':1, 'live_domain_count':1,
-                                  'live_supports_https_count':1, 'live_enforces_https_count':1,
-                                  'live_uses_strong_hsts_count':1, 'live_no_weak_crypto_count':1,
-                                  'live_bod1801_web_compliant_count':1,
-                                  'live_missing_https_hsts_count': {'$subtract': ['$live_domain_count',
-                                                                                  '$live_uses_strong_hsts_count']}}},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['https-scan'] = list(
+            self.__scan_db.https_scan.aggregate([
+                {
+                    '$match': {
+                        'latest': True,
+                        'domain': {
+                            '$in': self.__results['latest_cybex_https_scan_live_hostnames']
+                        }
+                    }
+                },
+                # Pull in data from sslyze_scan collection so weak
+                # crypto status can be determined
+                {
+                    '$lookup': {
+                        'from': 'sslyze_scan',
+                        'localField': 'domain',
+                        'foreignField': 'domain',
+                        'as':'sslyze_data'
+                    }
+                },
+                {
+                    '$project': {
+                        'agency.id': '$agency.id',
+                        'scan_date': '$scan_date',
+                        # If hsts_base_domain_preloaded is True, a
+                        # domain automatically gets credit for
+                        # supporting HTTPS, enforcing HTTPS, and
+                        # having strong HSTS Even if pshtt says that
+                        # the domain does not support HTTPS, enforce
+                        # HTTPS, or have strong HSTS
+                        'domain_supports_https': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_supports_https', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        'domain_enforces_https': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_enforces_https', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        'domain_uses_strong_hsts': {
+                            '$cond': [
+                                {
+                                    '$or': [
+                                        {
+                                            '$eq': ['$domain_uses_strong_hsts', True]
+                                        },
+                                        {
+                                            '$eq': ['$hsts_base_domain_preloaded', True]
+                                        },
+                                        {
+                                            '$and': [
+                                                {
+                                                    '$eq': ['$https_full_connection', False]
+                                                },
+                                                {
+                                                    '$eq': ['$https_client_auth_required', True]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                True,
+                                False
+                            ]
+                        },
+                        # has_weak_web_crypto projection can be
+                        # simplified by changing $lookup above to use
+                        # an uncorrelated subquery (Mongo 3.6 or
+                        # later)
+                        'has_weak_web_crypto': {
+                            '$cond': [
+                                {
+                                    '$eq': [
+                                        {
+                                            '$filter': {
+                                                'input': '$sslyze_data',
+                                                'as':'sslyze',
+                                                'cond': {
+                                                    '$and': [
+                                                        {
+                                                            '$eq': ['$$sslyze.latest', True]
+                                                        },
+                                                        {
+                                                            '$eq': ['$$sslyze.scanned_port', 443]
+                                                        },
+                                                        {
+                                                            '$or': [
+                                                                {
+                                                                    '$eq': ['$$sslyze.sslv2', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.sslv3', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.any_3des', True]
+                                                                },
+                                                                {
+                                                                    '$eq': ['$$sslyze.any_rc4', True]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        []
+                                    ]
+                                },
+                                False,
+                                True
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$agency.id',
+                        'earliest_scan_date': {
+                            '$min': '$scan_date'
+                        },
+                        'live_domain_count': {
+                            '$sum': 1
+                        },
+                        'live_supports_https_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_supports_https', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_enforces_https_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_enforces_https', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_uses_strong_hsts_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_uses_strong_hsts', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_no_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$has_weak_web_crypto', False]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        'live_bod1801_web_compliant_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$and': [
+                                            {'$eq': ['$domain_supports_https', True]},
+                                            {'$eq': ['$domain_enforces_https', True]},
+                                            {'$eq': ['$domain_uses_strong_hsts', True]},
+                                            {'$eq': ['$has_weak_web_crypto', False]}
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                # Calculate how many live domains are not BOD 18-01
+                # Compliant:
+                {
+                    '$project': {
+                        '_id': 1,
+                        'earliest_scan_date': 1,
+                        'live_domain_count': 1,
+                        'live_supports_https_count': 1,
+                        'live_enforces_https_count': 1,
+                        'live_uses_strong_hsts_count': 1,
+                        'live_no_weak_crypto_count': 1,
+                        'live_bod1801_web_compliant_count': 1,
+                        'live_missing_https_hsts_count': {
+                            '$subtract': [
+                                '$live_domain_count',
+                                '$live_uses_strong_hsts_count'
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$sort': {
+                        '_id': 1
+                    }
+                }
+            ], cursor={})
+        )
 
     def __run_sslyze_scan_queries(self, cybex_orgs):
         # Query sslyze-scans for weak crypto in domains (includes both web and email servers)
         # Used in 'BOD Results by Agency' section
-        latest_cybex_hostnames = list(set(self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']) |
-                                      set(self.__results['latest_cybex_https_scan_live_hostnames']))
+        latest_cybex_hostnames = list(set(
+            self.__results['latest_cybex_trustymail_base_domains_and_smtp_subdomains']
+        ) | set(
+            self.__results['latest_cybex_https_scan_live_hostnames']
+        ))
 
-        self.__results['sslyze-scan'] = list(self.__scan_db.sslyze_scan.aggregate([
-                    {'$match': {'latest':True, 'domain':{'$in':latest_cybex_hostnames},
-                                'scanned_port': {'$in':[25, 587, 465, 443]}}},    # 25, 587, 465 = SMTP (email)    443 = HTTPS (web)
-                    {'$project': {'agency_id':'$agency.id', 'domain':'$domain',
-                                  'sslv2':'$sslv2', 'sslv3':'$sslv3',
-                                  'any_rc4':'$any_rc4', 'any_3des':'$any_3des'}},
-                    {'$group': {'_id':{'domain':'$domain', 'agency_id':'$agency_id'},
-                                'ports_with_weak_crypto_count': {'$sum': {'$cond': [{'$or': [{'$eq': ['$sslv2', True]},
-                                                                                             {'$eq': ['$sslv3', True]},
-                                                                                             {'$eq': ['$any_rc4', True]},
-                                                                                             {'$eq': ['$any_3des', True]}]}, 1,0]}} }},
-                    {'$project': {'domain':'$id.domain',
-                                  'agency_id':'$id.agency_id',
-                                  'domain_has_weak_crypto': {'$cond': [{'$gt': ['$ports_with_weak_crypto_count', 0]}, True, False]} }},
-                    {'$group': {'_id':'$_id.agency_id',
-                                'domain_count': {'$sum': 1},
-                                'domains_with_weak_crypto_count': {'$sum': {'$cond': [{'$eq': ['$domain_has_weak_crypto', True]},1,0] }}}},
-                    {'$sort':{'_id':1}}
-                    ], cursor={}))
+        self.__results['sslyze-scan'] = list(self.__scan_db.sslyze_scan.aggregate(
+            [
+                {
+                    '$match': {
+                        'latest':True,
+                        'domain': {
+                            '$in':latest_cybex_hostnames
+                        },
+                        'scanned_port': {
+                            '$in': [25, 587, 465, 443]
+                        }
+                    }
+                },    # 25, 587, 465 = SMTP (email)    443 = HTTPS (web)
+                {
+                    '$project': {
+                        'agency_id': '$agency.id',
+                        'domain': '$domain',
+                        'sslv2': '$sslv2',
+                        'sslv3': '$sslv3',
+                        'any_rc4': '$any_rc4',
+                        'any_3des': '$any_3des'
+                    }
+                },
+                {
+                    '$group': {
+                        '_id':{
+                            'domain':'$domain',
+                            'agency_id':'$agency_id'
+                        },
+                        'ports_with_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$or': [
+                                            {
+                                                '$eq': ['$sslv2', True]
+                                            },
+                                            {
+                                                '$eq': ['$sslv3', True]
+                                            },
+                                            {
+                                                '$eq': ['$any_rc4', True]
+                                            },
+                                            {
+                                                '$eq': ['$any_3des', True]
+                                            }
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    '$project': {
+                        'domain': '$id.domain',
+                        'agency_id': '$id.agency_id',
+                        'domain_has_weak_crypto': {
+                            '$cond': [
+                                {
+                                    '$gt': ['$ports_with_weak_crypto_count', 0]
+                                },
+                                True,
+                                False
+                            ]
+                        }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$_id.agency_id',
+                        'domain_count': {'$sum': 1},
+                        'domains_with_weak_crypto_count': {
+                            '$sum': {
+                                '$cond': [
+                                    {
+                                        '$eq': ['$domain_has_weak_crypto', True]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    '$sort': {'_id':1}
+                }
+            ], cursor={}
+        ))
 
     def __create_domain_to_org_map(self, org_list):
         '''
         Map each domain (owned by an org in org_list) to the org that owns it
         '''
 
-        domains = self.__scan_db.domains.find({
-            'agency.id': {'$in': org_list}
-        }, {
-            '_id': True,
-            'agency.id': True
-        })
+        domains = self.__scan_db.domains.find(
+            {
+                'agency.id': {'$in': org_list}
+            },
+            {
+                '_id': True,
+                'agency.id': True
+            }
+        )
 
         return {d['_id'].lower(): d['agency']['id'] for d in domains}
 
@@ -1148,28 +2111,47 @@ class ScorecardGenerator(object):
 
         current_fy_start = report_dates(now=self.__generated_time)['fy_start']
 
-        relevant_certs = self.__scan_db.certs.find({
-            'trimmed_subjects': {
-                '$in': cybex_domains
+        relevant_certs = self.__scan_db.certs.find(
+            {
+                'trimmed_subjects': {
+                    '$in': cybex_domains
+                },
+                '$or': [
+                    {
+                        'not_after': {
+                            '$gt': self.__generated_time
+                        }
+                    },
+                    {
+                        'sct_or_not_before': {
+                            '$gte': current_fy_start
+                        }
+                    },
+                    {
+                        'sct_or_not_before': {
+                            '$gte': self.__generated_time - timedelta(days=30)
+                        }
+                    }
+                ]
             },
-            '$or': [
-                {'not_after': {'$gt': self.__generated_time}},
-                {'sct_or_not_before': {'$gte': current_fy_start}},
-                {'sct_or_not_before': {'$gte': self.__generated_time -
-                                               timedelta(days=30)}}
-            ]
-        }, {
-            '_id': False,
-            'not_after': True,
-            'trimmed_subjects': True,
-            'sct_or_not_before': True
-        })
+            {
+                '_id': False,
+                'not_after': True,
+                'trimmed_subjects': True,
+                'sct_or_not_before': True
+            }
+        )
 
-        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs, current_fy_start)
+        self.__results['cert-scan'] = self.__create_cert_summary_by_org(relevant_certs,
+                                                                        current_fy_start)
 
     def __run_queries(self):
         # Get cyhy request docs for all orgs that have CYBEX in their report_types
-        self.__requests = list(self.__cyhy_db.RequestDoc.find({'report_types':REPORT_TYPE.CYBEX}))
+        self.__requests = list(self.__cyhy_db.RequestDoc.find(
+            {
+                'report_types': REPORT_TYPE.CYBEX
+            }
+        ))
         cybex_orgs = []
         for r in self.__requests:
             cybex_orgs.append(r['_id'])
@@ -1177,7 +2159,7 @@ class ScorecardGenerator(object):
             self.__all_cybex_orgs_with_descendants += self.__cyhy_db.RequestDoc.get_all_descendants(r['_id'])
 
         # Build up list of CYBEX org tallies that were updated within past CURRENTLY_SCANNED_DAYS days
-        for tally in list(self.__cyhy_db.TallyDoc.find({'_id':{'$in':cybex_orgs}})):
+        for tally in list(self.__cyhy_db.TallyDoc.find({'_id': {'$in': cybex_orgs}})):
             if tally['last_change'] >= self.__generated_time - timedelta(days=CURRENTLY_SCANNED_DAYS):
                 self.__tallies.append(tally)                # Append the tally if it's been changed recently
             else:       # Check if this org has any descendants with tallies that have been changed recently
@@ -1189,8 +2171,8 @@ class ScorecardGenerator(object):
                             break                           # No need to check any other descendants
 
         # Get list of 'CFO Act' orgs
-        if self.__cyhy_db.RequestDoc.find_one({'_id':'FED_CFO_ACT'}):
-            self.__cfo_act_orgs = self.__cyhy_db.RequestDoc.find_one({'_id':'FED_CFO_ACT'})['children']
+        if self.__cyhy_db.RequestDoc.find_one({'_id': 'FED_CFO_ACT'}):
+            self.__cfo_act_orgs = self.__cyhy_db.RequestDoc.find_one({'_id': 'FED_CFO_ACT'})['children'] 
         else:
             self.__cfo_act_orgs = []
 
