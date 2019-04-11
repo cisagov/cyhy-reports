@@ -34,10 +34,10 @@
 % \definecolor{linkblue}{HTML}{145680}
 % \definecolor{midnightblue}{rgb}{0.1, 0.1, 0.44}
 \definecolor{darkcerulean}{rgb}{0.03, 0.27, 0.49}
-\usepackage[pdfauthor={National Cybersecurity Assessments and Technical Services},
+\usepackage[pdfauthor={CISA Assessments team},
             pdftitle={Cyber Hygiene Assessment for <<&owner.agency.name>>},
             pdfsubject={Assessment},
-            pdfkeywords={cyhy, cyber, hygiene, security, assessment, dhs, nppd, cs\&c, nccic, ncats, <<&owner.agency.acronym>><<#report_oid>>, oid:<<&report_oid>><</report_oid>>},
+            pdfkeywords={cyhy, cyber, hygiene, security, assessment, cisa, ncats, <<&owner.agency.acronym>><<#report_oid>>, oid:<<&report_oid>><</report_oid>>},
             %pdfproducer={xdvipdfmx},
             pdfcreator={XeTeX with hyperref},
 			colorlinks=true, linkcolor=black, urlcolor=darkcerulean]{hyperref}
@@ -330,11 +330,8 @@
 \makeglossaries
 \newacronym{AGENCY}{<<&owner.agency.acronym>>}{<<&owner.agency.name>>}
 \newacronym{AWS}{AWS}{Amazon Web Services}
-\newacronym[description={Department of Homeland Security [\href{https://www.dhs.gov}{https://www.dhs.gov}]}]{DHS}{DHS}{Department of Homeland Security}
-\newacronym[description={National Protection and Programs Directorate [\href{https://www.dhs.gov/national-protection-and-programs-directorate}{https://www.dhs.gov/national-protection-and-programs-directorate}]}]{NPPD}{NPPD}{National Protection and Programs Directorate}
-\newacronym[description={Office of Cybersecurity and Communications [\href{https://www.dhs.gov/office-cybersecurity-and-communications}{https://www.dhs.gov/office-cybersecurity-and-communications}]}]{CSC}{CS\&C}{Office of Cybersecurity and Communications}
+\newacronym[description={Cybersecurity and Infrastructure Security Agency [\href{https://www.cisa.gov}{https://www.cisa.gov}]}]{CISA}{CISA}{Cybersecurity and Infrastructure Security Agency}
 \newacronym{CSV}{CSV}{Comma-Separated Values}
-\newacronym[description={National Cybersecurity and Communications Integration Center [\href{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}{https://www.dhs.gov/about-national-cybersecurity-communications-integration-center}]}]{NCCIC}{NCCIC}{National Cybersecurity and Communications Integration Center}
 \newacronym{NCATS}{NCATS}{National Cybersecurity Assessments and Technical Services}
 \newacronym{CT}{CT}{Certificate transparency}
 \newacronym{CyHy}{CyHy}{Cyber Hygiene}
@@ -406,7 +403,7 @@
 		\vspace*{1.6in}
 		\begin{minipage}{\textwidth}
     	\begin{minipage}{.32\linewidth}
-				\hspace*{3mm} \raggedright \includegraphics[height=0.8in]{assets/dhs-nccic-logo}
+				\hspace*{3mm} \raggedright \includegraphics[height=0.8in]{assets/cisa-logo}
 			\end{minipage}
 			\begin{minipage}{.34\linewidth}
 				\ % placeholder for center of footer
@@ -457,7 +454,7 @@ As you review the report, you may have additional questions. Check out the answe
 
 \subsection{<<&owner.agency.acronym>> Points of Contact}
 \label{subsec:points-of-contact}
-\gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, \gls{DHS} requests that you funnel your request through your technical POC(s).
+\gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, the \gls{CISA} requests that you funnel your request through your technical POC(s).
 	\begin{table*}[h!]
  		\centering
  		\rowcolors{2}{white}{row-gray}
@@ -660,7 +657,7 @@ See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-s
 \section{Emergency Directive 19-01 --- New Certificates Summary}
 \label{sec:ed1901}
 Issued on 22 January 2019, Emergency Directive (ED) 19-01 requires
-CISA to assist Federal agencies in identifying newly added
+\gls{CISA} to assist Federal agencies in identifying newly added
 certificates to \gls{CT} logs for agency domains. \gls{NCATS} is
 supporting the directive by providing certificate information found in
 \gls{CT} log entries for known agency second-level domains and all
@@ -777,7 +774,7 @@ certificates that have been issued by an unusual organization.
 \newpage
 \section{Executive Summary}
 \label{sec:executive-summary}
-This report provides the results of a \gls{DHS} / \gls{NCATS} \gls{CyHy} assessment of \gls{AGENCY} conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
+This report provides the results of a \gls{CISA} / \gls{NCATS} \gls{CyHy} assessment of \gls{AGENCY} conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
 The Cyber Hygiene assessment includes network mapping and \gls{vulnerability} scanning for Internet\-/accessible \gls{AGENCY} \glspl{host}.  This report is intended to provide \gls{AGENCY} with enhanced understanding of their cyber posture and to promote a secure and resilient \gls{IT} infrastructure across \gls{AGENCY}'s Internet\-/accessible networks and hosts.
 
 For this reporting period, a total of \numprint{<<&ss0.host_count>>} hosts were identified out of the \numprint{<<&calc.address_count>>} addresses provided to \gls{NCATS}.  The scanning revealed \numprint{<<&ss0.vulnerabilities.total>>} total potential vulnerabilities on  \numprint{<<&ss0.vulnerable_host_count>>} vulnerable hosts, <<&calc.vuln_host_percent>>\% of all \gls{AGENCY} hosts.  \numprint{<<&ss0.unique_port_count>>} distinct open ports, \numprint{<<&calc.ss0_unique_services_count>>} distinct services, and \numprint{<<&ss0.unique_operating_systems>>} operating systems were detected.
@@ -951,9 +948,9 @@ The \gls{NCATS} team conducted a Cyber Hygiene assessment of \gls{AGENCY}'s Inte
 
 Cyber Hygiene is intended to improve your security posture by proactively identifying and reporting on \glspl{vulnerability} and configuration issues present on Internet-facing systems before those vulnerabilities can be exploited.
 
-Cyber Hygiene is a service of \gls{NCATS}, organized under the \gls{DHS} \gls{NPPD}, \gls{CSC}, \gls{NCCIC}.
+Cyber Hygiene is a service of \gls{NCATS}, organized under the Cybersecurity and Infrastructure Security Agency (\gls{CISA}).
 
-\gls{DHS} began Cyber Hygiene in January 2012 to assess, on a recurring basis, the ``health" of unclassified federal civilian networks accessible via the Internet. Since then, the program has grown to provide a persistent scanning service to federal, state, local, tribal, and territorial governments and private sector organizations.
+\gls{CISA} began Cyber Hygiene in January 2012 to assess, on a recurring basis, the ``health" of unclassified federal civilian networks accessible via the Internet. Since then, the program has grown to provide a persistent scanning service to federal, state, local, tribal, and territorial governments and private sector organizations.
 
 Upon submission of an Acceptance Letter, \gls{AGENCY} provided \gls{NCATS} with their public network address information. \gls{AGENCY} and \gls{NCATS} agreed on any time restrictions which would be imposed on the scanning activity.
 
@@ -1427,12 +1424,12 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 		\item \gls{CyHy} automatically rescans whenever a vulnerability is detected, so there is no need to notify us that you've fixed something. If we can no longer detect the vulnerability, it will be listed in \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities}.
 	\end{itemize}
 
-	<<#owner_is_federal_executive>>\item \textbf{The \gls{DHS} Binding Operational Directive 15-01 (BOD) requires my agency to fix Critical vulnerabilities within 30 days. If we can't do that, who do we contact and what needs to be sent?}
+	<<#owner_is_federal_executive>>\item \textbf{The \gls{CISA} Binding Operational Directive 15-01 (BOD) requires my agency to fix Critical vulnerabilities within 30 days. If we can't do that, who do we contact and what needs to be sent?}
 	\begin{itemize}
 		\item For all questions or submissions related to the BOD, please email \href{mailto:fnr.bod@hq.dhs.gov}{fnr.bod@hq.dhs.gov}.
 		\item To be clear, if a Critical vulnerability
 		\begin{itemize}
-			\item is less than 30 days old and your agency can fix it before it hits 30 days old, nothing needs to be sent to DHS.
+			\item is less than 30 days old and your agency can fix it before it hits 30 days old, nothing needs to be sent to \gls{CISA}.
 			\item can't or won't be fixed within 30 days (or it's already older than 30 days), send  \href{mailto:fnr.bod@hq.dhs.gov}{fnr.bod@hq.dhs.gov} a \gls{POAM} that includes the following information:
 			\begin{enumerate}
 				\item a detailed justification outlining any barriers to expedited mitigation,
@@ -1445,7 +1442,7 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 
 	\item \textbf{Can I add my third-party hosted/managed servers?}
 	\begin{itemize}
-		\item Yes, and we recommend that you do so, but we request that you obtain authorization/consent before we begin scanning them. \gls{DHS} does not require documentation from your third-parties.
+		\item Yes, and we recommend that you do so, but we request that you obtain authorization/consent before we begin scanning them. \gls{CISA} does not require documentation from your third-parties.
 	\end{itemize}
 
 	\item \textbf{Why do the host counts in my Cyber Hygiene report not match the number of known Internet-facing end points on my network?}
