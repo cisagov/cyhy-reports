@@ -818,7 +818,12 @@ class ScorecardGenerator(object):
                                                 {'$eq': ['$live', True]},
                                                 {'$eq': ['$valid_dmarc', True]},
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                  '$or': [
+                                                      {'$eq': ['$is_base_domain', False]},
+                                                      {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                  ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]}
                                             ]
                                         },
@@ -892,7 +897,12 @@ class ScorecardGenerator(object):
                                                 {'$eq': ['$live', True]},
                                                 {'$eq': ['$valid_dmarc', True]},
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                  '$or': [
+                                                      {'$eq': ['$is_base_domain', False]},
+                                                      {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                  ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]},
                                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
                                             ]
@@ -910,7 +920,12 @@ class ScorecardGenerator(object):
                                                 {'$eq': ['$live', True]},
                                                 {'$eq': ['$valid_dmarc', True]},
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                  '$or': [
+                                                      {'$eq': ['$is_base_domain', False]},
+                                                      {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                  ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]},
                                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
                                                 {'$eq': ['$is_missing_starttls', False]},
@@ -1209,7 +1224,12 @@ class ScorecardGenerator(object):
                                                     ]
                                                 },
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                  '$or': [
+                                                      {'$eq': ['$is_base_domain', False]},
+                                                      {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                  ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]}
                                             ]
                                         },
@@ -1297,7 +1317,12 @@ class ScorecardGenerator(object):
                                                             ]
                                                         },
                                                         {'$eq': ['$dmarc_policy', 'reject']},
-                                                        {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                        {
+                                                            '$or': [
+                                                                {'$eq': ['$is_base_domain', False]},
+                                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                            ]
+                                                        },
                                                         {'$eq': ['$dmarc_policy_percentage', 100]}
                                                     ]
                                                 }
@@ -1349,7 +1374,12 @@ class ScorecardGenerator(object):
                                                     ]
                                                 },
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                    '$or': [
+                                                        {'$eq': ['$is_base_domain', False]},
+                                                        {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                    ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]},
                                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]}
                                             ]
@@ -1372,7 +1402,12 @@ class ScorecardGenerator(object):
                                                     ]
                                                 },
                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                {
+                                                    '$or': [
+                                                        {'$eq': ['$is_base_domain', False]},
+                                                        {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                    ]
+                                                },
                                                 {'$eq': ['$dmarc_policy_percentage', 100]},
                                                 {'$eq': ['$has_bod1801_dmarc_rua_uri', True]},
                                                 {'$eq': ['$is_missing_starttls', False]},
@@ -1390,7 +1425,12 @@ class ScorecardGenerator(object):
                                                                     ]
                                                                 },
                                                                 {'$eq': ['$dmarc_policy', 'reject']},
-                                                                {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                                {
+                                                                    '$or': [
+                                                                        {'$eq': ['$is_base_domain', False]},
+                                                                        {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                                    ]
+                                                                },
                                                                 {'$eq': ['$dmarc_policy_percentage', 100]}
                                                             ]
                                                         }
@@ -1552,7 +1592,12 @@ class ScorecardGenerator(object):
                                         '$and': [
                                             {'$eq': ['$dmarc_policy', 'reject']},
                                             {'$eq': ['$valid_dmarc', True]},
-                                            {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                            {
+                                                '$or': [
+                                                    {'$eq': ['$is_base_domain', False]},
+                                                    {'$eq': ['$dmarc_subdomain_policy', 'reject']},
+                                                ]
+                                            },
                                             {'$eq': ['$dmarc_policy_percentage', 100]}
                                         ]
                                     },
