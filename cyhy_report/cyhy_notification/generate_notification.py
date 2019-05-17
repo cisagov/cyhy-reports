@@ -314,6 +314,7 @@ class NotificationGenerator(object):
             out.write(to_json(result))
 
     def __generate_latex(self, mustache_file, json_file, latex_file):
+        """Create a LaTex file based on a mustache template and JSON data."""
         template = codecs.open(mustache_file, 'r', encoding='utf-8').read()
 
         with codecs.open(json_file, 'r', encoding='utf-8') as data_file:
@@ -324,6 +325,7 @@ class NotificationGenerator(object):
             output.write(r)
 
     def __generate_final_pdf(self):
+        """Create a PDF from a LaTeX file."""
         if self.__debug:
             output = sys.stdout
         else:
@@ -334,6 +336,7 @@ class NotificationGenerator(object):
         assert return_code == 0, 'xelatex return code was %s' % return_code
 
     def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
+        """Encrypt a PDF file with both a user key and an owner key."""
         pdf_writer = PdfFileWriter()
         pdf_reader = PdfFileReader(open(name_in, 'rb'))
 
