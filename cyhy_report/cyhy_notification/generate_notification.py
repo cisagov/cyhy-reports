@@ -383,7 +383,11 @@ def main():
         else:
             report_key = None
 
-        print('Generating notification for {} ...'.format(owner)),
+        if args['--anonymize']:
+            print('Generating anonymized notification based on {} ...'.format(
+                owner)),
+        else:
+            print('Generating notification for {} ...'.format(owner)),
         generator = NotificationGenerator(cyhy_db, owner,
                                           debug=args['--debug'],
                                           final=args['--final'],
