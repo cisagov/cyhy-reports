@@ -359,6 +359,18 @@ class NotificationGenerator(object):
         with file(name_out, 'wb') as f:
             pdf_writer.write(f)
 
+    def __mark_notifications_as_generated(self):
+        """Update notification documents in the database.
+
+        Add this owner to the list of owners that a notification was
+        generated for.
+        """
+        notification_ids = [n['_id'] for n in self.__results['notifications']]
+        self.__cyhy_db.NotificationDoc.collection.update_many(
+            {'_id': {'$in': notification_ids}},
+            {'$push': {'generated_for': self.__owner}}
+        )
+
 
 def main():
     """Generate a notification PDF."""
