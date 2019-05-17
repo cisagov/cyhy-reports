@@ -338,6 +338,7 @@ class NotificationGenerator(object):
         return_code = subprocess.call(['xelatex', NOTIFICATION_TEX],
                                       stdout=output, stderr=subprocess.STDOUT)
         assert return_code == 0, 'xelatex return code was %s' % return_code
+        return return_code
 
     def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
         """Encrypt a PDF file with both a user key and an owner key."""
