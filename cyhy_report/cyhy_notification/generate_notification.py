@@ -113,16 +113,20 @@ class NotificationGenerator(object):
         # Generate json input to mustache
         self.__generate_mustache_json(NOTIFICATION_JSON)
 
-        # import IPython
-        # IPython.embed()  # <<< BREAKPOINT >>>
-        # sys.exit(0)
-
         # Generate latex json + mustache
         self.__generate_latex(
             MUSTACHE_FILE, NOTIFICATION_JSON, NOTIFICATION_TEX)
 
-        # Generate report figures + latex
-        self.__generate_final_pdf()
+        # Generate PDF
+        pdf_generated_rc = self.__generate_final_pdf()
+
+        # Mark notifications as generated in the database
+        if pdf_generated_rc == 0:
+            if not self.__anonymize:
+                # Skip this step for anonymized notifications
+                self.__mark_notifications_as_generated()
+        else:
+            sys.exit(pdf_generated_rc)
 
         # Encrypt if requested and possible
         if self.__encrypt_key is not None and owner_key is not None:
