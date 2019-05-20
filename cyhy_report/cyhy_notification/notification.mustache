@@ -9,6 +9,9 @@
 \usepackage{fontspec} % provides font selecting commands
 \usepackage{datetime} % format dates
 \usepackage[table,cymk]{xcolor} % add color to tables and page background
+\usepackage{booktabs} % nice book tables (needed for toprule, etc.)
+\usepackage{pdflscape} % rotation of pdf paper (landscape mode)
+\usepackage{longtable} % allows tables to span multiple pages
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PDF Metadata
@@ -69,6 +72,7 @@
 %%% Date Format Setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newdateformat{usvardate}{\monthname[\THEMONTH] \THEDAY, \THEYEAR}
+\newdateformat{isodate}{\THEYEAR-\twodigit{\THEMONTH}-\twodigit{\THEDAY}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Color Setup
@@ -83,6 +87,8 @@
 %%% Support Palette
 \definecolor{cisa-red}{cmyk}{0.0,1.0,0.79,0.20}
 \definecolor{cisa-green}{cmyk}{0.56,0.0,1.0,0.27}
+%%% Table Colors
+\definecolor{row-gray}{cmyk}{0.0,0.0,0.0,0.15}
 %%% TLP Colors - see https://www.us-cert.gov/tlp
 \definecolor{tlp-red}{cmyk}{0.0,1.0,0.79,0.0}
 \definecolor{tlp-amber}{cmyk}{0.0,0.25,1.0,0.0}
@@ -133,15 +139,27 @@
 %%% Content Start
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+\begin{landscape}
 
 \vspace*{1.0mm}
-{\textcolor{cisa-blue}{\CISAHeadingTwo{<<&owner_acronym>> - Cyber Hygiene Alert - New Critical/High Vulnerabilities Detected - \usvardate\formatdate<<&notification_date_tex>>}}}
+{\textcolor{cisa-blue}{\CISAHeadingOne{<<&owner_acronym>> - Cyber Hygiene Alert - New Critical/High Vulnerabilities Detected - \usvardate\formatdate<<&notification_date_tex>>}}}
 
 Cyber Hygiene scans conducted in the past day indicate potential new critical and/or high vulnerabilities.
 
 As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.
 
-Details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.5in}rrrrr}
+	\toprule
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection \\
+	<<#display_owner>> &  <</display_owner>>                  &          &      &      &             (UTC) &            (UTC) \\
+	\midrule \endhead
+	<<#tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<</tickets>>
+	\bottomrule
+\end{longtable}
+
+Vulnerability details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
 
 \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all vulnerability findings for each IP address and port, in CSV (comma-separated values) format.
 
@@ -149,4 +167,5 @@ If you have any questions, please contact our office: \href{mailto:ncats@hq.dhs.
 
 \includegraphics[height=1.0in]{assets/cisa-logo}  % CISA logo
 
+\end{landscape}
 \end{document}

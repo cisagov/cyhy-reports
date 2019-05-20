@@ -177,7 +177,10 @@ class NotificationGenerator(object):
         fields from their latest vulnerabilty scan.
         """
         tickets = list(self.__cyhy_db.TicketDoc.find(
-            {'_id': {'$in': ticket_ids}}))
+            {'_id': {'$in': ticket_ids}}).sort(
+            [('details.cvss_base_score', -1),
+             ('time_opened', 1),
+             ('details.name', 1)]))
 
         for ticket in tickets:
             # Neuter this monstrosity so it can't be saved (easily)
@@ -314,6 +317,24 @@ class NotificationGenerator(object):
         result['days_until_criticals_overdue'] = DAYS_UNTIL_OVERDUE_CRITICAL
         result['days_until_highs_overdue'] = DAYS_UNTIL_OVERDUE_HIGH
 
+        result['tickets'] = self.__results['tickets']
+        # Make port 0 into "NA" and make LaTeX-friendly dates and times
+        for t in result['tickets']:
+            if t['port'] == 0:
+                t['port'] = 'NA'
+            t['time_opened_date_tex'] = t['time_opened'].strftime(
+                '{%d}{%m}{%Y}')
+            t['time_opened_time_tex'] = t['time_opened'].strftime(
+                '{%H}{%M}{%S}')
+            t['last_detected_date_tex'] = t['last_detected'].strftime(
+                '{%d}{%m}{%Y}')
+            t['last_detected_time_tex'] = t['last_detected'].strftime(
+                '{%H}{%M}{%S}')
+
+        # Only need to display the owner if there are descendants involved
+        if self.__results['owner_and_all_descendants'] != [self.__owner]:
+            result['display_owner'] = True
+
         with open(filename, 'wb') as out:
             out.write(to_json(result))
 
@@ -337,7 +358,15 @@ class NotificationGenerator(object):
 
         return_code = subprocess.call(['xelatex', NOTIFICATION_TEX],
                                       stdout=output, stderr=subprocess.STDOUT)
-        assert return_code == 0, 'xelatex return code was %s' % return_code
+        assert return_code == 0, \
+            'xelatex pass 1 of 2 return code was {}'.format(return_code)
+
+        # 2nd xelatex is needed to get table to format correctly
+        return_code = subprocess.call(['xelatex', NOTIFICATION_TEX],
+                                      stdout=output, stderr=subprocess.STDOUT)
+        assert return_code == 0, \
+            'xelatex pass 2 of 2 return code was {}'.format(return_code)
+
         return return_code
 
     def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
