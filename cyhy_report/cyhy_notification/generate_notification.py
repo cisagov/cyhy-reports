@@ -93,9 +93,6 @@ class NotificationGenerator(object):
 
         # If no notifications are found, exit without creating a PDF
         if not self.__results['notifications']:
-            print('No notifications found, no PDF created ...'.format(
-                self.__owner)),
-
             # Revert to original working directory
             os.chdir(original_working_dir)
 
@@ -438,10 +435,14 @@ def main():
                                           encrypt_key=report_key)
         was_encrypted, results = generator.generate_notification()
 
-        if was_encrypted:
-            print('Done (encrypted)')
-        else:
-            print('Done')
+        if results:
+            if len(results["notifications"]) > 0:
+                if was_encrypted:
+                    print('Done (encrypted)')
+                else:
+                    print('Done')
+            else:
+                print('No notifications found, no PDF created!')
 
         # import IPython
         # IPython.embed()  # <<< BREAKPOINT >>>
