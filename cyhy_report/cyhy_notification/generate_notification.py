@@ -91,6 +91,20 @@ class NotificationGenerator(object):
         # Access database and cache results
         self.__run_queries()
 
+        # If no notifications are found, exit without creating a PDF
+        if not self.__results['notifications']:
+            print('No notifications found, no PDF created ...'.format(
+                self.__owner)),
+
+            # Revert to original working directory
+            os.chdir(original_working_dir)
+
+            if not self.__debug:
+                # Delete temp working directory
+                shutil.rmtree(temp_working_dir)
+
+            return False, self.__results
+
         # Store key if present
         owner_key = self.__results['owner_request_doc'].get('key')
 
