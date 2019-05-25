@@ -40,6 +40,7 @@ import pystache
 from cyhy.core import Config
 from cyhy.db import database
 from cyhy.util import to_json, utcnow
+from cyhy_report.cyhy_notification._version import __version__
 
 # constants
 SEVERITY_LEVELS = ['Informational', 'Low', 'Medium', 'High', 'Critical']
@@ -414,7 +415,7 @@ class NotificationGenerator(object):
 
 def main():
     """Generate a notification PDF."""
-    args = docopt(__doc__, version='v0.0.1')
+    args = docopt(__doc__, version=__version__)
     cyhy_db = database.db_from_config(args['--cyhy-section'])
 
     for owner in args['OWNER']:
