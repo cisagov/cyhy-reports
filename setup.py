@@ -44,7 +44,7 @@ setup(
         # "basemap >= 1.0.6",
         "matplotlib == 1.5.3",
         "numpy == 1.10.4",
-        "pandas == 0.19.1",
+        "pandas == 0.19.2",
         "python-dateutil >= 2.2",
         "netaddr >= 0.7.10",
         "pystache >= 0.5.3",
