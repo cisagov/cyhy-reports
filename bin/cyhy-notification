@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+"""The entrypoint to generate_notification."""
+
+import cyhy_report.cyhy_notification.generate_notification as \
+    generate_notification
+
+generate_notification.main()
