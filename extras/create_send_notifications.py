@@ -29,9 +29,9 @@ from cyhy_report.cyhy_notification import NotificationGenerator
 
 current_time = util.utcnow()
 
-NOTIFICATIONS_BASE_DIR = "/var/cyhy/notifications/output"
+NOTIFICATIONS_BASE_DIR = "/var/cyhy/reports/output"
 NOTIFICATION_ARCHIVE_DIR = os.path.join(
-    "archive", "notifications{}".format(current_time.strftime("%Y%m%d"))
+    "notification_archive", "notifications{}".format(current_time.strftime("%Y%m%d"))
 )
 CYHY_MAILER_DIR = "/var/cyhy/cyhy-mailer"
 
@@ -117,7 +117,9 @@ def main():
 
     # Create a symlink to the latest notifications.  This is for the
     # automated sending of notification emails.
-    latest_notifications = os.path.join(NOTIFICATIONS_BASE_DIR, "archive/latest")
+    latest_notifications = os.path.join(
+        NOTIFICATIONS_BASE_DIR, "notification_archive/latest"
+    )
     if os.path.exists(latest_notifications):
         os.remove(latest_notifications)
     os.symlink(
@@ -126,7 +128,8 @@ def main():
     )
 
     if num_pdfs_created:
-        # Email all notification PDFs in NOTIFICATIONS_BASE_DIR/archive/latest
+        # Email all notification PDFs in
+        # NOTIFICATIONS_BASE_DIR/notification_archive/latest
         os.chdir(CYHY_MAILER_DIR)
         p = subprocess.Popen(
             [
