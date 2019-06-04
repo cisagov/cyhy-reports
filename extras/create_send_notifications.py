@@ -55,10 +55,9 @@ def build_cybex_org_list(db):
             {"report_types": "CYBEX"}, {"_id": 1, "children": 1}
         )
     ):
+        cybex_org_ids.append(cybex_request["_id"])
         if cybex_request.get("children"):
             cybex_org_ids += db.RequestDoc.get_all_descendants(cybex_request["_id"])
-        else:
-            cybex_org_ids.append(cybex_request["_id"])
     return cybex_org_ids
 
 
