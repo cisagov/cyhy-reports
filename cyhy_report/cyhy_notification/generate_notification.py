@@ -54,6 +54,25 @@ ASSETS_DIR_SRC = '../assets'
 ASSETS_DIR_DST = 'assets'
 IPV4_ADDRESS_RE = re.compile(r'\d+\.\d+\.(\d+\.\d+)')
 ANONYMOUS_IPV4 = r'x.x.\1'
+LATEX_ESCAPE_MAP = {
+    '$':'\\$',
+    '%':'\\%',
+    '&':'\\&',
+    '#':'\\#',
+    '_':'\\_',
+    '{':'\\{',
+    '}':'\\}',
+    '[':'{[}',
+    ']':'{]}',
+    "'":"{'}",
+    '\\':'\\textbackslash{}',
+    '~':'\\textasciitilde{}',
+    '<':'\\textless{}',
+    '>':'\\textgreater{}',
+    '^':'\\textasciicircum{}',
+    '`':'{}`',
+    '\n': '\\newline{}',
+}
 
 # Number of days a vulnerability can be active until it's considered
 # "overdue" to be mitigated
@@ -281,6 +300,27 @@ class NotificationGenerator(object):
         else:
             return data
 
+    def __latex_escape(self, to_escape):
+        """Lookup and return escaped LaTeX special characters."""
+        return ''.join([LATEX_ESCAPE_MAP.get(i, i) for i in to_escape])
+
+    def __latex_escape_structure(self, data):
+        """Escape LaTeX special characters for a data structure.
+
+        Assumes that all sequences contain dicts.
+        """
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if k.endswith('_tex'):  # Skip special tex values
+                    continue
+                if isinstance(v, basestring):
+                    data[k] = self.__latex_escape(v)
+                else:
+                    self.__latex_escape_structure(v)
+        elif isinstance(data, (list, tuple)):
+            for i in data:
+                self.__latex_escape_structure(i)
+
     ##########################################################################
     #  Attachment Generation
     ##########################################################################
@@ -346,6 +386,9 @@ class NotificationGenerator(object):
         # Only need to display the owner if there are descendants involved
         if self.__results['owner_and_all_descendants'] != [self.__owner]:
             result['display_owner'] = True
+
+        # Escape LaTeX special characters in all result fields
+        self.__latex_escape_structure(result)
 
         with open(filename, 'wb') as out:
             out.write(to_json(result))
