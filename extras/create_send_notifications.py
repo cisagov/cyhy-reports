@@ -43,24 +43,22 @@ def create_output_directories():
     )
 
 
-def build_cybex_org_list(db):
-    """Build list of CybEx organization IDs.
+def build_cyhy_org_list(db):
+    """Build list of CyHy organization IDs.
 
-    This is the list of CyHy organization IDs and descendants whose data
-    is included in the Cyber Exposure (CybEx) Scorecard.
+    This is the list of CyHy organization IDs (and their descendants) that
+    receive CyHy reports.
     """
-    cybex_org_ids = list()
-    for cybex_request in list(
+    cyhy_org_ids = list()
+    for cyhy_request in list(
         db.RequestDoc.collection.find(
-            {"report_types": "CYBEX"}, {"_id": 1, "children": 1}
+            {"report_types": "CYHY"}, {"_id": 1, "children": 1}
         )
     ):
-        cybex_org_ids.append(cybex_request["_id"])
-        if cybex_request.get("children"):
-            cybex_org_ids.extend(
-                db.RequestDoc.get_all_descendants(cybex_request["_id"])
-            )
-    return cybex_org_ids
+        cyhy_org_ids.append(cyhy_request["_id"])
+        if cyhy_request.get("children"):
+            cyhy_org_ids.extend(db.RequestDoc.get_all_descendants(cyhy_request["_id"]))
+    return cyhy_org_ids
 
 
 def generate_notification_pdfs(db, org_ids, master_report_key):
@@ -108,13 +106,13 @@ def main():
     # Change to the correct output directory
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
-    # Build list of CybEx orgs
-    cybex_org_ids = build_cybex_org_list(db)
-    logging.debug("Found {} CYBEX orgs: {}".format(len(cybex_org_ids), cybex_org_ids))
+    # Build list of CyHy orgs
+    cyhy_org_ids = build_cyhy_org_list(db)
+    logging.debug("Found {} CYHY orgs: {}".format(len(cyhy_org_ids), cyhy_org_ids))
 
-    # Create notification PDFs for CybEx orgs
+    # Create notification PDFs for CyHy orgs
     master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
-    num_pdfs_created = generate_notification_pdfs(db, cybex_org_ids, master_report_key)
+    num_pdfs_created = generate_notification_pdfs(db, cyhy_org_ids, master_report_key)
     logging.info("{} notification PDFs created".format(num_pdfs_created))
 
     # Create a symlink to the latest notifications.  This is for the
@@ -166,14 +164,14 @@ def main():
     else:
         logging.info("Nothing to email - skipping this step")
 
-    # Delete all NotificationDocs where ticket_owner is not a CybEx org, since
-    # we are not currently sending out notifications for non-CybEx orgs
+    # Delete all NotificationDocs where ticket_owner is not a CyHy org, since
+    # we are not currently sending out notifications for non-CyHy orgs
     result = db.NotificationDoc.collection.delete_many(
-        {"ticket_owner": {"$nin": cybex_org_ids}}
+        {"ticket_owner": {"$nin": cyhy_org_ids}}
     )
     logging.info(
         "Deleted {} notifications from DB (owned by "
-        "non-CybEx organizations, which do not currently receive "
+        "non-CyHy organizations, which do not currently receive "
         "notification emails)".format(result.deleted_count)
     )
 
