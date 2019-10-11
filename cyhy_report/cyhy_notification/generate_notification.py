@@ -293,6 +293,10 @@ class NotificationGenerator(object):
         ticket_ids = [n["ticket_id"] for n in self.__results["notifications"]]
         self.__results["tickets"] = self.__load_tickets(ticket_ids)
 
+        # Determine if owner is a Federal org
+        federal_orgs = self.__cyhy_db.RequestDoc.get_all_descendants("FEDERAL")
+        self.__results["is_federal"] = self.__owner in federal_orgs
+
     ##########################################################################
     # Utilities
     ##########################################################################
@@ -415,6 +419,7 @@ class NotificationGenerator(object):
         result["owner_acronym"] = self.__results["owner_request_doc"]["agency"][
             "acronym"
         ]
+        result["is_federal"] = self.__results["is_federal"]
         result["notification_date_tex"] = self.__generated_time.strftime("{%d}{%m}{%Y}")
         result["days_until_criticals_overdue"] = DAYS_UNTIL_OVERDUE_CRITICAL
         result["days_until_highs_overdue"] = DAYS_UNTIL_OVERDUE_HIGH
