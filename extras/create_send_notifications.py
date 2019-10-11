@@ -53,7 +53,7 @@ def build_cyhy_org_list(db):
     for cyhy_request in list(
         db.RequestDoc.collection.find(
             {"report_types": "CYHY"}, {"_id": 1, "children": 1}
-        )
+        ).sort([("_id", 1)])
     ):
         cyhy_org_ids.append(cyhy_request["_id"])
         if cyhy_request.get("children"):
