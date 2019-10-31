@@ -13,26 +13,21 @@ Options:
   --no-pause            do not pause the commander when generating reports
 """
 
-from docopt import docopt
-from sets import Set
-from collections import defaultdict
-import datetime, time
-import subprocess
-from bson import ObjectId
-import sys
-import glob
-import os
-from socket import gethostname
-import logging
-import threading
-import multiprocessing
-import math
+import time
 import distutils.dir_util
+import glob
+import logging
+import math
+import os
 import shutil
+import subprocess
+import sys
+import threading
 
 import boto3
+from bson import ObjectId
+from docopt import docopt
 
-from cyhy.core import Config, STATUS, STAGE, SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from cyhy.db import database, CHDatabase
 from cyhy.util import util
