@@ -616,6 +616,11 @@ def generate_third_party_reports(
             logging.error("Third-party report failed: {}".format(third_party_id))
             logging.error("Stderr failure detail: {} {}".format(data, err))
             failed_tp_reports.append(third_party_id)
+
+    logging.info(
+        "Time to create all third-party reports:"
+        " {:.2f} minutes".format(round(time.time() - all_tpr_start_time, 1) / 60)
+    )
     return successful_tp_reports, failed_tp_reports
 
 
