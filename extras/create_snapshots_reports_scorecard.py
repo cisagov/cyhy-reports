@@ -30,6 +30,8 @@ import math
 import distutils.dir_util
 import shutil
 
+import boto3
+
 from cyhy.core import Config, STATUS, STAGE, SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from cyhy.db import database, CHDatabase
@@ -268,6 +270,110 @@ def resume_commander(db, pause_doc_id):
     doc.delete()
     logging.info('Commander control doc {} successfully deleted (commander should resume unless other control docs exist)'.format(pause_doc_id))
     return True
+
+
+def get_third_party_report_ids(db, third_party_report_ssm_param):
+    # Use an S3 boto3 client to get the current AWS region (which is
+    # required for the SSM client below)
+    current_region = boto3.client("s3").meta.region_name
+
+    ssm = boto3.client("ssm", region_name=current_region)
+    ssm_output = ssm.get_parameter(Name=third_party_report_ssm_param,
+                                   WithDecryption=True)
+    third_party_report_ids = ssm_output["Parameter"]["Value"].split(",")
+
+    # Check each third-party report id to ensure it exists in CyHy DB
+    for report_id in third_party_report_ids:
+        if db.RequestDoc.find_one({"_id": report_id}) is None:
+            logging.warning(
+                "Skipping invalid third-party report ID: {}".format(report_id))
+            logging.warning(
+                "Either add a valid request document for " +
+                "'{}' to the database or remove them from ".format(report_id) +
+                "AWS SSM parameter '{}'".format(third_party_report_ssm_param))
+            third_party_report_ids.remove(report_id)
+    return third_party_report_ids
+
+
+def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
+    all_tps_start_time = time.time()
+    successful_tp_snaps = list()
+    failed_tp_snaps = list()
+
+    for third_party_id in third_party_report_ids:
+        snapshot_start_time = time.time()
+        snapshot_process = subprocess.Popen(
+            ["cyhy-snapshot", "-s", cyhy_db_section, "create",
+             "--use-only-existing-snapshots", third_party_id],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        # Confirm the snapshot
+        data, err = snapshot_process.communicate("yes")
+
+        snapshot_duration = time.time() - snapshot_start_time
+
+        if snapshot_process.returncode == 0:
+            successful_tp_snaps.append(third_party_id)
+            logging.info(
+                "Successfully created third-party snapshot:"
+                " {} ({:.2f} s)".format(
+                    third_party_id, round(snapshot_duration, 2)))
+        else:
+            failed_tp_snaps.append(third_party_id)
+            logging.error("Third-party snapshot failed: {}".format(
+                third_party_id))
+            logging.error("Stderr failure detail: {} {}".format(
+                data, err))
+
+    logging.info("Time to create all third-party snapshots:"
+                 " {:.2f} minutes".format(
+                    round(time.time() - all_tps_start_time, 1) / 60))
+    return successful_tp_snaps, failed_tp_snaps
+
+
+def generate_third_party_reports(db, cyhy_db_section, scan_db_section,
+                                 nolog, successful_tp_snaps):
+    successful_tp_reports = list()
+    failed_tp_reports = list()
+
+    os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
+    all_tpr_start_time = time.time()
+
+    for third_party_id in successful_tp_snaps:
+        logging.info("Starting third-party report for: {}".format(
+            third_party_id))
+        report_start_time = time.time()
+        if nolog:
+            report_process = subprocess.Popen(
+                ["cyhy-report", "--encrypt", "--final", "--nolog",
+                 "--cyhy-section", cyhy_db_section,
+                 "--scan-section", scan_db_section, third_party_id],
+                stdout=subprocess.PIPE, stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        else:
+            report_process = subprocess.Popen(
+                ["cyhy-report", "--encrypt", "--final",
+                 "--cyhy-section", cyhy_db_section,
+                 "--scan-section", scan_db_section, third_party_id],
+                stdout=subprocess.PIPE, stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+
+        data, err = report_process.communicate()
+
+        report_duration = time.time() - report_start_time
+
+        if report_process.returncode == 0:
+            logging.info("Successful third-party report generated:"
+                         " {} ({:.2f} s)".format(
+                            third_party_id, round(report_duration, 2)))
+            successful_tp_reports.append(third_party_id)
+        else:
+            logging.error("Third-party report failed: {}".format(
+                third_party_id))
+            logging.error("Stderr failure detail: {} {}".format(data, err))
+            failed_tp_reports.append(third_party_id)
+    return successful_tp_reports, failed_tp_reports
+
 
 def pull_cybex_ticket_csvs(db):
     today = current_time.strftime('%Y%m%d')
