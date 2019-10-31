@@ -53,6 +53,8 @@ SCORECARD_JSON_OUTPUT_DIR = 'JSONfiles'
 CYBEX_CSV_DIR = 'cybex_csvs'
 CYHY_REPORT_DIR = os.path.join('report_archive', 'reports{}'.format(current_time.strftime('%Y%m%d')))
 
+THIRD_PARTY_REPORTS_SSM_PARAM = "/cyhy/report/third_party_reports"
+
 CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
 
@@ -413,6 +415,11 @@ def main():
     failed_snaps = list()
     reports_generated = list()
     reports_failed = list()
+    # To track third-party snapshot and report status
+    successful_tp_snaps = list()
+    failed_tp_snaps = list()
+    successful_tp_reports = list()
+    failed_tp_reports = list()
 
     create_subdirectories()
     if args['--no-dock']:
@@ -484,6 +491,32 @@ def main():
 
         sample_report(cyhy_db_section, scan_db_section, nolog)  # Create the sample (anonymized) report
         reports_generated, reports_failed = gen_weekly_reports(db, success_snaps, cyhy_db_section, scan_db_section, use_docker, nolog)
+
+        # Fetch list of valid third-party report IDs
+        third_party_report_ids = get_third_party_report_ids(
+            db, THIRD_PARTY_REPORTS_SSM_PARAM)
+
+        if third_party_report_ids:
+            if args["--no-snapshots"]:
+                # Skip creation of third-party snapshots
+                logging.info("Skipping third-party snapshot creation "
+                             "due to --no-snapshots parameter")
+                successful_tp_snaps = third_party_report_ids
+            else:
+                # Create snapshots needed for third-party reports
+                successful_tp_snaps, failed_tp_snaps = \
+                    create_third_party_snapshots(
+                        db, cyhy_db_section, third_party_report_ids)
+
+            # Generate third-party reports
+            successful_tp_reports, failed_tp_reports = \
+                generate_third_party_reports(
+                    db, cyhy_db_section, scan_db_section,
+                    nolog, successful_tp_snaps)
+        else:
+            logging.info("No third-party reports to generate; "
+                         "skipping this step")
+
         pull_cybex_ticket_csvs(db)
     finally:
         sync_all_tallies(db)
@@ -494,18 +527,22 @@ def main():
             logging.info('Number of snapshots generated: 0')
             logging.info('Number of snapshots failed: 0')
         else:
-            logging.info('Number of snapshots generated: %d', len(success_snaps))
-            logging.info('Number of snapshots failed: %d', len(failed_snaps))
-            if failed_snaps:
-                logging.info('Failed snapshots:')
-                for i in failed_snaps:
-                    logging.info(i)
+            logging.info('Number of snapshots generated: %d',
+                         len(success_snaps + successful_tp_snaps))
+            logging.info('Number of snapshots failed: %d',
+                         len(failed_snaps + failed_tp_snaps))
+            if failed_snaps or failed_tp_snaps:
+                logging.error('Failed snapshots:')
+                for i in failed_snaps + failed_tp_snaps:
+                    logging.error(i)
 
-        logging.info('Number of reports generated: %d', len(reports_generated))
-        logging.info('Number of reports failed: %d', len(reports_failed))
-        if reports_failed:
+        logging.info('Number of reports generated: %d',
+                     len(reports_generated + successful_tp_reports))
+        logging.info('Number of reports failed: %d',
+                     len(reports_failed + failed_tp_reports))
+        if reports_failed or failed_tp_reports:
             logging.info('Failed reports:')
-            for i in reports_failed:
+            for i in reports_failed + failed_tp_reports:
                 logging.info(i)
 
         logging.info('Total time: %.2f minutes', (round(time.time() - start,1)/60))
