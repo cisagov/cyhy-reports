@@ -95,7 +95,7 @@ def gen_weekly_scorecard(
                     "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
                     "cyhy-cybex-scorecard",
                     "--nolog",
-                    "-f",
+                    "--final",
                     cyhy_db_section,
                     scan_db_section,
                     os.path.join(
@@ -115,7 +115,7 @@ def gen_weekly_scorecard(
                     "{}:/home/cyhy".format(SCORECARD_OUTPUT_DIR),
                     "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
                     "cyhy-cybex-scorecard",
-                    "-f",
+                    "--final",
                     cyhy_db_section,
                     scan_db_section,
                     os.path.join(
@@ -131,7 +131,7 @@ def gen_weekly_scorecard(
                 [
                     "cyhy-cybex-scorecard",
                     "--nolog",
-                    "-f",
+                    "--final",
                     cyhy_db_section,
                     scan_db_section,
                     os.path.join(
@@ -145,7 +145,7 @@ def gen_weekly_scorecard(
             response = subprocess.call(
                 [
                     "cyhy-cybex-scorecard",
-                    "-f",
+                    "--final",
                     cyhy_db_section,
                     scan_db_section,
                     os.path.join(
@@ -171,7 +171,7 @@ def sample_report(cyhy_db_section, scan_db_section, nolog):
                 cyhy_db_section,
                 "--scan-section",
                 scan_db_section,
-                "-a",
+                "--anonymize",
                 "DHS",
             ],
             stdout=subprocess.PIPE,
@@ -186,7 +186,7 @@ def sample_report(cyhy_db_section, scan_db_section, nolog):
                 cyhy_db_section,
                 "--scan-section",
                 scan_db_section,
-                "-a",
+                "--anonymize",
                 "DHS",
             ],
             stdout=subprocess.PIPE,
@@ -234,7 +234,7 @@ def create_weekly_snapshots(db, cyhy_db_section):
 
         snap_time = time.time()
         output = subprocess.Popen(
-            ["cyhy-snapshot", "-s", cyhy_db_section, "create", i],
+            ["cyhy-snapshot", "--section", cyhy_db_section, "create", i],
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -296,8 +296,8 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                         cyhy_db_section,
                         "--scan-section",
                         scan_db_section,
-                        "-f",
-                        "-e",
+                        "--final",
+                        "--encrypt",
                         i,
                     ],
                     stdout=subprocess.PIPE,
@@ -320,8 +320,8 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                         cyhy_db_section,
                         "--scan-section",
                         scan_db_section,
-                        "-f",
-                        "-e",
+                        "--final",
+                        "--encrypt",
                         i,
                     ],
                     stdout=subprocess.PIPE,
@@ -338,8 +338,8 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                         cyhy_db_section,
                         "--scan-section",
                         scan_db_section,
-                        "-f",
-                        "-e",
+                        "--final",
+                        "--encrypt",
                         i,
                     ],
                     stdout=subprocess.PIPE,
@@ -354,8 +354,8 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                         cyhy_db_section,
                         "--scan-section",
                         scan_db_section,
-                        "-f",
-                        "-e",
+                        "--final",
+                        "--encrypt",
                         i,
                     ],
                     stdout=subprocess.PIPE,
@@ -527,7 +527,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
         snapshot_process = subprocess.Popen(
             [
                 "cyhy-snapshot",
-                "-s",
+                "--section",
                 cyhy_db_section,
                 "create",
                 "--use-only-existing-snapshots",
@@ -827,7 +827,7 @@ def main():
                 db, cyhy_db_section, scan_db_section, nolog, successful_tp_snaps
             )
         else:
-            logging.info("No third-party reports to generate; " "skipping this step")
+            logging.info("No third-party reports to generate; skipping this step")
 
         pull_cybex_ticket_csvs(db)
     finally:
