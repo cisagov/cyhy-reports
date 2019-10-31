@@ -159,25 +159,6 @@ def gen_weekly_scorecard(
     return response
 
 
-# def gen_election_report(cyhy_db_section):
-#    output = subprocess.Popen(['cyhy-snapshot','-s',cyhy_db_section,'create','--use-only-existing-snapshots','ELECTION'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#    data, err = output.communicate('yes')
-#    return_code = output.returncode
-#    if return_code == 0:
-#        logging.info('Successful ELECTION snap')
-#    else:
-#        logging.info('Failed ELECTION snap')
-#        logging.info('Stderr failure detail: %s%s', data, err)
-#    p = subprocess.Popen(['cyhy-report','-s',cyhy_db_section,'-n','-e','-f','ELECTION'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-#    data, err = p.communicate()
-#    return_code = p.returncode
-#    if return_code == 0:
-#        logging.info('Successful ELECTION report')
-#    else:
-#        logging.info('Failed ELECTION report')
-#        logging.info('Stderr report detail: %s%s', data, err)
-
-
 def sample_report(cyhy_db_section, scan_db_section, nolog):
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     logging.info("Creating SAMPLE report...")
@@ -814,8 +795,6 @@ def main():
             # success_snaps = ['49ers', 'USAID', 'Hawaii', 'DAS-BEST', 'COC', 'DHS', 'SDSD', 'COLA', 'COA', 'COGG', 'AGRS', 'FEC', 'FHFA', 'FMC', 'LPG', 'MSFG', 'OGE', 'PRC', 'SJI', 'USAB', 'VB']
         else:
             success_snaps, failed_snaps = create_weekly_snapshots(db, cyhy_db_section)
-
-        # gen_election_report(cyhy_db_section)
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
