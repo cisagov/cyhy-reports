@@ -28,6 +28,7 @@ import boto3
 from bson import ObjectId
 from docopt import docopt
 
+from cyhy.core import SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from cyhy.db import database, CHDatabase
 from cyhy.util import util
