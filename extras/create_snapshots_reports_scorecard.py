@@ -13,7 +13,6 @@ Options:
   --no-pause            do not pause the commander when generating reports
 """
 
-import time
 import distutils.dir_util
 import glob
 import logging
@@ -23,6 +22,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 import boto3
 from bson import ObjectId
