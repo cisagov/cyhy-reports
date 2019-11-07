@@ -60,7 +60,7 @@ setup(
         "python-dateutil >= 2.2",
         "requests >= 2.21.0",
         "unicodecsv >= 0.9.4",
-        # "basemap >= 1.0.6",
         # pip install of basemap currently fails; see requirements.txt
+        # "basemap >= 1.0.6",
     ],
 )
