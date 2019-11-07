@@ -24,7 +24,6 @@ import sys
 import threading
 import time
 
-import boto3
 from bson import ObjectId
 from docopt import docopt
 
@@ -50,8 +49,6 @@ CYBEX_CSV_DIR = "cybex_csvs"
 CYHY_REPORT_DIR = os.path.join(
     "report_archive", "reports{}".format(current_time.strftime("%Y%m%d"))
 )
-
-THIRD_PARTY_REPORTS_SSM_PARAM = "/cyhy/report/third_party_reports"
 
 CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
@@ -490,32 +487,6 @@ def resume_commander(db, pause_doc_id):
     return True
 
 
-def get_third_party_report_ids(db, third_party_report_ssm_param):
-    # Use an S3 boto3 client to get the current AWS region (which is
-    # required for the SSM client below)
-    current_region = boto3.client("s3").meta.region_name
-
-    ssm = boto3.client("ssm", region_name=current_region)
-    ssm_output = ssm.get_parameter(
-        Name=third_party_report_ssm_param, WithDecryption=True
-    )
-    third_party_report_ids = ssm_output["Parameter"]["Value"].split(",")
-
-    # Check each third-party report id to ensure it exists in CyHy DB
-    for report_id in third_party_report_ids:
-        if db.RequestDoc.find_one({"_id": report_id}) is None:
-            logging.warning(
-                "Skipping invalid third-party report ID: {}".format(report_id)
-            )
-            logging.warning(
-                "Either add a valid request document for "
-                + "'{}' to the database or remove them from ".format(report_id)
-                + "AWS SSM parameter '{}'".format(third_party_report_ssm_param)
-            )
-            third_party_report_ids.remove(report_id)
-    return third_party_report_ids
-
-
 def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     all_tps_start_time = time.time()
     successful_tp_snaps = list()
@@ -807,10 +778,19 @@ def main():
             db, success_snaps, cyhy_db_section, scan_db_section, use_docker, nolog
         )
 
-        # Fetch list of valid third-party report IDs
-        third_party_report_ids = get_third_party_report_ids(
-            db, THIRD_PARTY_REPORTS_SSM_PARAM
-        )
+        # Fetch list of third-party report IDs with children; if a third-party
+        # report has no children, there is no point in generating a report
+        # for it
+        third_party_report_ids = [
+            i["_id"]
+            for i in db.RequestDoc.collection.find(
+                {
+                    "report_types": REPORT_TYPE.CYHY_THIRD_PARTY,
+                    "children": {"$exists": True, "$ne": []},
+                },
+                {"_id": 1},
+            )
+        ]
 
         if third_party_report_ids:
             if args["--no-snapshots"]:
