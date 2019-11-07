@@ -48,7 +48,6 @@ setup(
     description="Reporting components for Cyber Hygiene",
     # long_description=open('README.txt').read(),
     install_requires=[
-        "boto3",
         "cyhy-core >= 0.0.2",
         "docopt >= 0.6.2",
         "matplotlib == 1.5.3",
