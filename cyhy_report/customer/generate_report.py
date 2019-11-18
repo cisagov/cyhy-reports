@@ -301,7 +301,7 @@ class ReportGenerator(object):
     def __load_tickets(self, snapshot_oids):
         '''load tickets into memory, and merge some of their latest vulnerability fields.
         These tickets should not be saved back to the database as they are modified in evil ways.'''
-        tickets = list(self.__cyhy_db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
         for t in tickets:
             t.connection = None # neuter this monstrosity so it can't be saved (easily)
             try:
@@ -323,7 +323,7 @@ class ReportGenerator(object):
         '''load closed tickets that were detected between start_date and end_date'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all tickets that closed after start_date (could potentially have been detected at some point after start_date)
-        tickets = list(self.__cyhy_db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
         tix_detected_in_range = list()
         for t in tickets:
             t['last_detected'] = t.last_detection_date
@@ -339,7 +339,7 @@ class ReportGenerator(object):
         '''load false_positive tickets'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all false_positive tickets
-        tickets = list(self.__cyhy_db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'false_positive':True, 'owner':{'$in':ss0_owners}}))
         for t in tickets:
             t.connection = None                 # neuter ticket so it can't be saved (easily)
             t.update(t['details'])              # flatten structure by copying details to ticket root
@@ -357,7 +357,7 @@ class ReportGenerator(object):
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
 
         # Calculate Buckets
-        tix = self.__cyhy_db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
+        tix = self.__cyhy_db.TicketDoc.find({'source':'nessus', 'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
                                 '$or':[{'time_closed':{'$gte':start_date}}, {'time_closed':None}]},
                                 {'_id':False, 'time_opened':True, 'time_closed':True})
         tix = list(tix)
