@@ -483,7 +483,8 @@ class ScorecardGenerator(object):
             {
                 '_id': False,
                 'time_opened': True,
-                'time_closed': True
+                'time_closed': True,
+                'source': 'nessus'
             }
         )
         tix = list(tix)
