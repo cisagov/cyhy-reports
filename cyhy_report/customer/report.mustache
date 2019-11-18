@@ -509,9 +509,11 @@ As you review the report, you may have additional questions. Check out the answe
 \begin{minipage}[b]{0.48\textwidth}
 	{\RCSub LATEST SCANS}\\[-0.75pt]
 	\RCHashDot\\
-	{\RCSmallNum \textbf{Addresses:} <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
-	{\RCSmallNum \textbf{Vulnerabilities:} <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
-	\vspace*{0.08in}
+	{\RCSmallNum \textbf{Host Scans on All Addresses:}\\
+  \hspace*{1cm} <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
+	{\RCSmallNum \textbf{Vulnerability Scans on Hosts:}\\
+  \hspace*{1cm} <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
+	\vspace*{-6.35mm}
 	%
 	%
 \end{minipage}%
