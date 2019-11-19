@@ -123,6 +123,43 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
+RISKY_SERVICES_MAP = {
+    'ms-wbt-server': 'rdp',
+    'telnet': 'telnet',
+    'rtelnet': 'telnet',
+    'microsoft-ds': 'smb',
+    'smbdirect': 'smb',
+    'ldap': 'ldap',
+    'netbios-ns': 'netbios',
+    'netbios-dgm': 'netbios',
+    'netbios-ssn': 'netbios',
+    'ftp': 'ftp',
+    'rsftp': 'ftp',
+    'ni-ftp': 'ftp',
+    'tftp': 'ftp',
+    'bftp': 'ftp',
+    'msrpc': 'rpc',
+    'sqlnet': 'sql',
+    'sqlserv': 'sql',
+    'sql-net': 'sql',
+    'sqlsrv': 'sql',
+    'msql': 'sql',
+    'mini-sql': 'sql',
+    'mysql-cluster': 'sql',
+    'ms-sql-s': 'sql',
+    'ms-sql-m': 'sql',
+    'irc': 'irc',
+    'kerberos-sec': 'kerberos',
+    'kpasswd5': 'kerberos',
+    'klogin': 'kerberos',
+    'kshell': 'kerberos',
+    'kerberos-adm': 'kerberos',
+    'kerberos': 'kerberos',
+    'kerberos_master': 'kerberos',
+    'krb_prop': 'kerberos',
+    'krbupdate': 'kerberos',
+    'kpasswd': 'kerberos'
+}
 
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
@@ -383,66 +420,42 @@ class ReportGenerator(object):
         else:
             return DataFrame([])
 
-    def __risky_services_metrics(self, snapshot_oid):
-        '''load nmap tickets into memory and calculate risky service metrics.'''
-        risky_services_map = {
-            'ms-wbt-server': 'rdp',
-            'telnet': 'telnet',
-            'rtelnet': 'telnet',
-            'microsoft-ds': 'smb',
-            'smbdirect': 'smb',
-            'ldap': 'ldap',
-            'netbios-ns': 'netbios',
-            'netbios-dgm': 'netbios',
-            'netbios-ssn': 'netbios',
-            'ftp': 'ftp',
-            'rsftp': 'ftp',
-            'ni-ftp': 'ftp',
-            'tftp': 'ftp',
-            'bftp': 'ftp',
-            'msrpc': 'rpc',
-            'sqlnet': 'sql',
-            'sqlserv': 'sql',
-            'sql-net': 'sql',
-            'sqlsrv': 'sql',
-            'msql': 'sql',
-            'mini-sql': 'sql',
-            'mysql-cluster': 'sql',
-            'ms-sql-s': 'sql',
-            'ms-sql-m': 'sql',
-            'irc': 'irc',
-            'kerberos-sec': 'kerberos',
-            'kpasswd5': 'kerberos',
-            'klogin': 'kerberos',
-            'kshell': 'kerberos',
-            'kerberos-adm': 'kerberos',
-            'kerberos': 'kerberos',
-            'kerberos_master': 'kerberos',
-            'krb_prop': 'kerberos',
-            'krbupdate': 'kerberos',
-            'kpasswd': 'kerberos'
-        }
-        risky_service_names = risky_services_map.keys()
+    def __load_risky_services_tickets(self, snapshot_oid):
+        '''load risky services tickets into memory.'''
+        tickets = list(self.__cyhy_db.TicketDoc.find(
+            {'source': 'nmap',
+             'source_id': 1,    # 1 = 'risky service detected'
+             'snapshots': snapshot_oid,
+             'false_positive': False},
+            {'details.service': True,
+             'ip': True,
+             'ip_int': True,
+             'port': True,
+             'time_opened': True}))
+        for t in tickets:
+            # Neuter the connection so it can't be saved (easily)
+            t.connection = None
+            # Move service to main level of ticket
+            t['service'] = t['details'].get('service')
+            t.pop('details')
+        return tickets
+
+    def __risky_services_metrics(self, tickets):
+        '''calculate risky service metrics.'''
         risky_service_metrics = dict()
         # Initialize risky_service_metrics
-        for service in set(risky_services_map.values()):
+        for service in set(RISKY_SERVICES_MAP.values()):
             risky_service_metrics[service] = {
                 'count': 0, 'any_newly_opened': False}
 
         if not self.__no_history:
             previous_snapshot_timestamp = self.__snapshots[1]['end_time']
 
-        for ticket in self.__cyhy_db.TicketDoc.find(
-            {'source': 'nmap',
-             'source_id': 1,    # 1 = 'risky service detected'
-             'snapshots': snapshot_oid,
-             'false_positive': False},
-            {'details.service': True,
-             'time_opened': True}):
-            service = ticket['details'].get('service')
-
+        risky_service_names = RISKY_SERVICES_MAP.keys()
+        for ticket in tickets:
+            service = ticket['service']
             if service in risky_service_names:
-                mapped_service = risky_services_map[service]
+                mapped_service = RISKY_SERVICES_MAP[service]
                 risky_service_metrics[mapped_service]['count'] += 1
                 if self.__no_history or ticket[
                   'time_opened'] > previous_snapshot_timestamp:
@@ -516,8 +529,10 @@ class ReportGenerator(object):
         else:
             self.__results['owner_is_federal_executive'] = False
 
-        self.__results['risky_services_metrics'] = self.__risky_services_metrics(
+        self.__results['risky_services_tickets'] = self.__load_risky_services_tickets(
             ss0_snapshot_oid)
+        self.__results['risky_services_metrics'] = self.__risky_services_metrics(
+            self.__results['risky_services_tickets'])
 
         results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db)
         database.id_expand(results)
@@ -747,7 +762,7 @@ class ReportGenerator(object):
                                                     '$not_after',
                                                     seven_days_from_today
                                                 ]
-                                                
+
                                             }
                                         ]
                                     },
@@ -771,7 +786,7 @@ class ReportGenerator(object):
                                                 '$lte': [
                                                     '$not_after',
                                                     today
-                                                ]           
+                                                ]
                                             }
                                         ]
                                     },
