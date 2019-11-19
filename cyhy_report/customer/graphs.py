@@ -580,16 +580,15 @@ class MyPie(object):
 
 
 class MyColorBar(object):
-    def __init__(self, agencyName, agencyScore, federalScore, label="Average"):
-        self.agencyName = agencyName
-        self.agencyScore = agencyScore
-        self.federalScore = federalScore
-        self.label = label
+    def __init__(self, label_text, days, max_days):
+        self.label_text = label_text
+        self.days = days
+        self.max_days = max_days
 
     def plot(self, filename, size=1.0):
         cmap = mpl.cm.RdYlGn_r
-        norm = mpl.colors.Normalize(vmin=0, vmax=10)
-        fig = plt.figure(figsize=(8, 2))
+        norm = mpl.colors.Normalize(vmin=0, vmax=self.max_days)
+        fig = plt.figure(figsize=(4, 0.8))
         fig.set_size_inches(fig.get_size_inches() * size)
         plt.axis("off")
 
@@ -597,32 +596,27 @@ class MyColorBar(object):
         cb1 = mpl.colorbar.ColorbarBase(
             ax2, cmap=cmap, norm=norm, orientation="horizontal"
         )
-        cb1.set_label("CVSS Score")
+        # cb1.set_label("Days")
         cb1.outline.set_visible(False)
         ax2.xaxis.tick_bottom()
 
-        if self.agencyScore <= self.federalScore:
-            agencyTextXY = (0.25, 0.66)
-            federalTextXY = (0.75, 0.66)
-        else:
-            agencyTextXY = (0.75, 0.66)
-            federalTextXY = (0.25, 0.66)
-
-        agencyLabel = "%s %s\n%1.2f" % (self.agencyName, self.label, self.agencyScore)
-        federalLabel = "Federal %s\n%1.2f" % (self.label, self.federalScore)
+        # add a plus to the last tick label
+        labels = ax2.get_xticklabels()
+        labels[-1] = labels[-1].get_text() + "+"
+        ax2.set_xticklabels(labels)
 
         ax2.annotate(
-            agencyLabel,
-            xy=(self.agencyScore / 10, 1),
+            self.label_text,
+            xy=(min(self.days, self.max_days) / self.max_days, 1),
             xycoords="data",
-            xytext=agencyTextXY,
+            xytext=(0.5, 0.66),
             textcoords="figure fraction",
-            size=14,
+            size=10,
             ha="center",
             bbox=dict(boxstyle="round", fc="1.0", alpha=0.9),
             arrowprops=dict(
-                arrowstyle="fancy",
-                mutation_scale=30,
+                arrowstyle="wedge",
+                mutation_scale=20,
                 fc="0.1",
                 ec="none",
                 patchB=ax2,
@@ -630,24 +624,6 @@ class MyColorBar(object):
             ),
         )
 
-        ax2.annotate(
-            federalLabel,
-            xy=(self.federalScore / 10, 1),
-            xycoords="data",
-            xytext=federalTextXY,
-            textcoords="figure fraction",
-            size=14,
-            ha="center",
-            bbox=dict(boxstyle="round", fc="1.0", alpha=0.9),
-            arrowprops=dict(
-                arrowstyle="fancy",
-                mutation_scale=30,
-                fc="0.4",
-                ec="none",
-                patchB=ax2,
-                connectionstyle="angle3,angleA=0,angleB=-90",
-            ),
-        )
         fig.set_tight_layout(True)
         plt.savefig(filename + ".pdf")
         plt.close()
@@ -1114,8 +1090,10 @@ if __name__ == "__main__":
     # pie = MyPie(data, labels)
     # pie.plot('top-five-services', 0.5)
     #
-    # bar = MyColorBar('DHS', 10.0, 10.0)
-    # bar.plot('overall-cvss-score')
+    bar = MyColorBar("Max Age of Active Criticals", 0, 15.0)
+    bar.plot("critical-guage")
+    bar = MyColorBar("Max Age of Active Highs", 6, 30.0)
+    bar.plot("high-guage")
     #
     # labels = ('Low', 'Medium', 'High', 'Critical')
     # data = (14, 91, 51, 12)
@@ -1156,5 +1134,5 @@ if __name__ == "__main__":
     # m = Histogram(data, 0)
     # m.plot('hist')
 
-    m = MyMessage("Figure Omitted\nNo Vulnerabilities Detected")
-    m.plot("message")
+    # m = MyMessage("Figure Omitted\nNo Vulnerabilities Detected")
+    # m.plot("message")
