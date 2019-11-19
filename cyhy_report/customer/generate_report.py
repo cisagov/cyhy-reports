@@ -438,29 +438,30 @@ class ReportGenerator(object):
             # Move service to main level of ticket
             t['service'] = t['details'].get('service')
             t.pop('details')
+
+            t['category'] = RISKY_SERVICES_MAP.get(t['service'])
+            if not self.__no_history:
+                previous_snapshot_timestamp = self.__snapshots[1]['end_time']
+            if self.__no_history or ticket[
+              'time_opened'] > previous_snapshot_timestamp:
+                t['newly_opened_since_last_report'] = True
         return tickets
 
     def __risky_services_metrics(self, tickets):
         '''calculate risky service metrics.'''
         risky_service_metrics = dict()
+        risky_service_categories = set(RISKY_SERVICES_MAP.values())
         # Initialize risky_service_metrics
-        for service in set(RISKY_SERVICES_MAP.values()):
-            risky_service_metrics[service] = {
+        for category in risky_service_categories:
+            risky_service_metrics[category] = {
                 'count': 0, 'any_newly_opened': False}
 
-        if not self.__no_history:
-            previous_snapshot_timestamp = self.__snapshots[1]['end_time']
-
-        risky_service_names = RISKY_SERVICES_MAP.keys()
         for ticket in tickets:
-            service = ticket['service']
-            if service in risky_service_names:
-                mapped_service = RISKY_SERVICES_MAP[service]
-                risky_service_metrics[mapped_service]['count'] += 1
-                if self.__no_history or ticket[
-                  'time_opened'] > previous_snapshot_timestamp:
-                    risky_service_metrics[mapped_service][
-                        'any_newly_opened'] = True
+            category = ticket['category']
+            if category in risky_service_categories:
+                risky_service_metrics[category]['count'] += 1
+                if ticket['newly_opened_since_last_report']:
+                    risky_service_metrics[category]['any_newly_opened'] = True
         return risky_service_metrics
 
     def __vulnerability_occurrence(self, tickets):
