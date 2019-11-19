@@ -383,6 +383,73 @@ class ReportGenerator(object):
         else:
             return DataFrame([])
 
+    def __risky_services_metrics(self, snapshot_oid):
+        '''load nmap tickets into memory and calculate risky service metrics.'''
+        risky_services_map = {
+            'ms-wbt-server': 'rdp',
+            'telnet': 'telnet',
+            'rtelnet': 'telnet',
+            'microsoft-ds': 'smb',
+            'smbdirect': 'smb',
+            'ldap': 'ldap',
+            'netbios-ns': 'netbios',
+            'netbios-dgm': 'netbios',
+            'netbios-ssn': 'netbios',
+            'ftp': 'ftp',
+            'rsftp': 'ftp',
+            'ni-ftp': 'ftp',
+            'tftp': 'ftp',
+            'bftp': 'ftp',
+            'msrpc': 'rpc',
+            'sqlnet': 'sql',
+            'sqlserv': 'sql',
+            'sql-net': 'sql',
+            'sqlsrv': 'sql',
+            'msql': 'sql',
+            'mini-sql': 'sql',
+            'mysql-cluster': 'sql',
+            'ms-sql-s': 'sql',
+            'ms-sql-m': 'sql',
+            'irc': 'irc',
+            'kerberos-sec': 'kerberos',
+            'kpasswd5': 'kerberos',
+            'klogin': 'kerberos',
+            'kshell': 'kerberos',
+            'kerberos-adm': 'kerberos',
+            'kerberos': 'kerberos',
+            'kerberos_master': 'kerberos',
+            'krb_prop': 'kerberos',
+            'krbupdate': 'kerberos',
+            'kpasswd': 'kerberos'
+        }
+        risky_service_names = risky_services_map.keys()
+        risky_service_metrics = dict()
+        # Initialize risky_service_metrics
+        for service in set(risky_services_map.values()):
+            risky_service_metrics[service] = {
+                'count': 0, 'any_newly_opened': False}
+
+        if not self.__no_history:
+            previous_snapshot_timestamp = self.__snapshots[1]['end_time']
+
+        for ticket in self.__cyhy_db.TicketDoc.find(
+            {'source': 'nmap',
+             'source_id': 1,    # 1 = 'risky service detected'
+             'snapshots': snapshot_oid,
+             'false_positive': False},
+            {'details.service': True,
+             'time_opened': True}):
+            service = ticket['details'].get('service')
+
+            if service in risky_service_names:
+                mapped_service = risky_services_map[service]
+                risky_service_metrics[mapped_service]['count'] += 1
+                if self.__no_history or ticket[
+                  'time_opened'] > previous_snapshot_timestamp:
+                    risky_service_metrics[mapped_service][
+                        'any_newly_opened'] = True
+        return risky_service_metrics
+
     def __vulnerability_occurrence(self, tickets):
         df = SafeDataFrame(tickets, columns=['cvss_base_score','name','severity'])
         if df.empty:
@@ -448,6 +515,9 @@ class ReportGenerator(object):
             self.__results['owner_is_federal_executive'] = self.__owner in self.__cyhy_db.RequestDoc.get_all_descendants('EXECUTIVE')
         else:
             self.__results['owner_is_federal_executive'] = False
+
+        self.__results['risky_services_metrics'] = self.__risky_services_metrics(
+            ss0_snapshot_oid)
 
         results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db)
         database.id_expand(results)
@@ -2039,6 +2109,8 @@ class ReportGenerator(object):
             avpvh[k] = safe_divide(v, ss0['vulnerable_host_count'], 2)
 
         result['calc'] = calc
+
+        result['risky_services'] = self.__results['risky_services_metrics']
 
         if self.__results.get('ss0_descendant_snapshots'):
             result['ss0_descendant_data'] = self.__results['ss0_descendant_data']
