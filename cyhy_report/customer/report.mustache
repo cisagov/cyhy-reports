@@ -652,6 +652,7 @@ As you review the report, you may have additional questions. Check out the answe
     <<&risky_services.ftp.count>> & <<&risky_services.rpc.count>> & <<&risky_services.sql.count>> & <<&risky_services.irc.count>> & <<&risky_services.kerberos.count>> \\[2mm]
     \multicolumn{5}{c}{\RCSmallNum \smallgreencircle \ \ \color{v-good}{none open} \ \ \ \ \smallyellowtriangle \ \ \color{v-medium}1+ open, no new \ \ \ \ \smallredoctagon \ \ \color{v-bad}1+ newly opened} \\
     \multicolumn{5}{c}{\RCSmallNum \textit{Service counts are best guesses and may not be 100\% accurate}} \\
+    \multicolumn{5}{c}{\RCSmallNum \textit{Details in ''potentially-risky-services.csv'' in \autoref{app:attachments}}} \\
   \end{tabular}
 \end{minipage}
 \hfill
@@ -1560,6 +1561,7 @@ If your PDF viewer supports embedded attachments you will see paperclip icons be
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=mitigated-vulnerabilities.csv]{mitigated-vulnerabilities.csv} mitigated-vulnerabilities.csv : List of vulnerabilities that were included on the last report, but were not detected in the latest scans.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=recently-detected.csv]{recently-detected.csv} recently-detected.csv : List of all vulnerabilities detected since the last report, but not detected in the latest scans.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full \gls{TCP} handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} potentially-risky-services.csv : List of all potentially risky \glspl{service} detected and the associated \gls{IP} address and port.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=hosts.csv]{hosts.csv} hosts.csv : List of \glspl{host} discovered with \gls{IP} address, best-guess \gls{OS} identification, and hostname if available.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope.csv]{scope.csv} scope.csv : List of \gls{IP} addresses that were in scope for this report.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=false-positive-findings.csv]{false-positive-findings.csv} false-positive-findings.csv : List of all reported \gls{false positive} vulnerability findings.
