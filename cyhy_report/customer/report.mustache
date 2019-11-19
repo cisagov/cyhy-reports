@@ -636,11 +636,23 @@ As you review the report, you may have additional questions. Check out the answe
 	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.low>>} new
 \end{minipage}
 
-\vspace*{0.2in}
+% Define K as a centered column type to use below
+\newcolumntype{K}[1]{>{\centering\arraybackslash}p{#1}}
+
+\vspace*{0.075in}
 \begin{minipage}[b]{0.48\textwidth}
-	{\RCSub PREVIOUS REPORT}\hfill{\color{v-good}\raisebox{-0.8ex}{\RCBullet}\RCSmallNum resolved}\\
+	{\RCSub POTENTIALLY RISKY OPEN SERVICES}\\
 	\RCHashDot\\
-	\scalegraphicsnofig{report-card-previous}
+	\begin{tabular}{K{1.3cm}K{1.3cm}K{1.3cm}K{1.3cm}K{1.3cm}}
+    <<^risky_services.rdp.count>>\greencircle<</risky_services.rdp.count>><<#risky_services.rdp.count>><<#risky_services.rdp.any_newly_opened>>\redoctagon<</risky_services.rdp.any_newly_opened>><<^risky_services.rdp.any_newly_opened>>\yellowtriangle<</risky_services.rdp.any_newly_opened>><</risky_services.rdp.count>> & <<^risky_services.telnet.count>>\greencircle<</risky_services.telnet.count>><<#risky_services.telnet.count>><<#risky_services.telnet.any_newly_opened>>\redoctagon<</risky_services.telnet.any_newly_opened>><<^risky_services.telnet.any_newly_opened>>\yellowtriangle<</risky_services.telnet.any_newly_opened>><</risky_services.telnet.count>> & <<^risky_services.smb.count>>\greencircle<</risky_services.smb.count>><<#risky_services.smb.count>><<#risky_services.smb.any_newly_opened>>\redoctagon<</risky_services.smb.any_newly_opened>><<^risky_services.smb.any_newly_opened>>\yellowtriangle<</risky_services.smb.any_newly_opened>><</risky_services.smb.count>> & <<^risky_services.ldap.count>>\greencircle<</risky_services.ldap.count>><<#risky_services.ldap.count>><<#risky_services.ldap.any_newly_opened>>\redoctagon<</risky_services.ldap.any_newly_opened>><<^risky_services.ldap.any_newly_opened>>\yellowtriangle<</risky_services.ldap.any_newly_opened>><</risky_services.ldap.count>> & <<^risky_services.netbios.count>>\greencircle<</risky_services.netbios.count>><<#risky_services.netbios.count>><<#risky_services.netbios.any_newly_opened>>\redoctagon<</risky_services.netbios.any_newly_opened>><<^risky_services.netbios.any_newly_opened>>\yellowtriangle<</risky_services.netbios.any_newly_opened>><</risky_services.netbios.count>> \\
+    {\RCSmallNum RDP} & {\RCSmallNum Telnet} & {\RCSmallNum SMB} & {\RCSmallNum LDAP} & {\RCSmallNum NETBIOS} \\
+    <<&risky_services.rdp.count>> & <<&risky_services.telnet.count>> & <<&risky_services.smb.count>> & <<&risky_services.ldap.count>> & <<&risky_services.netbios.count>> \\[2mm]
+    <<^risky_services.ftp.count>>\greencircle<</risky_services.ftp.count>><<#risky_services.ftp.count>><<#risky_services.ftp.any_newly_opened>>\redoctagon<</risky_services.ftp.any_newly_opened>><<^risky_services.ftp.any_newly_opened>>\yellowtriangle<</risky_services.ftp.any_newly_opened>><</risky_services.ftp.count>> & <<^risky_services.rpc.count>>\greencircle<</risky_services.rpc.count>><<#risky_services.rpc.count>><<#risky_services.rpc.any_newly_opened>>\redoctagon<</risky_services.rpc.any_newly_opened>><<^risky_services.rpc.any_newly_opened>>\yellowtriangle<</risky_services.rpc.any_newly_opened>><</risky_services.rpc.count>> & <<^risky_services.sql.count>>\greencircle<</risky_services.sql.count>><<#risky_services.sql.count>><<#risky_services.sql.any_newly_opened>>\redoctagon<</risky_services.sql.any_newly_opened>><<^risky_services.sql.any_newly_opened>>\yellowtriangle<</risky_services.sql.any_newly_opened>><</risky_services.sql.count>> & <<^risky_services.irc.count>>\greencircle<</risky_services.irc.count>><<#risky_services.irc.count>><<#risky_services.irc.any_newly_opened>>\redoctagon<</risky_services.irc.any_newly_opened>><<^risky_services.irc.any_newly_opened>>\yellowtriangle<</risky_services.irc.any_newly_opened>><</risky_services.irc.count>> & <<^risky_services.kerberos.count>>\greencircle<</risky_services.kerberos.count>><<#risky_services.kerberos.count>><<#risky_services.kerberos.any_newly_opened>>\redoctagon<</risky_services.kerberos.any_newly_opened>><<^risky_services.kerberos.any_newly_opened>>\yellowtriangle<</risky_services.kerberos.any_newly_opened>><</risky_services.kerberos.count>> \\
+    {\RCSmallNum FTP} & {\RCSmallNum RPC} & {\RCSmallNum SQL} & {\RCSmallNum IRC} & {\RCSmallNum Kerberos} \\
+    <<&risky_services.ftp.count>> & <<&risky_services.rpc.count>> & <<&risky_services.sql.count>> & <<&risky_services.irc.count>> & <<&risky_services.kerberos.count>> \\[2mm]
+    \multicolumn{5}{c}{\RCSmallNum \smallgreencircle \ \ \color{v-good}{none open} \ \ \ \ \smallyellowtriangle \ \ \color{v-medium}1+ open, no new \ \ \ \ \smallredoctagon \ \ \color{v-bad}1+ newly opened} \\
+    \multicolumn{5}{c}{\RCSmallNum \textit{Service counts are best guesses and may not be 100\% accurate}} \\
+  \end{tabular}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
