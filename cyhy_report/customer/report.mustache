@@ -673,9 +673,27 @@ As you review the report, you may have additional questions. Check out the answe
 {\RCSub DAYS CURRENTLY ACTIVE} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.median>>\numprint{<<&calc.ss0_tix_days_open.critical.median>>}<</calc.ss0_tix_days_open.critical.median>><<^calc.ss0_tix_days_open.critical.median>>\numprint{0}<</calc.ss0_tix_days_open.critical.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.max>>\numprint{<<&calc.ss0_tix_days_open.critical.max>>}<</calc.ss0_tix_days_open.critical.max>><<^calc.ss0_tix_days_open.critical.max>>\numprint{0}<</calc.ss0_tix_days_open.critical.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.high.median>>\numprint{<<&calc.ss0_tix_days_open.high.median>>}<</calc.ss0_tix_days_open.high.median>><<^calc.ss0_tix_days_open.high.median>>\numprint{0}<</calc.ss0_tix_days_open.high.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.high.max>>\numprint{<<&calc.ss0_tix_days_open.high.max>>}<</calc.ss0_tix_days_open.high.max>><<^calc.ss0_tix_days_open.high.max>>\numprint{0}<</calc.ss0_tix_days_open.high.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.median>>\numprint{<<&calc.ss0_tix_days_open.medium.median>>}<</calc.ss0_tix_days_open.medium.median>><<^calc.ss0_tix_days_open.medium.median>>\numprint{0}<</calc.ss0_tix_days_open.medium.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.max>>\numprint{<<&calc.ss0_tix_days_open.medium.max>>}<</calc.ss0_tix_days_open.medium.max>><<^calc.ss0_tix_days_open.medium.max>>\numprint{0}<</calc.ss0_tix_days_open.medium.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.low.median>>\numprint{<<&calc.ss0_tix_days_open.low.median>>}<</calc.ss0_tix_days_open.low.median>><<^calc.ss0_tix_days_open.low.median>>\numprint{0}<</calc.ss0_tix_days_open.low.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.low.max>>\numprint{<<&calc.ss0_tix_days_open.low.max>>}<</calc.ss0_tix_days_open.low.max>><<^calc.ss0_tix_days_open.low.max>>\numprint{0}<</calc.ss0_tix_days_open.low.max>>} \\
 \end{tabular}
 
+\vspace*{-0.3in}
+\begin{minipage}{\linewidth}
+    \centering
+    \begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphicsnofig{max-age-active-criticals}
+		\end{figure}
+	\end{minipage}
+    \hspace{0.05\linewidth}
+    \begin{minipage}{0.45\linewidth}
+		\begin{figure}[H]
+			\centering
+			\scalegraphicsnofig{max-age-active-highs}
+		\end{figure}
+	\end{minipage}
+\end{minipage}
+
 %% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
 <<#expiring_soon_false_positive_tickets_count>>
-\vspace*{2mm}
+\vspace*{-1mm}
 {\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
 See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
 

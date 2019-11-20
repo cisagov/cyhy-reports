@@ -910,6 +910,8 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        self.__figure_max_age_of_active_criticals()
+        self.__figure_max_age_of_active_highs()
         # self.__figure_high_level_discoveries()
         self.__figure_top_five_high_risk_hosts()
         self.__figure_top_five_risk_based_vulnerabilities()
@@ -943,6 +945,20 @@ class ReportGenerator(object):
             self.__figure_report_card_previous(cols_curr)
         # self.__figure_report_card_cvss_vulnerable()       # Removed as part of CYHY-227
         # self.__figure_report_card_cvss_overall()          # Removed as part of CYHY-227
+
+    def __figure_max_age_of_active_criticals(self):
+        max_age_criticals = self.__results['ss0_tix_days_open']['critical']['max']
+        # 15 days is top end of bar graph for Criticals
+        bar = graphs.MyColorBar(
+            "Max Age of Active Criticals", max_age_criticals, 15.0)
+        bar.plot("max-age-active-criticals")
+
+    def __figure_max_age_of_active_highs(self):
+        max_age_highs = self.__results['ss0_tix_days_open']['high']['max']
+        # 30 days is top end of bar graph for Highs
+        bar = graphs.MyColorBar(
+            "Max Age of Active Highs", max_age_highs, 30.0)
+        bar.plot("max-age-active-highs")
 
     # def __figure_high_level_discoveries(self):
     #     ss0 = self.__snapshots[0]
