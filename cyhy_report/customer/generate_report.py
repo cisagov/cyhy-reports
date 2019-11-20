@@ -936,13 +936,13 @@ class ReportGenerator(object):
         self.__figure_distinct_vulns_over_time()
         self.__figure_dnssec_domain_compliance()
         self.__figure_dnssec_percent_compliant()
-        cols_prev = self.__figure_report_card_previous()
-        cols_curr = self.__figure_report_card_current()
+        # cols_prev = self.__figure_report_card_previous()  # Removed as part of CYHY-777
+        # cols_curr = self.__figure_report_card_current()   # Removed as part of CYHY-777
         # possibly rerun one to make cols match
-        if cols_prev > cols_curr:
-            self.__figure_report_card_current(cols_prev)
-        elif cols_prev < cols_curr:
-            self.__figure_report_card_previous(cols_curr)
+        # if cols_prev > cols_curr:
+            # self.__figure_report_card_current(cols_prev)  # Removed as part of CYHY-777
+        # elif cols_prev < cols_curr:
+            # self.__figure_report_card_previous(cols_curr) # Removed as part of CYHY-777
         # self.__figure_report_card_cvss_vulnerable()       # Removed as part of CYHY-227
         # self.__figure_report_card_cvss_overall()          # Removed as part of CYHY-227
 
@@ -1237,43 +1237,43 @@ class ReportGenerator(object):
         os.symlink(PLACEHOLDER_PDF, 'dnssec-percent-compliant.pdf')
         pass
 
-    def __figure_report_card_previous(self, min_cols=10):
-        if self.__no_history:
-            df = DataFrame()
-        else:
-            resolved_vulns = DataFrame(self.__results['resolved_vulnerabilities'])
-            resolved_counts = Series(self.__results['resolved_vulnerability_counts'])
-            prev_counts = Series(self.__snapshots[1]['vulnerabilities'])
-            unresolved_counts = (prev_counts - resolved_counts)
-            df = pd.concat([unresolved_counts, resolved_counts], axis=1, keys=['unresolved','resolved']).fillna(0)
-            df = df.astype(int)
-            df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
-
-        if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
-            boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.GREEN)
-            cols = boxes.plot('report-card-previous')
-        else: # too many vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
-            message.plot('report-card-previous', size=0.5)
-            cols = 0
-        return cols
-
-    def __figure_report_card_current(self, min_cols=10):
-        new_vulns = DataFrame(self.__results['new_vulnerabilities'])
-        new_counts = Series(self.__results['new_vulnerability_counts'])
-        curr_counts = Series(self.__snapshots[0]['vulnerabilities'])
-        carryover_counts = (curr_counts - new_counts)
-        df = pd.concat([carryover_counts, new_counts], axis=1, keys=['carryover','new']).fillna(0)
-        df = df.astype(int)
-        df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
-        if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
-            boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.RED)
-            cols = boxes.plot('report-card-current')
-        else: # too many vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
-            message.plot('report-card-current', size=0.5)
-            cols = 0
-        return cols
+    # def __figure_report_card_previous(self, min_cols=10):
+    #     if self.__no_history:
+    #         df = DataFrame()
+    #     else:
+    #         resolved_vulns = DataFrame(self.__results['resolved_vulnerabilities'])
+    #         resolved_counts = Series(self.__results['resolved_vulnerability_counts'])
+    #         prev_counts = Series(self.__snapshots[1]['vulnerabilities'])
+    #         unresolved_counts = (prev_counts - resolved_counts)
+    #         df = pd.concat([unresolved_counts, resolved_counts], axis=1, keys=['unresolved','resolved']).fillna(0)
+    #         df = df.astype(int)
+    #         df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
+    #
+    #     if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
+    #         boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.GREEN)
+    #         cols = boxes.plot('report-card-previous')
+    #     else: # too many vulnerabilities
+    #         message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
+    #         message.plot('report-card-previous', size=0.5)
+    #         cols = 0
+    #     return cols
+    #
+    # def __figure_report_card_current(self, min_cols=10):
+    #     new_vulns = DataFrame(self.__results['new_vulnerabilities'])
+    #     new_counts = Series(self.__results['new_vulnerability_counts'])
+    #     curr_counts = Series(self.__snapshots[0]['vulnerabilities'])
+    #     carryover_counts = (curr_counts - new_counts)
+    #     df = pd.concat([carryover_counts, new_counts], axis=1, keys=['carryover','new']).fillna(0)
+    #     df = df.astype(int)
+    #     df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
+    #     if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
+    #         boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.RED)
+    #         cols = boxes.plot('report-card-current')
+    #     else: # too many vulnerabilities
+    #         message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
+    #         message.plot('report-card-current', size=0.5)
+    #         cols = 0
+    #     return cols
 
     def __figure_report_card_cvss_vulnerable(self):
         all_cvss = DataFrame(self.__results['all_cvss_scores'])
