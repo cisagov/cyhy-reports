@@ -911,6 +911,7 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        self.__figure_hosts_with_unsupported_software()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
         # self.__figure_high_level_discoveries()
@@ -960,6 +961,24 @@ class ReportGenerator(object):
         bar = graphs.MyColorBar(
             "Max Age of Active Highs", max_age_highs, 30.0)
         bar.plot("max-age-active-highs")
+
+    def __figure_hosts_with_unsupported_software(self):
+        hosts_with_unsupported_sw = set()
+        for t in self.__results['tickets_0']:
+            if "Unsupported" in t['details'].get('name'):
+                hosts_with_unsupported_sw.add(t['ip'])
+        total_host_count = self.__snapshots[0]['host_count']
+        unsupported_sw_host_count = len(hosts_with_unsupported_sw)
+
+        unsupported_sw_pct = unsupported_sw_host_count / float(
+            total_host_count) * 100.0
+        supported_sw_pct = 100.0 - unsupported_sw_pct
+        labels = ("Hosts with No Unsupported Software",
+                  "Hosts with Unsupported Software")
+        data = [round(supported_sw_pct, 1), round(unsupported_sw_pct, 1)]
+        title = None
+        pie = graphs.MyPie(data, labels)
+        pie.plot("hosts-with-unsupported-sw")
 
     # def __figure_high_level_discoveries(self):
     #     ss0 = self.__snapshots[0]
