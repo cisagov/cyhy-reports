@@ -43,7 +43,7 @@ GREY_LIGHT = "#e8e8e8"
 GREY_MID = "#cecece"
 GREY_DARK = "#a1a1a1"
 
-PIE_COLORS = COLORS + COLORS_DARK + COLORS_LIGHT
+PIE_COLORS = (GREEN, RED)
 
 TOO_SMALL_WEDGE = 30
 
@@ -449,7 +449,7 @@ class MyDistributionBar(object):
 class MyPie(object):
     def __init__(self, data, labels, explode=None, showValue=False):
         self.data = data
-        self.labels = wrapLabels(labels, 20)
+        self.labels = wrapLabels(labels, 15)
         self.explode = explode
         self.showValue = showValue
 
@@ -542,7 +542,7 @@ class MyPie(object):
             colors=PIE_COLORS,
             explode=self.explode,
             labels=self.labels,
-            labeldistance=1.15,
+            labeldistance=1.2,
             autopct="",
             pctdistance=0.65,
             shadow=False,
@@ -565,7 +565,7 @@ class MyPie(object):
             i += 1
 
         for label in outer_labels:
-            label.set_fontsize(8.0 * (1 + size) / 2)
+            label.set_fontsize(14.0 * (1 + size) / 2)
 
         trips = zip(inner_labels, outer_labels, wedges)
 
@@ -1090,10 +1090,16 @@ if __name__ == "__main__":
     # pie = MyPie(data, labels)
     # pie.plot('top-five-services', 0.5)
     #
-    bar = MyColorBar("Max Age of Active Criticals", 0, 15.0)
-    bar.plot("critical-guage")
-    bar = MyColorBar("Max Age of Active Highs", 6, 30.0)
-    bar.plot("high-guage")
+    # bar = MyColorBar("Max Age of Active Criticals", 0, 15.0)
+    # bar.plot("critical-gauge")
+    # bar = MyColorBar("Max Age of Active Highs", 6, 30.0)
+    # bar.plot("high-gauge")
+    #
+    labels = ("Hosts with No Unsupported Software", "Hosts with Unsupported Software")
+    data = [96.0, 4.0]
+    title = None
+    pie = MyPie(data, labels)
+    pie.plot("hosts-with-unsupported-sw")
     #
     # labels = ('Low', 'Medium', 'High', 'Critical')
     # data = (14, 91, 51, 12)
