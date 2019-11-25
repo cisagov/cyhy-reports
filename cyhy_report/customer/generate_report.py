@@ -443,7 +443,8 @@ class ReportGenerator(object):
             t['category'] = RISKY_SERVICES_MAP.get(t['service'])
             if not self.__no_history:
                 previous_snapshot_timestamp = self.__snapshots[1]['end_time']
-            if self.__no_history or ticket[
+            t['newly_opened_since_last_report'] = False
+            if self.__no_history or t[
               'time_opened'] > previous_snapshot_timestamp:
                 t['newly_opened_since_last_report'] = True
         return tickets
