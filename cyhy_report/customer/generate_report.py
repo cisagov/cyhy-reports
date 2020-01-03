@@ -2181,6 +2181,13 @@ class ReportGenerator(object):
 
         result['calc'] = calc
 
+        # Calculate count of "hosts with unsupported software"
+        hosts_with_unsupported_sw = set()
+        for t in self.__results['tickets_0']:
+            if "Unsupported" in t['details'].get('name'):
+                hosts_with_unsupported_sw.add(t['ip'])
+        result['unsupported_sw_host_count'] = len(hosts_with_unsupported_sw)
+
         result['risky_services'] = self.__results['risky_services_metrics']
 
         if self.__results.get('ss0_descendant_snapshots'):
