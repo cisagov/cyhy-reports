@@ -451,7 +451,7 @@ class ReportGenerator(object):
 
     def __risky_services_metrics(self, tickets):
         '''calculate risky service metrics.'''
-        risky_service_metrics = dict()
+        risky_service_metrics = {'total_count': 0}
         risky_service_categories = set(RISKY_SERVICES_MAP.values())
         # Initialize risky_service_metrics
         for category in risky_service_categories:
@@ -461,6 +461,7 @@ class ReportGenerator(object):
         for ticket in tickets:
             category = ticket['category']
             if category in risky_service_categories:
+                risky_service_metrics['total_count'] += 1
                 risky_service_metrics[category]['count'] += 1
                 if ticket['newly_opened_since_last_report']:
                     risky_service_metrics[category]['any_newly_opened'] = True
