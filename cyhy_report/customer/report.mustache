@@ -512,10 +512,12 @@ As you review the report, you may have additional questions. Check out the answe
       	\  % Spacer column
       \end{minipage}
       \begin{minipage}[t]{0.88\textwidth}
+        % TODO Figure out why this spacer graphic is creating a blank page
+        % before the Report Card page
         \begin{tikzpicture}
           % Spacer graphic; I cannot find any other way to move the date
           % text below vertically lower, hence this hack
-          \draw[color=rc-light-blue, fill=rc-light-blue](0mm,0mm) -- (4mm,0mm) -- (4mm,4mm) -- cycle;
+          \draw[color=rc-light-blue](0mm,0mm) -- (0mm,4mm) -- cycle;
         \end{tikzpicture}
 
       	\textcolor{dhs-white}{\RCSourceSansProTwelve{\usvardate\formatdate<<&calc.title_date_tex>>}}
