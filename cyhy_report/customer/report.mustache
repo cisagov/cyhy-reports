@@ -259,6 +259,7 @@
 \newcommand\RCSourceSansProLightEight{\sourcesansprolight\fontsize{8pt}{8pt}\selectfont}
 \newcommand\RCSourceSansProTen{\SourceSansProFont\fontsize{10pt}{10pt}\selectfont}
 \newcommand\RCSourceSansProTwelve{\SourceSansProFont\fontsize{12pt}{12pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldTen{\sourcesansprolight\bfseries\fontsize{10pt}{10pt}\selectfont}
 \newcommand\RCSourceSansProSemiBoldTwelve{\sourcesansprolight\bfseries\fontsize{12pt}{12pt}\selectfont}
 \newcommand\RCSourceSansProSemiBoldSixteen{\sourcesansprolight\bfseries\fontsize{16pt}{16pt}\selectfont}
 \newcommand\RCSourceSansProSemiBoldEighteen{\sourcesansprolight\bfseries\fontsize{18pt}{18pt}\selectfont}
@@ -707,13 +708,16 @@ As you review the report, you may have additional questions. Check out the answe
       \blindtext
     \end{minipage}}\begin{minipage}[t]{0.01\textwidth}  % END: SEVERITY BY PROMINENCE
        \  % Spacer column
-    \end{minipage}\colorbox{v-high}{\begin{minipage}[t]{0.48\textwidth}
+    \end{minipage}\colorbox{dhs-white}{\begin{minipage}[t]{0.48\textwidth}
       \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen VULNERABILITY\\
       RESPONSE TIME}
 
       \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
       \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
-      \blindtext
+      \centering
+        \scalegraphicsnofig{max-age-active-criticals} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE CRITICALS}
+
+        \scalegraphicsnofig{max-age-active-highs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE HIGHS}
     \end{minipage}}  % END: VULNERABILITY RESPONSE TIME
   \end{minipage}}  % END: VULNERABILITIES
   \begin{minipage}[t]{0.01\textwidth}
@@ -755,7 +759,7 @@ As you review the report, you may have additional questions. Check out the answe
   \end{minipage}  % END: POTENTIALLY RISKY OPEN SERVICES
 
   % Blue triangle at bottom right corner of page
-  \vspace*{18mm}  % TODO: Fix this number at the end
+  \vspace*{1mm}  % TODO: Fix this number at the end
   \hspace*{125mm}
   \begin{tikzpicture}
     \draw[color=rc-dark-blue, fill=rc-dark-blue](0mm,0mm) -- (90mm,0mm) -- (90mm,20mm) -- cycle;
