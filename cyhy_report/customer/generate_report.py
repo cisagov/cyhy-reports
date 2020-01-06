@@ -123,6 +123,10 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
+RC_DARK_BLUE = "#002d60"
+RC_LIGHT_RED = "#c41230"
+RC_ORANGE = "#f15a2d"
+
 RISKY_SERVICES_MAP = {
     'ms-wbt-server': 'rdp',
     'telnet': 'telnet',
@@ -950,17 +954,17 @@ class ReportGenerator(object):
 
     def __figure_max_age_of_active_criticals(self):
         max_age_criticals = self.__results['ss0_tix_days_open']['critical']['max']
-        # 15 days is top end of bar graph for Criticals
-        bar = graphs.MyColorBar(
-            "Max Age of Active Criticals", max_age_criticals, 15.0)
-        bar.plot("max-age-active-criticals")
+        # 15 days is top end of gauge for Criticals
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_criticals, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+        gauge.plot("max-age-active-criticals", size=0.75)
 
     def __figure_max_age_of_active_highs(self):
         max_age_highs = self.__results['ss0_tix_days_open']['high']['max']
-        # 30 days is top end of bar graph for Highs
-        bar = graphs.MyColorBar(
-            "Max Age of Active Highs", max_age_highs, 30.0)
-        bar.plot("max-age-active-highs")
+        # 30 days is top end of gauge for Highs
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_highs, 30, RC_ORANGE, RC_DARK_BLUE)
+        gauge.plot("max-age-active-highs", size=0.75)
 
     # def __figure_high_level_discoveries(self):
     #     ss0 = self.__snapshots[0]
