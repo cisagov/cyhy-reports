@@ -8,7 +8,7 @@ matplotlib.use("PDF")
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.basemap import Basemap
-from matplotlib.patches import Rectangle, Ellipse, RegularPolygon
+from matplotlib.patches import Ellipse, Rectangle, RegularPolygon, Wedge
 from matplotlib.collections import PatchCollection
 from matplotlib.ticker import MaxNLocator
 from matplotlib.dates import DateFormatter
@@ -44,6 +44,10 @@ GREY_MID = "#cecece"
 GREY_DARK = "#a1a1a1"
 
 PIE_COLORS = (GREEN, RED)
+
+RC_DARK_BLUE = "#002d60"
+RC_LIGHT_RED = "#c41230"
+RC_ORANGE = "#f15a2d"
 
 TOO_SMALL_WEDGE = 30
 
@@ -1046,8 +1050,95 @@ class Histogram2(object):
         plt.close()
 
 
+class MyColorGauge(object):
+    def __init__(self, unit_name, num_units, max_units, color1, color2):
+        self.unit_name = unit_name
+        self.num_units = num_units
+        self.max_units = max_units
+        self.color1 = color1
+        self.color2 = color2
+
+    def plot(self, filename, size=1.0):
+        fig = plt.figure()
+        fig.set_size_inches(fig.get_size_inches() * size)
+        ax = fig.add_subplot(1, 1, 1)
+
+        degrees_to_fill = 180.0 * self.num_units / self.max_units
+        wedge1 = Wedge(
+            center=(0.0, 0.0),
+            r=1.0,
+            theta1=180.0 - degrees_to_fill,
+            theta2=180.0,
+            width=0.3,
+            linewidth=0.0,
+            facecolor=self.color1,
+        )
+        wedge2 = Wedge(
+            center=(0.0, 0.0),
+            r=1.0,
+            theta1=0.0,
+            theta2=180.0 - degrees_to_fill,
+            width=0.3,
+            linewidth=0.0,
+            facecolor=self.color2,
+        )
+
+        ax.add_patch(wedge1)
+        ax.add_patch(wedge2)
+
+        # Center label
+        ax.annotate(
+            "{}".format(self.num_units),
+            xy=(0, 0.25),
+            family="sans-serif",
+            size=48,
+            ha="center",
+        )
+        ax.annotate(
+            "{}".format(self.unit_name.upper()),
+            xy=(0, 0.12),
+            family="sans-serif",
+            size=24,
+            ha="center",
+        )
+
+        # Lower boundary label
+        ax.annotate(
+            "0 {}".format(self.unit_name),
+            xy=(-0.85, -0.1),
+            family="sans-serif",
+            size=16,
+            ha="center",
+        )
+
+        # Upper boundary label
+        ax.annotate(
+            "{}+ {}".format(self.max_units, self.unit_name),
+            xy=(0.85, -0.1),
+            family="sans-serif",
+            size=16,
+            ha="center",
+        )
+
+        # Remove frame and axis ticks
+        ax.set_frame_on(False)
+        ax.axes.set_xticks([])
+        ax.axes.set_yticks([])
+
+        ax.axis("equal")  # Make axis equal on both sides
+        fig.set_tight_layout(True)
+        plt.savefig(filename + ".pdf")
+        plt.close()
+
+
 if __name__ == "__main__":
     setup()
+
+    gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+    gauge.plot("max-age-of-active-criticals")
+
+    gauge = MyColorGauge("Days", 8, 30, RC_ORANGE, RC_DARK_BLUE)
+    gauge.plot("max-age-of-active-highs")
 
     # crit = (0, 3, 4)
     # high = (20, 6, 2)
@@ -1095,11 +1186,11 @@ if __name__ == "__main__":
     # bar = MyColorBar("Max Age of Active Highs", 6, 30.0)
     # bar.plot("high-gauge")
     #
-    labels = ("Hosts with No Unsupported Software", "Hosts with Unsupported Software")
-    data = [96.0, 4.0]
-    title = None
-    pie = MyPie(data, labels)
-    pie.plot("hosts-with-unsupported-sw")
+    # labels = ("Hosts with No Unsupported Software", "Hosts with Unsupported Software")
+    # data = [96.0, 4.0]
+    # title = None
+    # pie = MyPie(data, labels)
+    # pie.plot("hosts-with-unsupported-sw")
     #
     # labels = ('Low', 'Medium', 'High', 'Critical')
     # data = (14, 91, 51, 12)
