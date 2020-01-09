@@ -8,7 +8,7 @@ matplotlib.use("PDF")
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.basemap import Basemap
-from matplotlib.patches import Ellipse, Rectangle, RegularPolygon, Wedge
+from matplotlib.patches import Circle, Ellipse, Rectangle, RegularPolygon, Wedge
 from matplotlib.collections import PatchCollection
 from matplotlib.ticker import MaxNLocator
 from matplotlib.dates import DateFormatter
@@ -1136,15 +1136,110 @@ class MyColorGauge(object):
         plt.close()
 
 
+class MyBubbleChart(object):
+    def __init__(
+        self, x_values, y_values, size_values, colors, categories, data, statuses
+    ):
+        self.x_values = x_values
+        self.y_values = y_values
+        self.size_values = size_values
+        self.colors = colors
+        self.categories = categories
+        self.data = data
+        self.statuses = statuses
+
+    def plot(self, filename, size=1.0):
+        fig = plt.figure()
+
+        # Ratio of width to height, plus axis limits below have been set to
+        # minimize distortion of circles.  Adjusting those values can result
+        # in the "bubbles" being non-circular ellipses.
+        fig.set_size_inches(2.75 * size, 3 * size)
+        ax = fig.add_subplot(1, 1, 1, frameon=False)
+
+        # Set axis limits to mimimize white space
+        plt.xlim(0, 85)
+        plt.ylim(0, 100)
+
+        # Remove axis ticks
+        ax.axes.set_xticks([])
+        ax.axes.set_yticks([])
+
+        # Minimize margins
+        plt.margins(0, 0)
+
+        for i in range(len(self.x_values)):
+            ax.add_patch(
+                Circle(
+                    xy=(self.x_values[i], self.y_values[i]),
+                    radius=self.size_values[i],
+                    facecolor=self.colors[i],
+                    edgecolor=self.colors[i],
+                )
+            )
+
+        # Bubble labels
+        for i in range(len(self.x_values)):
+            ax.annotate(
+                "{:,d}".format(self.data[i][0]),
+                xy=(self.x_values[i], self.y_values[i] + 4),
+                color="white",
+                family="sans-serif",
+                size=14,
+                weight="bold",
+                ha="center",
+            )
+            ax.annotate(
+                "{}".format(self.categories[i]),
+                xy=(self.x_values[i], self.y_values[i] + 0),
+                color="white",
+                family="sans-serif",
+                size=5,
+                weight="bold",
+                ha="center",
+            )
+            ax.annotate(
+                "{:,d} {}".format(self.data[i][1], self.statuses[0]),
+                xy=(self.x_values[i], self.y_values[i] - 4),
+                color="white",
+                family="sans-serif",
+                size=5,
+                ha="center",
+            )
+            ax.annotate(
+                "{:,d} {}".format(self.data[i][2], self.statuses[1]),
+                xy=(self.x_values[i], self.y_values[i] - 8),
+                color="white",
+                family="sans-serif",
+                size=5,
+                ha="center",
+            )
+
+        plt.savefig(filename + ".pdf", bbox_inches="tight", pad_inches=0)
+        plt.close()
+
+
 if __name__ == "__main__":
     setup()
 
-    gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
-    gauge.plot("max-age-of-active-criticals")
-
-    gauge = MyColorGauge("Days", 8, 30, RC_ORANGE, RC_DARK_BLUE)
-    gauge.plot("max-age-of-active-highs")
-
+    bc = MyBubbleChart(
+        # CRIT,HIGH,MED,LOW
+        [50, 20, 65, 35],  # horizontal location
+        [80, 55, 45, 20],  # vertical location
+        [12, 14, 18, 16],  # max radius = 18
+        BUBBLE_COLORS,
+        ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        [(0, 1, 0), (2, 1, 2), (888, 120, 119), (40, 20, 15)],
+        ["RESOLVED", "NEW"],
+    )
+    bc.plot("bubbles")
+    #
+    # gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+    # gauge.plot("max-age-of-active-criticals")
+    #
+    # gauge = MyColorGauge("Days", 8, 30, RC_ORANGE, RC_DARK_BLUE)
+    # gauge.plot("max-age-of-active-highs")
+    #
     # crit = (0, 3, 4)
     # high = (20, 6, 2)
     # medium = (16, 20, 36)
