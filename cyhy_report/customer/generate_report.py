@@ -124,6 +124,9 @@ RED =       '#c66270'
 BLACK =     '#000000'
 
 RC_DARK_BLUE = "#002d60"
+RC_DARK_RED = "#963513"
+RC_LIGHT_GREEN = "#5e9732"
+RC_LIGHT_BLUE = "#0078ae"
 RC_LIGHT_RED = "#c41230"
 RC_ORANGE = "#f15a2d"
 
@@ -916,6 +919,7 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        self.__figure_vuln_severity_by_prominence()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
         # self.__figure_high_level_discoveries()
@@ -951,6 +955,58 @@ class ReportGenerator(object):
             # self.__figure_report_card_previous(cols_curr) # Removed as part of CYHY-777
         # self.__figure_report_card_cvss_vulnerable()       # Removed as part of CYHY-227
         # self.__figure_report_card_cvss_overall()          # Removed as part of CYHY-227
+
+    def __determine_bubble_sizes(self, severities, vuln_counts):
+        vulns_sorted = sorted(vuln_counts.items(), key=lambda item: item[1])
+        count = 0
+        rank = 0
+        vulns_ranked = dict()
+        previous_value = None
+
+        for severity, num_vulns in vulns_sorted:
+            count += 1
+            if num_vulns != previous_value:
+                rank += count
+                previous_value = num_vulns
+                count = 0
+            vulns_ranked[severity] = rank
+
+        bubble_sizes = list()
+        for severity in severities:
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            bubble_sizes.append(2 * vulns_ranked[severity] + 10)
+        return bubble_sizes
+
+    def __figure_vuln_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        vuln_data = list()
+        active_vulns = dict()
+        for severity in severities:
+            vuln_data.append(
+                (
+                    self.__snapshots[0]['vulnerabilities'][severity],
+                    self.__results['new_vulnerability_counts'][severity],
+                    self.__results['resolved_vulnerability_counts'][severity],
+                )
+            )
+            active_vulns[severity] = self.__snapshots[0]['vulnerabilities'][severity]
+
+        bubble_sizes = self.__determine_bubble_sizes(severities, active_vulns)
+
+        bubbles = graphs.MyBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            [50, 20, 65, 35],   # Bubble x coordinates
+            [80, 55, 45, 20],   # Bubble y coordinates
+            bubble_sizes,
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            vuln_data,
+            ["RESOLVED", "NEW"])
+        bubbles.plot("vuln-severity-by-prominence", size=1.0)
 
     def __figure_max_age_of_active_criticals(self):
         max_age_criticals = self.__results['ss0_tix_days_open']['critical']['max']
