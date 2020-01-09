@@ -690,7 +690,7 @@ As you review the report, you may have additional questions. Check out the answe
   \begin{minipage}[t]{0.04\textwidth}
      \  % Spacer column
   \end{minipage}
-  \colorbox{v-critical}{\begin{minipage}[t]{0.61\textwidth}
+  \begin{minipage}[t]{0.61\textwidth}
     \vspace*{-3.5mm}
     \stackon[-16pt]{\begin{tikzpicture}
       \draw[color=rc-light-blue, fill=rc-light-blue](0mm,0mm) -- (0mm,8mm) -- (10mm,8mm) -- (6mm,0mm) -- cycle;
@@ -699,14 +699,14 @@ As you review the report, you may have additional questions. Check out the answe
     {\hspace*{-60mm} \resizebox{4cm}{!}{\textcolor{dhs-white}{\RCSourceSansProBoldFourteen VULNERABILITIES}}}
 
     \vspace*{3mm}  % blank line needed on previous line for vertical spacing
-    \colorbox{v-low}{\begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.48\textwidth}
       \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen SEVERITY BY\\
       PROMINENCE}
 
       \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
       \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
-      \blindtext
-    \end{minipage}}\begin{minipage}[t]{0.01\textwidth}  % END: SEVERITY BY PROMINENCE
+      \scalegraphicsnofig[1.2]{vuln-severity-by-prominence}
+    \end{minipage}\begin{minipage}[t]{0.01\textwidth}  % END: SEVERITY BY PROMINENCE
        \  % Spacer column
     \end{minipage}\colorbox{dhs-white}{\begin{minipage}[t]{0.48\textwidth}
       \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen VULNERABILITY\\
@@ -714,12 +714,13 @@ As you review the report, you may have additional questions. Check out the answe
 
       \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
       \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
-      \centering
+
+      \centering % blank line needed on previous line for vertical spacing
         \scalegraphicsnofig{max-age-active-criticals} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE CRITICALS}
 
         \scalegraphicsnofig{max-age-active-highs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE HIGHS}
     \end{minipage}}  % END: VULNERABILITY RESPONSE TIME
-  \end{minipage}}  % END: VULNERABILITIES
+  \end{minipage}  % END: VULNERABILITIES
   \begin{minipage}[t]{0.01\textwidth}
      \  % Spacer column
   \end{minipage}
