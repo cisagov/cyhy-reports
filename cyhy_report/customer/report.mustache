@@ -525,8 +525,11 @@ As you review the report, you may have additional questions. Check out the answe
         \textcolor{dhs-white}{\RCFranklinGothicDemiCondForty CARD}
 
       	\vspace*{2mm}  % blank line needed on previous line for vertical spacing
-      	\textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}
-        % TODO: Ensure long agency names don't vertically blow out this section
+        % Use a vbox to maintain a constant height, regardless of the
+        % length of the organization's name
+	      \vbox to 16mm {\vfil
+		      \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
+	      }
 
         \hspace*{-6mm}
         {\renewcommand{\arraystretch}{4}  % Increase vertical padding between rows
