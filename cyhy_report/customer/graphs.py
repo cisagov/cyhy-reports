@@ -1068,7 +1068,11 @@ class MyColorGauge(object):
         fig.set_size_inches(fig.get_size_inches() * size)
         ax = fig.add_subplot(1, 1, 1)
 
-        degrees_to_fill = 180.0 * self.num_units / self.max_units
+        if self.num_units > self.max_units:
+            degrees_to_fill = 180.0
+        else:
+            degrees_to_fill = 180.0 * self.num_units / self.max_units
+
         wedge1 = Wedge(
             center=(0.0, 0.0),
             r=1.0,
