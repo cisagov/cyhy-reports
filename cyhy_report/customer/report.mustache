@@ -524,12 +524,15 @@ As you review the report, you may have additional questions. Check out the answe
       	\vspace*{2mm}  % blank line needed on previous line for vertical spacing
         \textcolor{dhs-white}{\RCFranklinGothicDemiCondForty CARD}
 
-      	\vspace*{2mm}  % blank line needed on previous line for vertical spacing
-        % Use a vbox to maintain a constant height, regardless of the
-        % length of the organization's name
-	      \vbox to 16mm {\vfil
-		      \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
-	      }
+        \begin{minipage}[t]{0.9\textwidth}
+
+      	  \vspace*{0.1mm}  % blank line needed on previous line for vertical spacing
+          % Use a vbox to maintain a constant height, regardless of the
+          % length of the organization's name
+  	      \vbox to 16mm {\vfil
+  		      \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
+  	      }  % END: vbox (org name)
+        \end{minipage}  % END: org name minipage
 
         \hspace*{-6mm}
         {\renewcommand{\arraystretch}{4}  % Increase vertical padding between rows
