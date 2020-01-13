@@ -572,11 +572,11 @@ As you review the report, you may have additional questions. Check out the answe
 
       \vspace*{1mm}  % blank line needed on previous line for vertical spacing
       {\RCSourceSansProSemiBoldSixteen <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
-      {\RCSourceSansProTen Host Scans on All Addresses}
+      {\RCSourceSansProTwelve Host Scans on All Addresses}
 
-      \vspace*{2mm}  % blank line needed on previous line for vertical spacing
+      \vspace*{3mm}  % blank line needed on previous line for vertical spacing
       {\RCSourceSansProSemiBoldSixteen <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
-      {\RCSourceSansProTen Vulnerability Scans on All Hosts}
+      {\RCSourceSansProTwelve Vulnerability Scans on All Hosts}
 
       \vspace*{4mm}  % blank line needed on previous line for vertical spacing
       \begin{minipage}[t]{0.45\textwidth}
@@ -588,9 +588,9 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&calc.address_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.address_count_up_flag>>grey-up-arrow<</calc.address_count_up_flag>><<#calc.address_count_down_flag>>grey-down-arrow<</calc.address_count_down_flag>><<#calc.address_count_flat_flag>>no-change-blue-arrows<</calc.address_count_flat_flag>>}
 
-        <<#calc.address_count_up_flag>>{\RCSourceSansProTen Increase of \textbf{\numprint{<<&calc.address_count_up>>}}}<</calc.address_count_up_flag>>
-        <<#calc.address_count_down_flag>>{\RCSourceSansProTen Decrease of \textbf{\numprint{<<&calc.address_count_down>>}}}<</calc.address_count_down_flag>>
-        <<#calc.address_count_flat_flag>>{\RCSourceSansProTen No Change}<</calc.address_count_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.address_count_up_flag>>Increase of \textbf{\numprint{<<&calc.address_count_up>>}}<</calc.address_count_up_flag>>
+        <<#calc.address_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.address_count_down>>}}<</calc.address_count_down_flag>>
+        <<#calc.address_count_flat_flag>>No Change<</calc.address_count_flat_flag>>}
       \end{minipage}  % END: ADDRESSES OWNED
       \begin{minipage}[t]{0.1\textwidth}
          \  % Spacer column
@@ -604,11 +604,11 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&calc.addresses_scanned>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.addresses_scanned_up_flag>>grey-up-arrow<</calc.addresses_scanned_up_flag>><<#calc.addresses_scanned_down_flag>>grey-down-arrow<</calc.addresses_scanned_down_flag>><<#calc.addresses_scanned_flat_flag>>no-change-blue-arrows<</calc.addresses_scanned_flat_flag>>}
 
-        <<#calc.addresses_scanned_up_flag>>{\RCSourceSansProTen Increase of \textbf{\numprint{<<&calc.addresses_scanned_up>>}}<</calc.addresses_scanned_up_flag>>
-        <<#calc.addresses_scanned_down_flag>>{\RCSourceSansProTen Decrease of \textbf{\numprint{<<&calc.addresses_scanned_down>>}}<</calc.addresses_scanned_down_flag>>
-        <<#calc.addresses_scanned_flat_flag>>{\RCSourceSansProTen No Change<</calc.addresses_scanned_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.addresses_scanned_up_flag>>Increase of \textbf{\numprint{<<&calc.addresses_scanned_up>>}}<</calc.addresses_scanned_up_flag>>
+        <<#calc.addresses_scanned_down_flag>>Decrease of \textbf{\numprint{<<&calc.addresses_scanned_down>>}}<</calc.addresses_scanned_down_flag>>
+        <<#calc.addresses_scanned_flat_flag>>No Change<</calc.addresses_scanned_flat_flag>>
 
-        \vspace*{-1mm}  % blank line needed on previous line for vertical spacing
+        % blank line needed on previous line for vertical spacing
         \numprint{<<&calc.addresses_scanned_percent>>}\% of addresses scanned}
       \end{minipage}  % END: ADDRESSES SCANNED
 
@@ -622,9 +622,9 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.host_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.host_count_up_flag>>grey-up-arrow<</calc.host_count_up_flag>><<#calc.host_count_down_flag>>grey-down-arrow<</calc.host_count_down_flag>><<#calc.host_count_flat_flag>>no-change-blue-arrows<</calc.host_count_flat_flag>>}
 
-        <<#calc.host_count_up_flag>>{\RCSourceSansProTen Increase of \textbf{\numprint{<<&calc.host_count_up>>}}}<</calc.host_count_up_flag>>
-        <<#calc.host_count_down_flag>>{\RCSourceSansProTen Decrease of \textbf{\numprint{<<&calc.host_count_down>>}}}<</calc.host_count_down_flag>>
-        <<#calc.host_count_flat_flag>>{\RCSourceSansProTen No Change}<</calc.host_count_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.host_count_up_flag>>Increase of \textbf{\numprint{<<&calc.host_count_up>>}}<</calc.host_count_up_flag>>
+        <<#calc.host_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.host_count_down>>}}<</calc.host_count_down_flag>>
+        <<#calc.host_count_flat_flag>>No Change<</calc.host_count_flat_flag>>}
       \end{minipage}  % END: HOSTS
       \begin{minipage}[t]{0.1\textwidth}
          \  % Spacer column
@@ -638,9 +638,9 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.port_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.port_count_up_flag>>grey-up-arrow<</calc.port_count_up_flag>><<#calc.port_count_down_flag>>grey-down-arrow<</calc.port_count_down_flag>><<#calc.port_count_flat_flag>>no-change-blue-arrows<</calc.port_count_flat_flag>>}
 
-        <<#calc.port_count_up_flag>>{\RCSourceSansProTen Increase of \textbf{\numprint{<<&calc.port_count_up>>}}}<</calc.port_count_up_flag>>
-        <<#calc.port_count_down_flag>>{\RCSourceSansProTen Decrease of \textbf{\numprint{<<&calc.port_count_down>>}}}<</calc.port_count_down_flag>>
-        <<#calc.port_count_flat_flag>>{\RCSourceSansProTen No Change}<</calc.port_count_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.port_count_up_flag>>Increase of \textbf{\numprint{<<&calc.port_count_up>>}}<</calc.port_count_up_flag>>
+        <<#calc.port_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.port_count_down>>}}<</calc.port_count_down_flag>>
+        <<#calc.port_count_flat_flag>>No Change<</calc.port_count_flat_flag>>}
       \end{minipage}  % END: SERVICES
 
       \vspace*{4mm}  % blank line needed on previous line for vertical spacing
@@ -653,11 +653,11 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.vulnerable_host_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.vuln_host_count_up_flag>>red-up-arrow<</calc.vuln_host_count_up_flag>><<#calc.vuln_host_count_down_flag>>green-down-arrow<</calc.vuln_host_count_down_flag>><<#calc.vuln_host_count_flat_flag>>no-change-blue-arrows<</calc.vuln_host_count_flat_flag>>}
 
-        <<#calc.vuln_host_count_up_flag>>{\RCSourceSansProTen \textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_host_count_up>>}}}<</calc.vuln_host_count_up_flag>>
-        <<#calc.vuln_host_count_down_flag>>{\RCSourceSansProTen \textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_host_count_down>>}}}<</calc.vuln_host_count_down_flag>>
-        <<#calc.vuln_host_count_flat_flag>>{\RCSourceSansProTen No Change<</calc.vuln_host_count_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.vuln_host_count_up_flag>>\textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_host_count_up>>}}}<</calc.vuln_host_count_up_flag>>
+        <<#calc.vuln_host_count_down_flag>>\textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_host_count_down>>}}}<</calc.vuln_host_count_down_flag>>
+        <<#calc.vuln_host_count_flat_flag>>No Change<</calc.vuln_host_count_flat_flag>>
 
-        \vspace*{-1mm}  % blank line needed on previous line for vertical spacing
+        % blank line needed on previous line for vertical spacing
         <<&calc.vuln_host_percent>>\% of hosts vulnerable}
       \end{minipage}  % END: VULNERABLE HOSTS
       \begin{minipage}[t]{0.1\textwidth}
@@ -672,9 +672,9 @@ As you review the report, you may have additional questions. Check out the answe
         \vspace*{1mm}  % blank line needed on previous line for vertical spacing
         {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.vulnerabilities.total>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.vuln_total_up_flag>>red-up-arrow<</calc.vuln_total_up_flag>><<#calc.vuln_total_down_flag>>green-down-arrow<</calc.vuln_total_down_flag>><<#calc.vuln_total_flat_flag>>no-change-blue-arrows<</calc.vuln_total_flat_flag>>}
 
-        <<#calc.vuln_total_up_flag>>{\RCSourceSansProTen \textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_total_up>>}}}}<</calc.vuln_total_up_flag>>
-        <<#calc.vuln_total_down_flag>>{\RCSourceSansProTen \textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_total_down>>}}}}<</calc.vuln_total_down_flag>>
-        <<#calc.vuln_total_flat_flag>>{\RCSourceSansProTen No Change}<</calc.vuln_total_flat_flag>>
+        {\RCSourceSansProTwelve <<#calc.vuln_total_up_flag>>\textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_total_up>>}}}<</calc.vuln_total_up_flag>>
+        <<#calc.vuln_total_down_flag>>\textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_total_down>>}}}<</calc.vuln_total_down_flag>>
+        <<#calc.vuln_total_flat_flag>>No Change<</calc.vuln_total_flat_flag>>}
       \end{minipage}  % END: VULNERABILITIES (within HIGH LEVEL FINDINGS)
      \end{minipage}
   \end{minipage}
