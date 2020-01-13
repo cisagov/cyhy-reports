@@ -502,6 +502,13 @@ As you review the report, you may have additional questions. Check out the answe
   		\end{tabular}
 	\end{table*}
 
+  % NOTE: If layout changes in the Report Card below result in additional
+  % vertical spacing, you may end up with a blank page (here) before the
+  % Report Card page.  One possible fix is to adjust the vspace amount at the
+  % very bottom of the Report Card section. I believe the blank page is due to
+  % the blue triangle (bottom right of the Report Card) being pushed past the
+  % end of the Report Card page.  It's not clear to me why LaTeX decides to add
+  % a blank page in this case, but that is the behavior I have observed.
   \newpage
   \newgeometry{left=0in,right=0in,top=0in,bottom=0in}
   \hiddensection{Report Card}
@@ -756,7 +763,7 @@ As you review the report, you may have additional questions. Check out the answe
   \end{minipage}  % END: POTENTIALLY RISKY OPEN SERVICES
 
   % Blue triangle at bottom right corner of page
-  \vspace*{-10.4mm}
+  \vspace*{-12.2mm}  % VERY IMPORTANT: If layout changes above result in vertical spacing differences, this vspace amount will need to be adjusted; this may not be obvious in every case, but if you end up with a blank page before the Report Card page, this is a good place to start
   \hspace*{125mm}
   \begin{tikzpicture}
     \draw[color=rc-dark-blue, fill=rc-dark-blue](0mm,0mm) -- (90mm,0mm) -- (90mm,20mm) -- cycle;
