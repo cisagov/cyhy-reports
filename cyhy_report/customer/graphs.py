@@ -1105,7 +1105,7 @@ class MyColorGauge(object):
         )
         ax.annotate(
             "{}".format(self.unit_name.upper()),
-            xy=(0, 0.12),
+            xy=(0, 0.08),
             family="sans-serif",
             size=24,
             ha="center",
