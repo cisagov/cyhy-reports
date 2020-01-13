@@ -973,12 +973,6 @@ As you review the report, you may have additional questions. Check out the answe
 	\end{minipage}
 \end{minipage}
 
-%% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
-<<#expiring_soon_false_positive_tickets_count>>
-\vspace*{-1mm}
-{\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
-See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
-
 <<#owner_is_federal_executive>>
 \section{Emergency Directive 19-01 --- New Certificates Summary}
 \label{sec:ed1901}
@@ -1159,6 +1153,12 @@ Additionally, the top high-risk \glspl{host} and top risk-based \glspl{vulnerabi
 		\end{figure}
 	\end{minipage}
 \end{minipage}
+
+%% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
+<<#expiring_soon_false_positive_tickets_count>>
+\vspace*{10mm}
+{\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
+See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
 
 \clearpage
 
