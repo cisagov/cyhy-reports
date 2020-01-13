@@ -127,7 +127,6 @@ RC_DARK_BLUE = "#002d60"
 RC_DARK_RED = "#963513"
 RC_LIGHT_GREEN = "#5e9732"
 RC_LIGHT_BLUE = "#0078ae"
-RC_LIGHT_RED = "#c41230"
 RC_ORANGE = "#f15a2d"
 
 RISKY_SERVICES_MAP = {
@@ -1012,7 +1011,7 @@ class ReportGenerator(object):
         max_age_criticals = self.__results['ss0_tix_days_open']['critical']['max']
         # 15 days is top end of gauge for Criticals
         gauge = graphs.MyColorGauge(
-            "Days", max_age_criticals, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+            "Days", max_age_criticals, 15, RC_DARK_RED, RC_DARK_BLUE)
         gauge.plot("max-age-active-criticals", size=0.75)
 
     def __figure_max_age_of_active_highs(self):
