@@ -49,7 +49,6 @@ RC_DARK_BLUE = "#002d60"
 RC_DARK_RED = "#963513"
 RC_LIGHT_GREEN = "#5e9732"
 RC_LIGHT_BLUE = "#0078ae"
-RC_LIGHT_RED = "#c41230"
 RC_ORANGE = "#f15a2d"
 
 BUBBLE_COLORS = (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN)
@@ -1226,22 +1225,22 @@ class MyBubbleChart(object):
 if __name__ == "__main__":
     setup()
 
-    bc = MyBubbleChart(
-        # CRIT,HIGH,MED,LOW
-        [50, 20, 65, 35],  # horizontal location
-        [80, 55, 45, 20],  # vertical location
-        [12, 14, 18, 16],  # max radius = 18
-        BUBBLE_COLORS,
-        ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
-        [(0, 1, 0), (2, 1, 2), (888, 120, 119), (40, 20, 15)],
-        ["RESOLVED", "NEW"],
-    )
-    bc.plot("bubbles")
+    # bc = MyBubbleChart(
+    #     # CRIT,HIGH,MED,LOW
+    #     [50, 20, 65, 35],  # horizontal location
+    #     [80, 55, 45, 20],  # vertical location
+    #     [12, 14, 18, 16],  # max radius = 18
+    #     BUBBLE_COLORS,
+    #     ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+    #     [(0, 1, 0), (2, 1, 2), (888, 120, 119), (40, 20, 15)],
+    #     ["RESOLVED", "NEW"],
+    # )
+    # bc.plot("bubbles")
     #
-    # gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
-    # gauge.plot("max-age-of-active-criticals")
+    gauge = MyColorGauge("Days", 14, 15, RC_DARK_RED, RC_DARK_BLUE)
+    gauge.plot("max-age-of-active-criticals")
     #
-    # gauge = MyColorGauge("Days", 8, 30, RC_ORANGE, RC_DARK_BLUE)
+    # gauge = MyColorGauge("Days", 475, 30, RC_ORANGE, RC_DARK_BLUE)
     # gauge.plot("max-age-of-active-highs")
     #
     # crit = (0, 3, 4)
