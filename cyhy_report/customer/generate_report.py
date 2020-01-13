@@ -2183,15 +2183,20 @@ class ReportGenerator(object):
             calc['vuln_host_count_pct_increase_flag'] = False
             calc['vuln_host_count_pct_decrease_flag'] = False
             calc['vuln_host_count_pct_flat_flag'] = False
-            if calc['vulnerable_host_count_percent'] > 0.0:
+            if calc['vulnerable_host_count_percent'] == '-':
+                calc['vuln_host_count_pct_flat_flag'] = True
+            elif calc['vulnerable_host_count_percent'] > 0.0:
                 calc['vuln_host_count_pct_increase_flag'] = True
             elif calc['vulnerable_host_count_percent'] < 0.0:
                 calc['vuln_host_count_pct_decrease_flag'] = True
             else:
                 calc['vuln_host_count_pct_flat_flag'] = True
 
-            calc['vuln_host_count_pct_change_int'] = \
-                abs(int(round(calc['vulnerable_host_count_percent'], 0)))
+            if calc['vuln_host_count_pct_flat_flag']:
+                calc['vuln_host_count_pct_change_int'] = 0
+            else:
+                calc['vuln_host_count_pct_change_int'] = \
+                    abs(int(round(calc['vulnerable_host_count_percent'], 0)))
 
             calc['unique_operating_systems_percent'] = self.__percent_change(ss1['unique_operating_systems'], ss0['unique_operating_systems'])
             calc['unique_services_percent'] = self.__percent_change(len(ss1['services']), len(ss0['services']))
