@@ -944,8 +944,8 @@ class ReportGenerator(object):
         self.__figure_vulnerable_hosts_over_time()
         self.__figure_distinct_services_over_time()
         self.__figure_distinct_vulns_over_time()
-        self.__figure_dnssec_domain_compliance()
-        self.__figure_dnssec_percent_compliant()
+        # self.__figure_dnssec_domain_compliance()          # Commented out during CYHY-777 (has not been used in a long time)
+        # self.__figure_dnssec_percent_compliant()          # Commented out during CYHY-777 (has not been used in a long time)
         # cols_prev = self.__figure_report_card_previous()  # Removed as part of CYHY-777
         # cols_curr = self.__figure_report_card_current()   # Removed as part of CYHY-777
         # possibly rerun one to make cols match
