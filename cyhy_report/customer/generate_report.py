@@ -129,6 +129,10 @@ RC_LIGHT_GREEN = "#5e9732"
 RC_LIGHT_BLUE = "#0078ae"
 RC_ORANGE = "#f15a2d"
 
+# The list of services below determined to be (potentially) risky was created
+# by the Cyber Hygiene team and it may change in the future.
+# The service names (keys in the dict below) come from the nmap services list:
+#  https://svn.nmap.org/nmap/nmap-services
 RISKY_SERVICES_MAP = {
     'ms-wbt-server': 'rdp',
     'telnet': 'telnet',
