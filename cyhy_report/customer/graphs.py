@@ -49,6 +49,7 @@ RC_DARK_BLUE = "#002d60"
 RC_DARK_RED = "#963513"
 RC_LIGHT_GREEN = "#5e9732"
 RC_LIGHT_BLUE = "#0078ae"
+RC_LIGHT_RED = "#c21734"
 RC_ORANGE = "#f15a2d"
 
 BUBBLE_COLORS = (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN)
@@ -1237,7 +1238,7 @@ if __name__ == "__main__":
     # )
     # bc.plot("bubbles")
     #
-    gauge = MyColorGauge("Days", 14, 15, RC_DARK_RED, RC_DARK_BLUE)
+    gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
     gauge.plot("max-age-of-active-criticals")
     #
     # gauge = MyColorGauge("Days", 475, 30, RC_ORANGE, RC_DARK_BLUE)
