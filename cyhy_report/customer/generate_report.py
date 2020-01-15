@@ -2182,7 +2182,9 @@ class ReportGenerator(object):
             calc['vuln_host_count_pct_increase_flag'] = False
             calc['vuln_host_count_pct_decrease_flag'] = False
             calc['vuln_host_count_pct_flat_flag'] = False
+
             if calc['vulnerable_host_count_percent'] == '-':
+                # See __percent_change() for how/why this can happen
                 calc['vuln_host_count_pct_flat_flag'] = True
             elif calc['vulnerable_host_count_percent'] > 0.0:
                 calc['vuln_host_count_pct_increase_flag'] = True
