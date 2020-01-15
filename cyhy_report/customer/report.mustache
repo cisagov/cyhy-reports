@@ -536,8 +536,9 @@ As you review the report, you may have additional questions. Check out the answe
       	  \vspace*{0.1mm}  % blank line needed on previous line for vertical spacing
           % Use a vbox to maintain a constant height, regardless of the
           % length of the organization's name
+          % Use raggedright to prevent hypenation of the organization's name
   	      \vbox to 16mm {\vfil
-  		      \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
+            \raggedright \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
   	      }  % END: vbox (org name)
         \end{minipage}  % END: org name minipage
 
