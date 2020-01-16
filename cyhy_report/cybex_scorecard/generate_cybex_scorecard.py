@@ -3421,9 +3421,17 @@ def main():
     with open(OCSP_FILE, 'w') as f:
         f.write(response.text)
 
+    # Grab a CSV file listing whether or not organizations have been
+    # issued a 3DES exception by FNR.  Such organizations are adorned
+    # with an asterisk in the scorecard.
+    response = requests.get(TRIPLE_DES_EXCEPTIONS_URL)
+    with open(TRIPLE_DES_EXCEPTIONS_FILE, 'w') as f:
+        f.write(response.text)
+
     if cyhy_db.RequestDoc.find_one({'report_types':REPORT_TYPE.CYBEX}):
         print 'Generating Cyber Exposure Scorecard...'
         generator = ScorecardGenerator(cyhy_db, scan_db, OCSP_FILE,
+                                       TRIPLE_DES_EXCEPTIONS_FILE,
                                        args['PREVIOUS_SCORECARD_JSON_FILE'],
                                        debug=args['--debug'],
                                        final=args['--final'],
