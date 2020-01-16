@@ -381,7 +381,7 @@ If there are questions, comments, or concerns about this scorecard, please conta
   \item \textbf{Active Critical-Severity Vulnerabilities:} Critical vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_criticals_overdue>> days.
   \item \textbf{Active High-Severity Vulnerabilities:} High vulnerabilities, based on an industry-standard scoring model, that were observed in the most-recent Cyber Hygiene scan.  These vulnerabilities should be remediated within <<&days_until_highs_overdue>> days.
   \item \textbf{BOD 18-01 Web Compliant:} Percentage of HTTP-responsive hosts that Use and Enforce HTTPS, Use Strong HSTS and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known HTTP-responsive hosts.
-  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" (and if specified, with optional attributes ``\texttt{sp}" and ``\texttt{pct}" set as ``\texttt{sp=reject}" and ``\texttt{pct=100}") and ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a valid SPF record (or if a subdomain has no SPF record, be ``covered" by a valid DMARC record with ``\texttt{p=reject}"), and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known Live Domains or SMTP Subdomains.
+  \item \textbf{BOD 18-01 Email Compliant:} Percentage of Live Domains and SMTP Subdomains that have a Valid DMARC Record with ``\texttt{p=reject}" (and if specified, with optional attributes ``\texttt{sp}" and ``\texttt{pct}" set as ``\texttt{sp=reject}" and ``\texttt{pct=100}") and ``\texttt{rua=mailto:reports@dmarc.cyber.dhs.gov}", Support STARTTLS, have a valid SPF record (or if a subdomain has no SPF record, be ``covered" by a valid DMARC record with ``\texttt{p=reject}"), and are Free of SSLv2/v3, 3DES, RC4.  A value of ``N/A" indicates that there are no known Live Domains or SMTP Subdomains.  An asterisk after the score denotes that the agency has been granted a 3DES exception by FNR.
 \end{itemize}
 
 \vspace*{3mm}
@@ -412,23 +412,23 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
       \textbf{\numprint{<<&federal_totals.vuln-scan.metrics.open_highs>>}} &
       \textbf{\numprint{<<&federal_totals.vuln-scan.metrics.open_overdue_highs>>}} &
       \textbf{<<&federal_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} &
-      \textbf{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>>}\\
+      \textbf{<<&federal_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>> \phantom{*}}\\
   \textbf{\ \ \ \ ``CFO ACT" AGENCIES TOTAL} &
       \textbf{\numprint{<<&cfo_totals.vuln-scan.metrics.open_criticals>>}} &
       \textbf{\numprint{<<&cfo_totals.vuln-scan.metrics.open_overdue_criticals>>}} &
       \textbf{\numprint{<<&cfo_totals.vuln-scan.metrics.open_highs>>}} &
       \textbf{\numprint{<<&cfo_totals.vuln-scan.metrics.open_overdue_highs>>}} &
       \textbf{<<&cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} &
-      \textbf{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>>}\\
+      \textbf{<<&cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>> \phantom{*}}\\
   \textbf{\ \ \ \ NON-``CFO ACT" AGENCIES TOTAL} &
       \textbf{\numprint{<<&non_cfo_totals.vuln-scan.metrics.open_criticals>>}} &
       \textbf{\numprint{<<&non_cfo_totals.vuln-scan.metrics.open_overdue_criticals>>}} &
       \textbf{\numprint{<<&non_cfo_totals.vuln-scan.metrics.open_highs>>}} &
       \textbf{\numprint{<<&non_cfo_totals.vuln-scan.metrics.open_overdue_highs>>}} &
       \textbf{<<&non_cfo_totals.https-scan.live_domains.live_bod1801_web_compliant_pct_str>>} &
-      \textbf{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>>}\\
+      \textbf{<<&non_cfo_totals.trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>> \phantom{*}}\\
   \hhline{=======}
-  <<#overall_bod_orgs>><<#cfo_act_org>>\textbf{<<&acronym>> - <<&name>>}<</cfo_act_org>><<^cfo_act_org>><<&acronym>> - <<&name>><</cfo_act_org>> &
+  <<#overall_bod_orgs>><<#cfo_act_org>>\textbf{<</cfo_act_org>><<&acronym>> - <<&name>><<#cfo_act_org>>}<</cfo_act_org>> &
     <<#vuln-scan.scanned>>\numprint{<<&vuln-scan.metrics.open_criticals>>} &
     \numprint{<<&vuln-scan.metrics.open_overdue_criticals>>} &
     \numprint{<<&vuln-scan.metrics.open_highs>>} &
@@ -437,7 +437,7 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
     <<#https-scan.scanned>><<https-scan.live_domains.live_bod1801_web_compliant_pct_str>>
     <</https-scan.scanned>><<^https-scan.scanned>>N/A<</https-scan.scanned>> &
     <<#trustymail.scanned>><<trustymail.base_domains_and_smtp_subdomains.live_bod1801_email_compliant_pct_str>>
-    <</trustymail.scanned>><<^trustymail.scanned>>N/A<</trustymail.scanned>>\\
+    <</trustymail.scanned>><<^trustymail.scanned>>N/A<</trustymail.scanned>> <<^3des_exception>>\phantom{<</3des_exception>>*<<^3des_exception>>}<</3des_exception>>\\
 	<</overall_bod_orgs>>
   \bottomrule
 \end{longtable}
