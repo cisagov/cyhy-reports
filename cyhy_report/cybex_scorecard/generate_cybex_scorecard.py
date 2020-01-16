@@ -2370,6 +2370,9 @@ class ScorecardGenerator(object):
             else:
                 score['cfo_act_org'] = False
 
+            # Was this organization granted a 3DES exception by FNR?
+            score['3des_exception'] = score['acronym'] in self.__3des_exceptions
+
             # Pull trustymail results into the score
             for trustymail_result_set in ['base_domains', 'base_domains_and_smtp_subdomains']:
                 for trustymail_result in self.__results['trustymail_' + trustymail_result_set]:
