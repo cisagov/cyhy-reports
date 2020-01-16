@@ -2982,14 +2982,18 @@ class ScorecardGenerator(object):
                          'overdue_high_vulns_{}+_days'.format(
                             DAYS_UNTIL_OVERDUE_HIGH),
                          'bod_18-01_web_compliant_%',
-                         'bod_18-01_email_compliant_%')
+                         'bod_18-01_email_compliant_%',
+                         'fnr_3des_exception'
+        )
         data_fields = ('acronym', 'name', 'cfo_act_org',
                        'open_criticals',
                        'open_overdue_criticals',
                        'open_highs',
                        'open_overdue_highs',
                        'live_bod1801_web_compliant_pct',
-                       'live_bod1801_email_compliant_pct')
+                       'live_bod1801_email_compliant_pct',
+                       '3des_exception'
+        )
 
         with open(BOD_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields,
@@ -3128,8 +3132,8 @@ class ScorecardGenerator(object):
                 data_writer.writerow(org)
 
     def __generate_email_security_results_by_agency_attachment(self):
-        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_policy_of_reject', 'dmarc_policy_of_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'has_spf_covered', 'has_spf_covered_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
-        data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_spf_covered_count', 'live_spf_covered_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct')
+        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_policy_of_reject', 'dmarc_policy_of_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'has_spf_covered', 'has_spf_covered_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%', 'fnr_3des_exception')
+        data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_spf_covered_count', 'live_spf_covered_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct', '3des_exception')
         with open(EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction='ignore')
