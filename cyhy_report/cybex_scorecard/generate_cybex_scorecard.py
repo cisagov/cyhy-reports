@@ -110,9 +110,13 @@ BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/ocsp-crl.csv'
 OCSP_FILE = '/tmp/ocsp-crl.csv'
 
+TRIPLE_DES_EXCEPTIONS_URL = \
+    'https://raw.githubusercontent.com/cisagov/scan-target-data/develop/3des-exception-agencies.csv'
+TRIPLE_DES_EXCEPTIONS_FILE = '/tmp/3des-exception-agencies.csv'
+
 
 class ScorecardGenerator(object):
-    def __init__(self, cyhy_db, scan_db, ocsp_file,
+    def __init__(self, cyhy_db, scan_db, ocsp_file, triple_des_exceptions_file,
                  previous_scorecard_json_file, debug=False, final=False,
                  log_scorecard=True, anonymize=False):
         self.__cyhy_db = cyhy_db
@@ -146,15 +150,28 @@ class ScorecardGenerator(object):
         self.__log_scorecard_to_db = log_scorecard
         self.__anonymize = anonymize
 
-        # Read in and parse the OCSP exclusion domains.
+        # Read in and parse the OCSP exclusion domains and FNR 3DES
+        # exception domains.
         #
-        # We use a dict for ocsp_exclusions because we want to take
-        # advantage of the speed of the underlying hash map.  (We only
-        # care if a domain is present as an exclusion or not.)
+        # We use a dict for __ocsp_exclusions and __3des_exceptions
+        # because we want to take advantage of the speed of the
+        # underlying hash map.  (We only care if a domain is present
+        # as an exclusion/exception  or not.)
         self.__ocsp_exclusions = {}
         with open(ocsp_file, 'r') as f:
             csvreader = csv.reader(f)
             self.__ocsp_exclusions = {row[0]: None for row in csvreader}
+
+        self.__3des_exceptions = {}
+        with open(triple_des_exceptions_file, 'r') as f:
+            dictreader = csv.DictReader(f)
+            self.__3des_exceptions = {
+                # The "3DES Exception" column either contains the
+                # string "TRUE" or is empty.
+                row['acronym']: None
+                for row in dictreader
+                if row['3DES Exception'] == "TRUE"
+            }
 
     def __open_tix_opened_in_date_range_pl(self, severity, current_date,
                                            days_until_tix_overdue):
