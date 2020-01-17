@@ -110,9 +110,13 @@ BOD1801_DMARC_RUA_URI = 'mailto:reports@dmarc.cyber.dhs.gov'
 OCSP_URL = 'https://raw.githubusercontent.com/GSA/data/master/dotgov-websites/ocsp-crl.csv'
 OCSP_FILE = '/tmp/ocsp-crl.csv'
 
+TRIPLE_DES_EXCEPTIONS_URL = \
+    'https://raw.githubusercontent.com/cisagov/scan-target-data/develop/3des-exception-agencies.csv'
+TRIPLE_DES_EXCEPTIONS_FILE = '/tmp/3des-exception-agencies.csv'
+
 
 class ScorecardGenerator(object):
-    def __init__(self, cyhy_db, scan_db, ocsp_file,
+    def __init__(self, cyhy_db, scan_db, ocsp_file, triple_des_exceptions_file,
                  previous_scorecard_json_file, debug=False, final=False,
                  log_scorecard=True, anonymize=False):
         self.__cyhy_db = cyhy_db
@@ -146,15 +150,28 @@ class ScorecardGenerator(object):
         self.__log_scorecard_to_db = log_scorecard
         self.__anonymize = anonymize
 
-        # Read in and parse the OCSP exclusion domains.
+        # Read in and parse the OCSP exclusion domains and CISA 3DES
+        # exception domains.
         #
-        # We use a dict for ocsp_exclusions because we want to take
-        # advantage of the speed of the underlying hash map.  (We only
-        # care if a domain is present as an exclusion or not.)
+        # We use a dict for __ocsp_exclusions and __3des_exceptions
+        # because we want to take advantage of the speed of the
+        # underlying hash map.  (We only care if a domain/agency is
+        # present as an exclusion/exception or not.)
         self.__ocsp_exclusions = {}
         with open(ocsp_file, 'r') as f:
             csvreader = csv.reader(f)
             self.__ocsp_exclusions = {row[0]: None for row in csvreader}
+
+        self.__3des_exceptions = {}
+        with open(triple_des_exceptions_file, 'r') as f:
+            dictreader = csv.DictReader(f)
+            self.__3des_exceptions = {
+                # The "3DES Exception" column either contains the
+                # string "TRUE" or is empty.
+                row['acronym']: None
+                for row in dictreader
+                if row['3DES Exception'] == "TRUE"
+            }
 
     def __open_tix_opened_in_date_range_pl(self, severity, current_date,
                                            days_until_tix_overdue):
@@ -2354,6 +2371,9 @@ class ScorecardGenerator(object):
             else:
                 score['cfo_act_org'] = False
 
+            # Was this organization granted a 3DES exception by CISA?
+            score['3des_exception'] = score['acronym'] in self.__3des_exceptions
+
             # Pull trustymail results into the score
             for trustymail_result_set in ['base_domains', 'base_domains_and_smtp_subdomains']:
                 for trustymail_result in self.__results['trustymail_' + trustymail_result_set]:
@@ -2963,14 +2983,18 @@ class ScorecardGenerator(object):
                          'overdue_high_vulns_{}+_days'.format(
                             DAYS_UNTIL_OVERDUE_HIGH),
                          'bod_18-01_web_compliant_%',
-                         'bod_18-01_email_compliant_%')
+                         'bod_18-01_email_compliant_%',
+                         '3des_exception'
+        )
         data_fields = ('acronym', 'name', 'cfo_act_org',
                        'open_criticals',
                        'open_overdue_criticals',
                        'open_highs',
                        'open_overdue_highs',
                        'live_bod1801_web_compliant_pct',
-                       'live_bod1801_email_compliant_pct')
+                       'live_bod1801_email_compliant_pct',
+                       '3des_exception'
+        )
 
         with open(BOD_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields,
@@ -3109,8 +3133,8 @@ class ScorecardGenerator(object):
                 data_writer.writerow(org)
 
     def __generate_email_security_results_by_agency_attachment(self):
-        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_policy_of_reject', 'dmarc_policy_of_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'has_spf_covered', 'has_spf_covered_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%')
-        data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_spf_covered_count', 'live_spf_covered_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct')
+        header_fields = ('acronym', 'name', 'cfo_act', 'live_domains_and_smtp_subdomains', 'valid_dmarc_record', 'valid_dmarc_record_%', 'dmarc_policy_of_reject', 'dmarc_policy_of_reject_%', 'reports_dmarc_to_cisa', 'reports_dmarc_to_cisa_%', 'supports_starttls', 'supports_starttls_%', 'has_spf_covered', 'has_spf_covered_%', 'free_of_sslv2/v3,3des,rc4', 'free_of_sslv2/v3,3des,rc4_%', 'bod_18-01_email_compliant', 'bod_18-01_email_compliant_%', '3des_exception')
+        data_fields = ('acronym', 'name', 'cfo_act_org', 'live_domain_count', 'live_valid_dmarc_count', 'live_valid_dmarc_pct', 'live_dmarc_reject_count', 'live_dmarc_reject_pct', 'live_has_bod1801_dmarc_uri_count', 'live_has_bod1801_dmarc_uri_pct', 'live_supports_starttls_count', 'live_supports_starttls_pct', 'live_spf_covered_count', 'live_spf_covered_pct', 'live_no_weak_crypto_count', 'live_no_weak_crypto_pct', 'live_bod1801_email_compliant_count', 'live_bod1801_email_compliant_pct', '3des_exception')
         with open(EMAIL_SECURITY_RESULTS_BY_AGENCY_CSV_FILE, 'wb') as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction='ignore')
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction='ignore')
@@ -3402,9 +3426,17 @@ def main():
     with open(OCSP_FILE, 'w') as f:
         f.write(response.text)
 
+    # Grab a CSV file listing whether or not organizations have been
+    # issued a 3DES exception by CISA.  Such organizations are adorned
+    # with an asterisk in the scorecard.
+    response = requests.get(TRIPLE_DES_EXCEPTIONS_URL)
+    with open(TRIPLE_DES_EXCEPTIONS_FILE, 'w') as f:
+        f.write(response.text)
+
     if cyhy_db.RequestDoc.find_one({'report_types':REPORT_TYPE.CYBEX}):
         print 'Generating Cyber Exposure Scorecard...'
         generator = ScorecardGenerator(cyhy_db, scan_db, OCSP_FILE,
+                                       TRIPLE_DES_EXCEPTIONS_FILE,
                                        args['PREVIOUS_SCORECARD_JSON_FILE'],
                                        debug=args['--debug'],
                                        final=args['--final'],
