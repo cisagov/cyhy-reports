@@ -150,7 +150,7 @@ class ScorecardGenerator(object):
         self.__log_scorecard_to_db = log_scorecard
         self.__anonymize = anonymize
 
-        # Read in and parse the OCSP exclusion domains and FNR 3DES
+        # Read in and parse the OCSP exclusion domains and CISA 3DES
         # exception domains.
         #
         # We use a dict for __ocsp_exclusions and __3des_exceptions
@@ -2370,7 +2370,7 @@ class ScorecardGenerator(object):
             else:
                 score['cfo_act_org'] = False
 
-            # Was this organization granted a 3DES exception by FNR?
+            # Was this organization granted a 3DES exception by CISA?
             score['3des_exception'] = score['acronym'] in self.__3des_exceptions
 
             # Pull trustymail results into the score
@@ -3426,7 +3426,7 @@ def main():
         f.write(response.text)
 
     # Grab a CSV file listing whether or not organizations have been
-    # issued a 3DES exception by FNR.  Such organizations are adorned
+    # issued a 3DES exception by CISA.  Such organizations are adorned
     # with an asterisk in the scorecard.
     response = requests.get(TRIPLE_DES_EXCEPTIONS_URL)
     with open(TRIPLE_DES_EXCEPTIONS_FILE, 'w') as f:
