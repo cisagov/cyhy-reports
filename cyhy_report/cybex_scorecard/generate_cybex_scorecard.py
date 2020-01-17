@@ -155,8 +155,8 @@ class ScorecardGenerator(object):
         #
         # We use a dict for __ocsp_exclusions and __3des_exceptions
         # because we want to take advantage of the speed of the
-        # underlying hash map.  (We only care if a domain is present
-        # as an exclusion/exception  or not.)
+        # underlying hash map.  (We only care if a domain/agency is
+        # present as an exclusion/exception or not.)
         self.__ocsp_exclusions = {}
         with open(ocsp_file, 'r') as f:
             csvreader = csv.reader(f)
