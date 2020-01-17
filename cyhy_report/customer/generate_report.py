@@ -123,6 +123,54 @@ ORANGE =    '#cf9c66'
 RED =       '#c66270'
 BLACK =     '#000000'
 
+RC_DARK_BLUE = "#002d60"
+RC_DARK_RED = "#963513"
+RC_LIGHT_GREEN = "#5e9732"
+RC_LIGHT_BLUE = "#0078ae"
+RC_LIGHT_RED = "#c21734"
+RC_ORANGE = "#f15a2d"
+
+# The list of services below determined to be (potentially) risky was created
+# by the Cyber Hygiene team and it may change in the future.
+# The service names (keys in the dict below) come from the nmap services list:
+#  https://svn.nmap.org/nmap/nmap-services
+RISKY_SERVICES_MAP = {
+    'ms-wbt-server': 'rdp',
+    'telnet': 'telnet',
+    'rtelnet': 'telnet',
+    'microsoft-ds': 'smb',
+    'smbdirect': 'smb',
+    'ldap': 'ldap',
+    'netbios-ns': 'netbios',
+    'netbios-dgm': 'netbios',
+    'netbios-ssn': 'netbios',
+    'ftp': 'ftp',
+    'rsftp': 'ftp',
+    'ni-ftp': 'ftp',
+    'tftp': 'ftp',
+    'bftp': 'ftp',
+    'msrpc': 'rpc',
+    'sqlnet': 'sql',
+    'sqlserv': 'sql',
+    'sql-net': 'sql',
+    'sqlsrv': 'sql',
+    'msql': 'sql',
+    'mini-sql': 'sql',
+    'mysql-cluster': 'sql',
+    'ms-sql-s': 'sql',
+    'ms-sql-m': 'sql',
+    'irc': 'irc',
+    'kerberos-sec': 'kerberos',
+    'kpasswd5': 'kerberos',
+    'klogin': 'kerberos',
+    'kshell': 'kerberos',
+    'kerberos-adm': 'kerberos',
+    'kerberos': 'kerberos',
+    'kerberos_master': 'kerberos',
+    'krb_prop': 'kerberos',
+    'krbupdate': 'kerberos',
+    'kpasswd': 'kerberos'
+}
 
 def SafeDataFrame(data=None, *args, **kwargs):
     '''A wrapper around pandas DataFrame so that empty lists still
@@ -130,8 +178,6 @@ def SafeDataFrame(data=None, *args, **kwargs):
     if not data:
         data = None
     return DataFrame(data, *args, **kwargs)
-
-#import IPython; IPython.embed() #<<<<<BREAKPOINT>>>>>>>
 
 class ReportGenerator(object):
     def __init__(self, cyhy_db, scan_db, owner, debug=False,
@@ -301,7 +347,7 @@ class ReportGenerator(object):
     def __load_tickets(self, snapshot_oids):
         '''load tickets into memory, and merge some of their latest vulnerability fields.
         These tickets should not be saved back to the database as they are modified in evil ways.'''
-        tickets = list(self.__cyhy_db.TicketDoc.find({'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'snapshots':{'$in':snapshot_oids}, 'false_positive':False}))
         for t in tickets:
             t.connection = None # neuter this monstrosity so it can't be saved (easily)
             try:
@@ -323,7 +369,7 @@ class ReportGenerator(object):
         '''load closed tickets that were detected between start_date and end_date'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all tickets that closed after start_date (could potentially have been detected at some point after start_date)
-        tickets = list(self.__cyhy_db.TicketDoc.find({'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'open':False, 'owner':{'$in':ss0_owners}, 'time_closed':{'$gt':start_date}}))
         tix_detected_in_range = list()
         for t in tickets:
             t['last_detected'] = t.last_detection_date
@@ -339,7 +385,7 @@ class ReportGenerator(object):
         '''load false_positive tickets'''
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
         # Fetch all false_positive tickets
-        tickets = list(self.__cyhy_db.TicketDoc.find({'false_positive':True, 'owner':{'$in':ss0_owners}}))
+        tickets = list(self.__cyhy_db.TicketDoc.find({'source':'nessus', 'false_positive':True, 'owner':{'$in':ss0_owners}}))
         for t in tickets:
             t.connection = None                 # neuter ticket so it can't be saved (easily)
             t.update(t['details'])              # flatten structure by copying details to ticket root
@@ -357,7 +403,7 @@ class ReportGenerator(object):
         ss0_owners = [self.__snapshots[0]['owner']] + self.__snapshots[0].get('descendants_included', [])
 
         # Calculate Buckets
-        tix = self.__cyhy_db.TicketDoc.find({'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
+        tix = self.__cyhy_db.TicketDoc.find({'source':'nessus', 'details.severity':severity, 'false_positive':False, 'owner':{'$in':ss0_owners},
                                 '$or':[{'time_closed':{'$gte':start_date}}, {'time_closed':None}]},
                                 {'_id':False, 'time_opened':True, 'time_closed':True})
         tix = list(tix)
@@ -382,6 +428,53 @@ class ReportGenerator(object):
             return results_df
         else:
             return DataFrame([])
+
+    def __load_risky_services_tickets(self, snapshot_oid):
+        '''load risky services tickets into memory.'''
+        tickets = list(self.__cyhy_db.TicketDoc.find(
+            {'source': 'nmap',
+             'source_id': 1,    # 1 = 'risky service detected'
+             'snapshots': snapshot_oid,
+             'false_positive': False},
+            {'details.service': True,
+             'ip': True,
+             'ip_int': True,
+             'owner': True,
+             'port': True,
+             'time_opened': True}))
+        for t in tickets:
+            # Neuter the connection so it can't be saved (easily)
+            t.connection = None
+            # Move service to main level of ticket
+            t['service'] = t['details'].get('service')
+            t.pop('details')
+
+            t['category'] = RISKY_SERVICES_MAP.get(t['service'])
+            if not self.__no_history:
+                previous_snapshot_timestamp = self.__snapshots[1]['end_time']
+            t['newly_opened_since_last_report'] = False
+            if self.__no_history or t[
+              'time_opened'] > previous_snapshot_timestamp:
+                t['newly_opened_since_last_report'] = True
+        return tickets
+
+    def __risky_services_metrics(self, tickets):
+        '''calculate risky service metrics.'''
+        risky_service_metrics = {'total_count': 0}
+        risky_service_categories = set(RISKY_SERVICES_MAP.values())
+        # Initialize risky_service_metrics
+        for category in risky_service_categories:
+            risky_service_metrics[category] = {
+                'count': 0, 'any_newly_opened': False}
+
+        for ticket in tickets:
+            category = ticket['category']
+            if category in risky_service_categories:
+                risky_service_metrics['total_count'] += 1
+                risky_service_metrics[category]['count'] += 1
+                if ticket['newly_opened_since_last_report']:
+                    risky_service_metrics[category]['any_newly_opened'] = True
+        return risky_service_metrics
 
     def __vulnerability_occurrence(self, tickets):
         df = SafeDataFrame(tickets, columns=['cvss_base_score','name','severity'])
@@ -448,6 +541,11 @@ class ReportGenerator(object):
             self.__results['owner_is_federal_executive'] = self.__owner in self.__cyhy_db.RequestDoc.get_all_descendants('EXECUTIVE')
         else:
             self.__results['owner_is_federal_executive'] = False
+
+        self.__results['risky_services_tickets'] = self.__load_risky_services_tickets(
+            ss0_snapshot_oid)
+        self.__results['risky_services_metrics'] = self.__risky_services_metrics(
+            self.__results['risky_services_tickets'])
 
         results = database.run_pipeline_cursor(queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db)
         database.id_expand(results)
@@ -677,7 +775,7 @@ class ReportGenerator(object):
                                                     '$not_after',
                                                     seven_days_from_today
                                                 ]
-                                                
+
                                             }
                                         ]
                                     },
@@ -701,7 +799,7 @@ class ReportGenerator(object):
                                                 '$lte': [
                                                     '$not_after',
                                                     today
-                                                ]           
+                                                ]
                                             }
                                         ]
                                     },
@@ -823,49 +921,91 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
-        # self.__figure_high_level_discoveries()
+        self.__figure_vuln_severity_by_prominence()
+        self.__figure_max_age_of_active_criticals()
+        self.__figure_max_age_of_active_highs()
         self.__figure_top_five_high_risk_hosts()
         self.__figure_top_five_risk_based_vulnerabilities()
-        # self.__figure_top_five_operating_systems()        # Turned into a table (see CYHY-228)
-        # self.__figure_top_five_services()                 # Turned into a table (see CYHY-228)
         self.__figure_top_five_vulnerabilities_count()
         self.__figure_vuln_responsiveness_time_to_close()
         self.__figure_vuln_responsiveness_time_open()
         self.__figure_critical_vuln_ages_over_time()
         self.__figure_active_critical_vuln_age_distribution()
-        # self.__figure_cvss_score_results()                # Removed as part of CYHY-228
         self.__figure_network_map()
-        # self.__figure_distinct_vulnerabilities()          # Removed as part of CYHY-233
         self.__figure_active_vulns_cvss_histogram()
         self.__figure_vulnerability_count_per_host()
         self.__figure_total_vulnerabilities_over_time()
         self.__figure_critical_high_vulns_over_time()
         self.__figure_medium_low_vulns_over_time()
-        # self.__figure_vulnerabilities_over_time()         # Removed as part of CYHY-234
         self.__figure_vulnerable_hosts_over_time()
         self.__figure_distinct_services_over_time()
         self.__figure_distinct_vulns_over_time()
-        self.__figure_dnssec_domain_compliance()
-        self.__figure_dnssec_percent_compliant()
-        cols_prev = self.__figure_report_card_previous()
-        cols_curr = self.__figure_report_card_current()
-        # possibly rerun one to make cols match
-        if cols_prev > cols_curr:
-            self.__figure_report_card_current(cols_prev)
-        elif cols_prev < cols_curr:
-            self.__figure_report_card_previous(cols_curr)
-        # self.__figure_report_card_cvss_vulnerable()       # Removed as part of CYHY-227
-        # self.__figure_report_card_cvss_overall()          # Removed as part of CYHY-227
 
-    # def __figure_high_level_discoveries(self):
-    #     ss0 = self.__snapshots[0]
-    #     serivces = Series(ss0['services'])
-    #     total_services = serivces.sum()
-    #     data = (ss0['host_count'], ss0['port_count'], total_services, ss0['vulnerabilities']['total'])
-    #     labels = ('Total Hosts', 'Total Ports', 'Total Services', 'Total Vulnerabilities')
-    #     series = Series(data, index=labels)
-    #     bar = graphs.MyBar(series, yscale='linear')
-    #     bar.plot('high-level-discoveries', size=0.5)
+    def __determine_bubble_sizes(self, severities, vuln_counts):
+        vulns_sorted = sorted(vuln_counts.items(), key=lambda item: item[1])
+        count = 0
+        rank = 0
+        vulns_ranked = dict()
+        previous_value = None
+
+        for severity, num_vulns in vulns_sorted:
+            count += 1
+            if num_vulns != previous_value:
+                rank += count
+                previous_value = num_vulns
+                count = 0
+            vulns_ranked[severity] = rank
+
+        bubble_sizes = list()
+        for severity in severities:
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            bubble_sizes.append(2 * vulns_ranked[severity] + 10)
+        return bubble_sizes
+
+    def __figure_vuln_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        vuln_data = list()
+        active_vulns = dict()
+        for severity in severities:
+            vuln_data.append(
+                (
+                    self.__snapshots[0]['vulnerabilities'][severity],
+                    self.__results['new_vulnerability_counts'][severity],
+                    self.__results['resolved_vulnerability_counts'][severity],
+                )
+            )
+            active_vulns[severity] = self.__snapshots[0]['vulnerabilities'][severity]
+
+        bubble_sizes = self.__determine_bubble_sizes(severities, active_vulns)
+
+        bubbles = graphs.MyBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            [50, 20, 65, 35],   # Bubble x coordinates
+            [80, 55, 45, 20],   # Bubble y coordinates
+            bubble_sizes,
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            vuln_data,
+            ["RESOLVED", "NEW"])
+        bubbles.plot("vuln-severity-by-prominence", size=1.0)
+
+    def __figure_max_age_of_active_criticals(self):
+        max_age_criticals = self.__results['ss0_tix_days_open']['critical']['max']
+        # 15 days is top end of gauge for Criticals
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_criticals, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+        gauge.plot("max-age-active-criticals", size=0.75)
+
+    def __figure_max_age_of_active_highs(self):
+        max_age_highs = self.__results['ss0_tix_days_open']['high']['max']
+        # 30 days is top end of gauge for Highs
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_highs, 30, RC_ORANGE, RC_DARK_BLUE)
+        gauge.plot("max-age-active-highs", size=0.75)
 
     def __figure_top_five_high_risk_hosts(self):
         if self.__results['tickets_0']:
@@ -892,45 +1032,6 @@ class ReportGenerator(object):
         else: # no vulnerabilities
             message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
             message.plot('top-five-risk-based-vulnerabilities', size=0.5)
-
-    # def __figure_top_five_operating_systems(self):
-    #     results = self.__results['operating_system_count']
-    #     df = DataFrame(results)
-    #     if len(df) > 0:
-    #         df['percent'] = df['count'] / float(np.sum(df['count'])) * 100
-    #         other_count = np.sum(df[5:]['count'])
-    #         other_percent = np.sum(df[5:]['percent'])
-    #         df = df[:5] # trim to top 5
-    #         if other_count > 0:
-    #             df_other = DataFrame({'count':other_count, 'operating_system':'Other', 'percent':other_percent}, index=[0])
-    #             df = df.append(df_other, ignore_index=True)
-    #         labels = df['operating_system']
-    #         data = df['percent']
-    #         pie = graphs.MyPie(data, labels)
-    #         pie.plot('top-five-operating-systems', size=0.5)
-    #     else: # no operating systems
-    #         message = graphs.MyMessage(OMITTED_MESSAGE_NO_OPERATING_SYSTEMS)
-    #         message.plot('top-five-operating-systems', size=0.5)
-
-    # def __figure_top_five_services(self):
-    #     ss0 = self.__snapshots[0]
-    #     df = DataFrame.from_dict(ss0['services'], orient='index')
-    #     if len(df) > 0:
-    #         df = df.reset_index().rename(columns={'index':'service_name',0:'count'})
-    #         df['percent'] = df['count'] / float(np.sum(df['count'])) * 100
-    #         other_count = np.sum(df[5:]['count'])
-    #         other_percent = np.sum(df[5:]['percent'])
-    #         df = df[:5] # trim to top 5
-    #         if other_count > 0:
-    #             df_other = DataFrame({'count':other_count, 'service_name':'Other', 'percent':other_percent}, index=[0])
-    #             df = df.append(df_other, ignore_index=True)
-    #         labels = df['service_name']
-    #         data = df['percent']
-    #         pie = graphs.MyPie(data, labels)
-    #         pie.plot('top-five-services', size=0.5)
-    #     else: # no services
-    #         message = graphs.MyMessage(OMITTED_MESSAGE_NO_SERVICES)
-    #         message.plot('top-five-services', size=0.5)
 
     def __figure_top_five_vulnerabilities_count(self):
         df = self.__vulnerability_occurrence(self.__results['tickets_0'])
@@ -1010,33 +1111,11 @@ class ReportGenerator(object):
             message.plot('active-critical-age-distribution', size=0.7)
             self.__results['active_critical_age_counts'] = Series().reindex(range(ACTIVE_CRITICAL_AGE_CUTOFF_DAYS+1)).fillna(0)
 
-    # def __figure_cvss_score_results(self):
-    #     ss0 = self.__snapshots[0]
-    #     bar = graphs.MyColorBar(self.__owner, ss0['cvss_average_all'], ss0['world']['cvss_average_all'])
-    #     bar.plot('cvss-overall-score-results')
-    #     bar = graphs.MyColorBar(self.__owner, ss0['cvss_average_vulnerable'], ss0['world']['cvss_average_vulnerable'])
-    #     bar.plot('cvss-vulnerable-score-results')
-
     def __figure_network_map(self):
         results = self.__results['ip_geoloc']
         locs = [i['loc'] for i in results]
         host_map = graphs.MyMap(locs)
         host_map.plot('network-map')
-
-    def __figure_distinct_vulnerabilities(self):
-        df = DataFrame.from_dict(self.__snapshots[0]['unique_vulnerabilities'], orient='index')
-        df = df.reset_index().rename(columns={'index':'severity',0:'count'})
-        df = df[df.apply(lambda x: x['count'] > 0 and x['severity'] != 'total',  axis=1)] # filter
-        df = df.reset_index()
-        df['percent'] = df['count'] / float(np.sum(df['count'])) * 100
-        labels = df['severity']
-        data = df['percent']
-        if len(data):
-            bar = graphs.MyPie(data, labels)
-            bar.plot('distinct-vulnerabilities', size=0.5)
-        else: # no vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
-            message.plot('distinct-vulnerabilities', size=0.5)
 
     def __figure_vulnerability_count_per_host(self):
         if len(self.__results['tickets_0']):
@@ -1080,21 +1159,6 @@ class ReportGenerator(object):
         line = graphs.MyLine(data, linecolors=(YELLOW, BLUE), yscale=self.__best_scale(data), ylabel='Vulnerabilities')
         line.plot('vulns-over-time-medium-low', figsize=(8,2.7))
 
-    # def __figure_vulnerabilities_over_time(self):
-    #     source_dict = dict()
-    #     for ss in self.__snapshots:
-    #         d = dict(ss['vulnerabilities'])
-    #         d['host_count'] = ss['host_count']
-    #         d['vulnerable_host_count'] = ss['vulnerable_host_count']
-    #         d['world_host_count'] = ss['world']['host_count']
-    #         d['world_vulnerable_host_count'] = ss['world']['vulnerable_host_count']
-    #         for k,v in ss['world']['vulnerabilities'].items():
-    #             d['world_'+k] = v
-    #         source_dict[ss['end_time']] = d
-    #     df = DataFrame(source_dict).T
-    #     line = graphs.MyPentaLine(df)
-    #     line.plot('vulnerabilities-over-time')
-
     def __figure_vulnerable_hosts_over_time(self):
         source_dict = dict()
         for ss in self.__snapshots:
@@ -1125,74 +1189,6 @@ class ReportGenerator(object):
         df = DataFrame(source_dict).T
         line = graphs.MyLine(df, linecolors=(BLACK, BLACK), yscale=self.__best_scale(df), ylabel='Vulnerabilities')
         line.plot('distinct-vulns-over-time', figsize=(8,2.7))
-
-    def __figure_dnssec_domain_compliance(self):
-        os.symlink(PLACEHOLDER_PDF, 'dnssec-domain-compliance.pdf')
-        pass
-
-    def __figure_dnssec_percent_compliant(self):
-        os.symlink(PLACEHOLDER_PDF, 'dnssec-percent-compliant.pdf')
-        pass
-
-    def __figure_report_card_previous(self, min_cols=10):
-        if self.__no_history:
-            df = DataFrame()
-        else:
-            resolved_vulns = DataFrame(self.__results['resolved_vulnerabilities'])
-            resolved_counts = Series(self.__results['resolved_vulnerability_counts'])
-            prev_counts = Series(self.__snapshots[1]['vulnerabilities'])
-            unresolved_counts = (prev_counts - resolved_counts)
-            df = pd.concat([unresolved_counts, resolved_counts], axis=1, keys=['unresolved','resolved']).fillna(0)
-            df = df.astype(int)
-            df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
-
-        if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
-            boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.GREEN)
-            cols = boxes.plot('report-card-previous')
-        else: # too many vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
-            message.plot('report-card-previous', size=0.5)
-            cols = 0
-        return cols
-
-    def __figure_report_card_current(self, min_cols=10):
-        new_vulns = DataFrame(self.__results['new_vulnerabilities'])
-        new_counts = Series(self.__results['new_vulnerability_counts'])
-        curr_counts = Series(self.__snapshots[0]['vulnerabilities'])
-        carryover_counts = (curr_counts - new_counts)
-        df = pd.concat([carryover_counts, new_counts], axis=1, keys=['carryover','new']).fillna(0)
-        df = df.astype(int)
-        df = df.reindex_axis(['critical','high','medium','low']) # reorder and filter
-        if df.sum().sum() <= MAX_REPORTCARD_BOX_DISPLAY:
-            boxes = graphs.Boxes(df, min_cols=min_cols, other_color=graphs.RED)
-            cols = boxes.plot('report-card-current')
-        else: # too many vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_TOO_MANY_VULNS)
-            message.plot('report-card-current', size=0.5)
-            cols = 0
-        return cols
-
-    def __figure_report_card_cvss_vulnerable(self):
-        all_cvss = DataFrame(self.__results['all_cvss_scores'])
-        bin_counts = np.histogram(all_cvss['cvss_average_vulnerable'], bins=range(11))[0]
-        owner_cvss = self.__snapshots[0]['cvss_average_vulnerable']
-        h = np.histogram([owner_cvss], bins=range(11))[0]
-        for owner_bin,c in enumerate(h): # search for where owner's CVSS score fell
-            if c == 1:
-                break
-        hist = graphs.Histogram(bin_counts, owner_bin)
-        hist.plot('report-card-cvss-vulnerable')
-
-    def __figure_report_card_cvss_overall(self):
-        all_cvss = DataFrame(self.__results['all_cvss_scores'])
-        bin_counts = np.histogram(all_cvss['cvss_average_all'], bins=range(11))[0]
-        owner_cvss = self.__snapshots[0]['cvss_average_all']
-        h = np.histogram([owner_cvss], bins=range(11))[0]
-        for owner_bin,c in enumerate(h): # search for where owner's CVSS score fell
-            if c == 1:
-                break
-        hist = graphs.Histogram(bin_counts, owner_bin)
-        hist.plot('report-card-cvss-overall')
 
 
     ###############################################################################
@@ -1667,6 +1663,7 @@ class ReportGenerator(object):
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
         self.__generate_services_attachment()
+        self.__generate_risky_services_attachment()
         self.__generate_hosts_attachment()
         self.__generate_scope_attachment()
         self.__generate_false_positives_attachment()
@@ -1840,6 +1837,25 @@ class ReportGenerator(object):
             for row in data:
                 writer.writerow(row)
 
+    def __generate_risky_services_attachment(self):
+        # remove ip_int column if we are trying to be anonymous
+        if self.__anonymize:
+            fields = ('ip', 'port', 'service', 'category',
+                      'newly_opened_since_last_report')
+        else:
+            if self.__snapshots[0].get('descendants_included'):
+                fields = ('owner', 'ip_int', 'ip', 'port', 'service',
+                          'category', 'newly_opened_since_last_report')
+            else:
+                fields = ('ip_int', 'ip', 'port', 'service',
+                          'category', 'newly_opened_since_last_report')
+        data = self.__results['risky_services_tickets']
+        with open('potentially-risky-services.csv', 'wb') as out_file:
+            writer = DictWriter(out_file, fields, extrasaction='ignore')
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
+
     def __generate_hosts_attachment(self):
         # remove ip_int and hostname column if we are trying to be anonymous
         if self.__anonymize:
@@ -1988,10 +2004,33 @@ class ReportGenerator(object):
                 calc['unique_operating_systems_percent'] =\
                 calc['unique_services_percent'] =\
                 calc['unique_vulnerabilities_percent'] = '-'
+            calc['vuln_host_count_pct_no_change'] = True
+            calc['vuln_host_count_pct_increase'] = False
         else:
             ss1 = self.__snapshots[1]
             calc['host_count_percent'] = self.__percent_change(ss1['host_count'], ss0['host_count'])
             calc['vulnerable_host_count_percent'] = self.__percent_change(ss1['vulnerable_host_count'], ss0['vulnerable_host_count'])
+
+            calc['vuln_host_count_pct_increase_flag'] = False
+            calc['vuln_host_count_pct_decrease_flag'] = False
+            calc['vuln_host_count_pct_flat_flag'] = False
+
+            if calc['vulnerable_host_count_percent'] == '-':
+                # See __percent_change() for how/why this can happen
+                calc['vuln_host_count_pct_flat_flag'] = True
+            elif calc['vulnerable_host_count_percent'] > 0.0:
+                calc['vuln_host_count_pct_increase_flag'] = True
+            elif calc['vulnerable_host_count_percent'] < 0.0:
+                calc['vuln_host_count_pct_decrease_flag'] = True
+            else:
+                calc['vuln_host_count_pct_flat_flag'] = True
+
+            if calc['vuln_host_count_pct_flat_flag']:
+                calc['vuln_host_count_pct_change_int'] = 0
+            else:
+                calc['vuln_host_count_pct_change_int'] = \
+                    abs(int(round(calc['vulnerable_host_count_percent'], 0)))
+
             calc['unique_operating_systems_percent'] = self.__percent_change(ss1['unique_operating_systems'], ss0['unique_operating_systems'])
             calc['unique_services_percent'] = self.__percent_change(len(ss1['services']), len(ss0['services']))
             calc['unique_vulnerabilities_percent'] =\
@@ -2039,6 +2078,15 @@ class ReportGenerator(object):
             avpvh[k] = safe_divide(v, ss0['vulnerable_host_count'], 2)
 
         result['calc'] = calc
+
+        # Calculate count of "hosts with unsupported software"
+        hosts_with_unsupported_sw = set()
+        for t in self.__results['tickets_0']:
+            if "Unsupported" in t['details'].get('name'):
+                hosts_with_unsupported_sw.add(t['ip'])
+        result['unsupported_sw_host_count'] = len(hosts_with_unsupported_sw)
+
+        result['risky_services'] = self.__results['risky_services_metrics']
 
         if self.__results.get('ss0_descendant_snapshots'):
             result['ss0_descendant_data'] = self.__results['ss0_descendant_data']

@@ -26,7 +26,9 @@
 \usepackage{amssymb} % used for \checkmark symbol
 \usepackage{hhline} % used for double horizontal lines in tables
 \usepackage{lpic} % used to put text over title page graphic
-
+\usepackage{array} % used to center text in tabular tables
+\usepackage{tikz,stackengine} % shapes in report card
+\usepackage{sourcesanspro} % source sans pro font
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PDF Metadata
@@ -175,7 +177,14 @@
 \definecolor{tlp-amber}{cmyk}{0.0,0.25,1.0,0.0}
 \definecolor{tlp-green}{cmyk}{0.79,0.0,1.0,0.0}
 \definecolor{tlp-white}{cmyk}{0.0,0.0,0.0,0.0}
-
+%%% Report Card Colors
+\definecolor{rc-dark-blue}{HTML}{002D60}
+\definecolor{rc-dark-green}{HTML}{396A34}
+\definecolor{rc-dark-red}{HTML}{963513}
+\definecolor{rc-light-blue}{HTML}{0078AE}
+\definecolor{rc-light-green}{HTML}{5E9732}
+\definecolor{rc-light-red}{HTML}{C41230}
+\definecolor{rc-orange}{HTML}{F15A2D}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Attachments Setup
@@ -223,7 +232,10 @@
 
 % DHS NCCIC Standard Fonts
 \newfontfamily{\ArialFont}{Arial}
+\newfontfamily{\FranklinGothicDemiCondFont}{Franklin Gothic Demi Cond}
 \newfontfamily{\FranklinGothicMediumFont}{Franklin Gothic Medium}
+\newfontfamily{\SourceSansProFont}{Source Sans Pro}
+
 \newcommand\NCCICCoverTitle{\FranklinGothicMediumFont\fontsize{24pt}{24pt}\selectfont}
 \newcommand\NCCICTitle{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
 \newcommand\NCCICHeadingOne{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
@@ -239,12 +251,17 @@
 \newcommand\TLPFont{\FranklinGothicDemiFont\fontsize{11pt}{11pt}\selectfont}
 
 % Report Card Fonts and Hashes
-% \newfontfamily{\RCHeadFont}{Avenir Next Condensed Demi Bold}
-% \newfontfamily{\RCSubFont}{Baskerville SemiBold}
-% \newfontfamily{\RCBigNumFont}{Avenir Next Demi Bold}
-% \newfontfamily{\RCSmallNumFont}{Avenir Next Regular}
-\newfontfamily{\RCArrowFont}{Apple SD Gothic Neo}
-\newfontfamily{\RCFlatArrowFont}{Cambria Math}
+\newcommand\RCFranklinGothicDemiCondForty{\FranklinGothicDemiCondFont\fontsize{40pt}{40pt}\selectfont}
+\newcommand\RCFranklinGothicMedTwelve{\FranklinGothicMediumFont\fontsize{12pt}{12pt}\selectfont}
+\newcommand\RCSourceSansProBoldFourteen{\SourceSansProFont\bfseries\fontsize{14pt}{14pt}\selectfont}
+\newcommand\RCSourceSansProLightEight{\sourcesansprolight\fontsize{8pt}{8pt}\selectfont}
+\newcommand\RCSourceSansProTen{\SourceSansProFont\fontsize{10pt}{10pt}\selectfont}
+\newcommand\RCSourceSansProTwelve{\SourceSansProFont\fontsize{12pt}{12pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldTen{\sourcesansprolight\bfseries\fontsize{10pt}{10pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldTwelve{\sourcesansprolight\bfseries\fontsize{12pt}{12pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldSixteen{\sourcesansprolight\bfseries\fontsize{16pt}{16pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldEighteen{\sourcesansprolight\bfseries\fontsize{18pt}{18pt}\selectfont}
+\newcommand\RCSourceSansProSemiBoldThirty{\sourcesansprolight\bfseries\fontsize{30pt}{30pt}\selectfont}
 
 \newcommand\RCHeadA{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
 \newcommand\RCHeadB{\FranklinGothicMediumFont\fontsize{14pt}{14pt}\selectfont}
@@ -252,18 +269,10 @@
 \newcommand\RCBigNum{\ArialFont\fontsize{16pt}{16pt}\selectfont}
 \newcommand\RCMediumNum{\ArialFont\fontsize{14pt}{14pt}\selectfont}
 \newcommand\RCSmallNum{\ArialFont\fontsize{10pt}{10pt}\selectfont}
-% \newcommand\RCHeadA{\RCHeadFont\fontsize{28pt}{33.6pt}\selectfont}
-% \newcommand\RCHeadB{\RCHeadFont\fontsize{14pt}{16.8pt}\selectfont}
-% \newcommand\RCSub{\RCSubFont\fontsize{8.5pt}{10.8pt}\selectfont}
-% \newcommand\RCBigNum{\RCBigNumFont\fontsize{18pt}{21.6pt}\selectfont}
-% \newcommand\RCMediumNum{\RCBigNumFont\fontsize{14pt}{16pt}\selectfont}
-% \newcommand\RCSmallNum{\RCSmallNumFont\fontsize{9pt}{10.8pt}\selectfont}
+
 \newcommand\RCHashDot{\hdashrule[6pt]{\linewidth}{1pt}{1pt}}
 \newcommand\RCHashThick{\hdashrule{\linewidth}{3pt}{}}
-\newcommand\RCUpArrow{\RCArrowFont\fontsize{14pt}{14pt}\selectfont⬆}
-\newcommand\RCDownArrow{\RCArrowFont\fontsize{14pt}{14pt}\selectfont⬇}
-\newcommand\RCFlatArrow{\RCFlatArrowFont\fontsize{14pt}{14pt}\selectfont⬌}
-\newcommand\RCBullet{\RCFlatArrowFont\fontsize{22pt}{22pt}\selectfont•}
+
 
 % Set formats for each heading level
 \titleformat*{\section}{\NCCICHeadingOne\color{dhs-blue}}
@@ -275,6 +284,15 @@
 %%% Graphics Setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \DeclareGraphicsExtensions{.pdf, .jpg, .tif, .png}
+
+% Risky Open Services shapes
+\newcommand{\greencircle}{\tikz\draw[black, fill=v-good] (0,0) circle (3mm);}
+\newcommand{\yellowtriangle}{\tikz\draw[black, fill=v-medium] (0mm,0mm) -- (6mm,0mm) -- (3mm,6mm) -- cycle;}
+\newcommand{\redoctagon}{\tikz\draw[black, fill=v-bad] (4mm,0mm) -- (2mm,0mm) -- (0mm,2mm) -- (0mm,4mm) -- (2mm,6mm) -- (4mm,6mm) -- (6mm,4mm) -- (6mm,2mm) -- cycle;}
+
+\newcommand{\smallgreencircle}{\tikz\draw[black, fill=v-good] (0,0) circle (1.5mm);}
+\newcommand{\smallyellowtriangle}{\tikz\draw[black, fill=v-medium] (0mm,0mm) -- (3mm,0mm) -- (1.5mm,3mm) -- cycle;}
+\newcommand{\smallredoctagon}{\tikz\draw[black, fill=v-bad] (2mm,0mm) -- (1mm,0mm) -- (0mm,1mm) -- (0mm,2mm) -- (1mm,3mm) -- (2mm,3mm) -- (3mm,2mm) -- (3mm,1mm) -- cycle;}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Paragraph Setup
@@ -469,189 +487,274 @@ As you review the report, you may have additional questions. Check out the answe
   		\end{tabular}
 	\end{table*}
 
-\newpage
-\hiddensection{Report Card}
-\label{sec:report-card}
-{\RCHeadA\color{dhs-blue} CYBER HYGIENE REPORT CARD}
-\vspace*{0.3in}
-\\
-{\RCHeadB\color{dhs-dark-gray} HIGH LEVEL FINDINGS\\
-\RCHashThick}\\
-\\
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub ADDRESSES OWNED}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&calc.address_count>>}}%
-	<<#calc.address_count_up_flag>>\RCUpArrow<</calc.address_count_up_flag>>%
-	<<#calc.address_count_down_flag>>\RCDownArrow<</calc.address_count_down_flag>>%
-	<<#calc.address_count_flat_flag>>\RCFlatArrow<</calc.address_count_flat_flag>>%
-	\\
-	<<#calc.address_count_up_flag>>{\RCSmallNum \numprint{<<&calc.address_count_up>>} increase}<</calc.address_count_up_flag>>%
-	<<#calc.address_count_down_flag>>{\RCSmallNum \numprint{<<&calc.address_count_down>>} decrease}<</calc.address_count_down_flag>>%
-	<<#calc.address_count_flat_flag>>{\RCSmallNum no change}<</calc.address_count_flat_flag>>\\%
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub ADDRESSES SCANNED}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&calc.addresses_scanned>>}}%
-	<<#calc.addresses_scanned_up_flag>>\RCUpArrow<</calc.addresses_scanned_up_flag>>%
-	<<#calc.addresses_scanned_down_flag>>\RCDownArrow<</calc.addresses_scanned_down_flag>>%
-	<<#calc.addresses_scanned_flat_flag>>\RCFlatArrow<</calc.addresses_scanned_flat_flag>>%
-	\\
-	<<#calc.addresses_scanned_up_flag>>{\RCSmallNum \numprint{<<&calc.addresses_scanned_up>>} increase<</calc.addresses_scanned_up_flag>>%
-	<<#calc.addresses_scanned_down_flag>>{\RCSmallNum \numprint{<<&calc.addresses_scanned_down>>} decrease<</calc.addresses_scanned_down_flag>>%
-	<<#calc.addresses_scanned_flat_flag>>{\RCSmallNum no change<</calc.addresses_scanned_flat_flag>>%
-	\\
-	\numprint{<<&calc.addresses_scanned_percent>>}\% of addresses scanned}
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.48\textwidth}
-	{\RCSub LATEST SCANS}\\[-0.75pt]
-	\RCHashDot\\
-	{\RCSmallNum \textbf{Addresses:} <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
-	{\RCSmallNum \textbf{Vulnerabilities:} <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
-	\vspace*{0.08in}
-	%
-	%
-\end{minipage}%
+  % NOTE: If layout changes in the Report Card below result in additional
+  % vertical spacing, you may end up with a blank page (here) before the
+  % Report Card page.  One possible fix is to adjust the vspace amount at the
+  % very bottom of the Report Card section. I believe the blank page is due to
+  % the blue triangle (bottom right of the Report Card) being pushed past the
+  % end of the Report Card page.  It's not clear to me why LaTeX decides to add
+  % a blank page in this case, but that is the behavior I have observed.
+  \newpage
+  \newgeometry{left=0in,right=0in,top=0in,bottom=0in}
+  \hiddensection{Report Card}
+  \label{sec:report-card}
+  \colorbox{rc-light-blue}{\begin{minipage}[t]{0.3\textwidth}
+      \begin{minipage}[t]{0.12\textwidth}
+      	\  % Spacer column
+      \end{minipage}
+      \begin{minipage}[t]{0.88\textwidth}
+      	\textcolor{dhs-white}{\RCSourceSansProTwelve{\isodate\formatdate<<&calc.title_date_tex>>}}
 
-\vspace*{0.1in}
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub HOSTS}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.host_count>>}}%
-	<<#calc.host_count_up_flag>>\RCUpArrow<</calc.host_count_up_flag>>%
-	<<#calc.host_count_down_flag>>\RCDownArrow<</calc.host_count_down_flag>>%
-	<<#calc.host_count_flat_flag>>\RCFlatArrow<</calc.host_count_flat_flag>>%
-	\\
-	<<#calc.host_count_up_flag>>{\RCSmallNum \numprint{<<&calc.host_count_up>>} increase}<</calc.host_count_up_flag>>%
-	<<#calc.host_count_down_flag>>{\RCSmallNum \numprint{<<&calc.host_count_down>>} decrease}<</calc.host_count_down_flag>>%
-	<<#calc.host_count_flat_flag>>{\RCSmallNum no change}<</calc.host_count_flat_flag>>\\%
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub VULNERABLE HOSTS}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerable_host_count>>}}%
-	<<#calc.vuln_host_count_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_host_count_up_flag>>%
-	<<#calc.vuln_host_count_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_host_count_down_flag>>%
-	<<#calc.vuln_host_count_flat_flag>>\RCFlatArrow<</calc.vuln_host_count_flat_flag>>%
-	\\
-	<<#calc.vuln_host_count_up_flag>>{\RCSmallNum \numprint{<<&calc.vuln_host_count_up>>} increase<</calc.vuln_host_count_up_flag>>%
-	<<#calc.vuln_host_count_down_flag>>{\RCSmallNum \numprint{<<&calc.vuln_host_count_down>>} decrease<</calc.vuln_host_count_down_flag>>%
-	<<#calc.vuln_host_count_flat_flag>>{\RCSmallNum no change<</calc.vuln_host_count_flat_flag>>%
-	\\
-	\color{black}<<&calc.vuln_host_percent>>\% of hosts vulnerable}
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub VULNERABILITIES}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerabilities.total>>}}%
-	<<#calc.vuln_total_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_total_up_flag>>%
-	<<#calc.vuln_total_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_total_down_flag>>%
-	<<#calc.vuln_total_flat_flag>>\RCFlatArrow<</calc.vuln_total_flat_flag>>%
-	\\
-	<<#calc.vuln_total_up_flag>>{\RCSmallNum \numprint{<<&calc.vuln_total_up>>} increase}<</calc.vuln_total_up_flag>>%
-	<<#calc.vuln_total_down_flag>>{\RCSmallNum \numprint{<<&calc.vuln_total_down>>} decrease}<</calc.vuln_total_down_flag>>%
-	<<#calc.vuln_total_flat_flag>>{\RCSmallNum no change}<</calc.vuln_total_flat_flag>>\\%
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\RCSub SERVICES}\\[-3pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.port_count>>}}%
-	<<#calc.port_count_up_flag>>\RCUpArrow<</calc.port_count_up_flag>>%
-	<<#calc.port_count_down_flag>>\RCDownArrow<</calc.port_count_down_flag>>%
-	<<#calc.port_count_flat_flag>>\RCFlatArrow<</calc.port_count_flat_flag>>%
-	\\
-	<<#calc.port_count_up_flag>>{\RCSmallNum \numprint{<<&calc.port_count_up>>} increase}<</calc.port_count_up_flag>>%
-	<<#calc.port_count_down_flag>>{\RCSmallNum \numprint{<<&calc.port_count_down>>} decrease}<</calc.port_count_down_flag>>%
-	<<#calc.port_count_flat_flag>>{\RCSmallNum no change}<</calc.port_count_flat_flag>>\\%
-\end{minipage}%
-\vspace*{0.2in}
-\\
-{\RCHeadB\color{dhs-dark-gray} VULNERABILITIES\\
-\RCHashThick}\\
-\\
-\begin{minipage}[b]{0.2125\textwidth}
-	{\color{v-critical}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub CRITICAL}\\[1pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerabilities.critical>>}}%
-	<<#calc.vuln_critical_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_critical_up_flag>>%
-	<<#calc.vuln_critical_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_critical_down_flag>>%
-	<<#calc.vuln_critical_flat_flag>>\RCFlatArrow<</calc.vuln_critical_flat_flag>>%
-	\\\\
-	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.critical>>} resolved\\
-	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.critical>>} new
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\color{v-high}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub HIGH}\\[1pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerabilities.high>>}}%
-	<<#calc.vuln_high_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_high_up_flag>>%
-	<<#calc.vuln_high_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_high_down_flag>>%
-	<<#calc.vuln_high_flat_flag>>\RCFlatArrow<</calc.vuln_high_flat_flag>>%
-	\\\\
-	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.high>>} resolved\\
-	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.high>>} new
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\color{v-medium}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub MEDIUM}\\[1pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerabilities.medium>>}}%
-	<<#calc.vuln_medium_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_medium_up_flag>>%
-	<<#calc.vuln_medium_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_medium_down_flag>>%
-	<<#calc.vuln_medium_flat_flag>>\RCFlatArrow<</calc.vuln_medium_flat_flag>>%
-	\\\\
-	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.medium>>} resolved\\
-	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.medium>>} new
-\end{minipage}%
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-	{\color{v-low}\hdashrule[-2pt]{10pt}{10pt}{}} {\RCSub LOW}\\[1pt]
-	\RCHashDot\\
-	{\RCBigNum \numprint{<<&ss0.vulnerabilities.low>>}}%
-	<<#calc.vuln_low_up_flag>>\color{v-bad}\RCUpArrow<</calc.vuln_low_up_flag>>%
-	<<#calc.vuln_low_down_flag>>\color{v-good}\RCDownArrow<</calc.vuln_low_down_flag>>%
-	<<#calc.vuln_low_flat_flag>>\RCFlatArrow<</calc.vuln_low_flat_flag>>%
-	\\\\
-	\color{v-good}\RCSmallNum \numprint{<<&resolved_vulnerability_counts.low>>} resolved\\
-	\color{v-bad}\RCSmallNum \numprint{<<&new_vulnerability_counts.low>>} new
-\end{minipage}
+      	\vspace*{8mm}  % blank line needed on previous line for vertical spacing
+      	\stackon[-12.5pt]{\begin{tikzpicture}
+      	\draw[color=rc-dark-blue, fill=rc-dark-blue](0mm,0mm) -- (0mm,6mm) -- (42mm,6mm) -- (40mm,0mm) -- cycle; \end{tikzpicture}}
+      	{\resizebox{3cm}{!}{\textcolor{dhs-white}{\RCFranklinGothicMedTwelve CYBER HYGIENE}}}
 
-\vspace*{0.2in}
-\begin{minipage}[b]{0.48\textwidth}
-	{\RCSub PREVIOUS REPORT}\hfill{\color{v-good}\raisebox{-0.8ex}{\RCBullet}\RCSmallNum resolved}\\
-	\RCHashDot\\
-	\scalegraphicsnofig{report-card-previous}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.48\textwidth}
-	{\RCSub CURRENT REPORT}\hfill{\color{v-bad}\raisebox{-0.8ex}{\RCBullet}\RCSmallNum new}\\
-	\RCHashDot\\
-	\scalegraphicsnofig{report-card-current}
-\end{minipage}
+      	\vspace*{2mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{dhs-white}{\RCFranklinGothicDemiCondForty REPORT}
 
-{\RCHeadB\color{dhs-dark-gray} VULNERABILITY RESPONSE TIME <<#calc.ss0_tix_closed_after_date_tex>>(since \usvardate\formatdate<<&calc.ss0_tix_closed_after_date_tex>>)<</calc.ss0_tix_closed_after_date_tex>>\\
-\RCHashThick}\\
-\\
-%\begin{tabular}{@{}lll@{\hspace{2em}}ll@{\hspace{2em}}ll@{\hspace{2em}}ll@{}}
-\begin{tabular}{@{}llp{0.5in}llp{0.5in}llp{0.5in}lll@{}}
-  & \multicolumn{2}{l}{\color{v-critical}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub CRITICAL} & & \multicolumn{2}{l}{\color{v-high}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub HIGH} & & \multicolumn{2}{l}{\color{v-medium}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub MEDIUM} & & \multicolumn{2}{l}{\color{v-low}\hdashrule[-2pt]{10pt}{10pt}{} \color{black}\RCSub LOW} \\
-  & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} & & {\RCSmallNum Median} & {\RCSmallNum Maximum} \\
-{\RCSub DAYS TO MITIGATE} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.critical.median>>\numprint{<<&calc.ss0_tix_days_to_close.critical.median>>}<</calc.ss0_tix_days_to_close.critical.median>><<^calc.ss0_tix_days_to_close.critical.median>>\numprint{0}<</calc.ss0_tix_days_to_close.critical.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.critical.max>>\numprint{<<&calc.ss0_tix_days_to_close.critical.max>>}<</calc.ss0_tix_days_to_close.critical.max>><<^calc.ss0_tix_days_to_close.critical.max>>\numprint{0}<</calc.ss0_tix_days_to_close.critical.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.high.median>>\numprint{<<&calc.ss0_tix_days_to_close.high.median>>}<</calc.ss0_tix_days_to_close.high.median>><<^calc.ss0_tix_days_to_close.high.median>>\numprint{0}<</calc.ss0_tix_days_to_close.high.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.high.max>>\numprint{<<&calc.ss0_tix_days_to_close.high.max>>}<</calc.ss0_tix_days_to_close.high.max>><<^calc.ss0_tix_days_to_close.high.max>>\numprint{0}<</calc.ss0_tix_days_to_close.high.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.medium.median>>\numprint{<<&calc.ss0_tix_days_to_close.medium.median>>}<</calc.ss0_tix_days_to_close.medium.median>><<^calc.ss0_tix_days_to_close.medium.median>>\numprint{0}<</calc.ss0_tix_days_to_close.medium.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.medium.max>>\numprint{<<&calc.ss0_tix_days_to_close.medium.max>>}<</calc.ss0_tix_days_to_close.medium.max>><<^calc.ss0_tix_days_to_close.medium.max>>\numprint{0}<</calc.ss0_tix_days_to_close.medium.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_to_close.low.median>>\numprint{<<&calc.ss0_tix_days_to_close.low.median>>}<</calc.ss0_tix_days_to_close.low.median>><<^calc.ss0_tix_days_to_close.low.median>>\numprint{0}<</calc.ss0_tix_days_to_close.low.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_to_close.low.max>>\numprint{<<&calc.ss0_tix_days_to_close.low.max>>}<</calc.ss0_tix_days_to_close.low.max>><<^calc.ss0_tix_days_to_close.low.max>>\numprint{0}<</calc.ss0_tix_days_to_close.low.max>>} \\
-{\RCSub DAYS CURRENTLY ACTIVE} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.median>>\numprint{<<&calc.ss0_tix_days_open.critical.median>>}<</calc.ss0_tix_days_open.critical.median>><<^calc.ss0_tix_days_open.critical.median>>\numprint{0}<</calc.ss0_tix_days_open.critical.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.critical.max>>\numprint{<<&calc.ss0_tix_days_open.critical.max>>}<</calc.ss0_tix_days_open.critical.max>><<^calc.ss0_tix_days_open.critical.max>>\numprint{0}<</calc.ss0_tix_days_open.critical.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.high.median>>\numprint{<<&calc.ss0_tix_days_open.high.median>>}<</calc.ss0_tix_days_open.high.median>><<^calc.ss0_tix_days_open.high.median>>\numprint{0}<</calc.ss0_tix_days_open.high.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.high.max>>\numprint{<<&calc.ss0_tix_days_open.high.max>>}<</calc.ss0_tix_days_open.high.max>><<^calc.ss0_tix_days_open.high.max>>\numprint{0}<</calc.ss0_tix_days_open.high.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.median>>\numprint{<<&calc.ss0_tix_days_open.medium.median>>}<</calc.ss0_tix_days_open.medium.median>><<^calc.ss0_tix_days_open.medium.median>>\numprint{0}<</calc.ss0_tix_days_open.medium.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.medium.max>>\numprint{<<&calc.ss0_tix_days_open.medium.max>>}<</calc.ss0_tix_days_open.medium.max>><<^calc.ss0_tix_days_open.medium.max>>\numprint{0}<</calc.ss0_tix_days_open.medium.max>>} & & {\RCMediumNum <<#calc.ss0_tix_days_open.low.median>>\numprint{<<&calc.ss0_tix_days_open.low.median>>}<</calc.ss0_tix_days_open.low.median>><<^calc.ss0_tix_days_open.low.median>>\numprint{0}<</calc.ss0_tix_days_open.low.median>>} & {\RCMediumNum <<#calc.ss0_tix_days_open.low.max>>\numprint{<<&calc.ss0_tix_days_open.low.max>>}<</calc.ss0_tix_days_open.low.max>><<^calc.ss0_tix_days_open.low.max>>\numprint{0}<</calc.ss0_tix_days_open.low.max>>} \\
-\end{tabular}
+      	\vspace*{2mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{dhs-white}{\RCFranklinGothicDemiCondForty CARD}
 
-%% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
-<<#expiring_soon_false_positive_tickets_count>>
-\vspace*{2mm}
-{\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
-See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
+        \begin{minipage}[t]{0.9\textwidth}
+
+      	  \vspace*{0.1mm}  % blank line needed on previous line for vertical spacing
+          % Use a vbox to maintain a constant height, regardless of the
+          % length of the organization's name
+          % Use raggedright to prevent hypenation of the organization's name
+  	      \vbox to 16mm {\vfil
+            \raggedright \textcolor{dhs-white}{\RCSourceSansProTwelve{<<&owner.agency.name>>}}\vfil
+  	      }  % END: vbox (org name)
+        \end{minipage}  % END: org name minipage
+
+        \hspace*{-6mm}
+        {\renewcommand{\arraystretch}{4}  % Increase vertical padding between rows
+          \begin{tabular}{cl}
+            \raisebox{-0.4\height}{\scalegraphicsnofig{assets/<<#unsupported_sw_host_count>>red-laptop-x<</unsupported_sw_host_count>><<^unsupported_sw_host_count>>green-laptop-x<</unsupported_sw_host_count>>}} & \vtop{\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldThirty{\numprint{<<&unsupported_sw_host_count>>}}}}} \vspace*{1mm} \hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{Hosts with}}}}\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{unsupported}}}}\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{software}}}}} \\
+            \raisebox{-0.45\height}{\scalegraphicsnofig{assets/<<#risky_services.total_count>>red-exclamation-triangle<</risky_services.total_count>><<^risky_services.total_count>>green-exclamation-triangle<</risky_services.total_count>>}} & \vtop{\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldThirty{\numprint{<<&risky_services.total_count>>}}}}} \vspace*{1mm} \hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{Potentially Risky}}}}\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{Open Services}}}}} \\
+            \raisebox{-0.5\height}{\scalegraphicsnofig{assets/<<#calc.vuln_host_count_pct_increase_flag>>white-red-up-arrow<</calc.vuln_host_count_pct_increase_flag>><<#calc.vuln_host_count_pct_decrease_flag>>white-green-down-arrow<</calc.vuln_host_count_pct_decrease_flag>><<#calc.vuln_host_count_pct_flat_flag>>no-change-arrows<</calc.vuln_host_count_pct_flat_flag>>}} & \vtop{\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldThirty{<<&calc.vuln_host_count_pct_change_int>>\%}}}} \vspace*{1mm} \hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{<<#calc.vuln_host_count_pct_increase_flag>>Increase<</calc.vuln_host_count_pct_increase_flag>><<#calc.vuln_host_count_pct_decrease_flag>>Decrease<</calc.vuln_host_count_pct_decrease_flag>><<#calc.vuln_host_count_pct_flat_flag>>No Change<</calc.vuln_host_count_pct_flat_flag>> in}}}}\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{Vulnerable}}}}\hbox{\strut {\textcolor{dhs-white}{\RCSourceSansProSemiBoldTwelve{Hosts}}}}} \\
+          \end{tabular}
+        }
+      \end{minipage}  % END: "3 Big Things" block (upper left side of page)
+      \vspace*{-1.2mm}
+      \hspace*{-1mm}
+      \begin{tikzpicture}
+        \draw[color=dhs-white, fill=dhs-white](0mm,0mm) -- (68mm,18mm) -- (68mm,0mm) -- cycle;
+      \end{tikzpicture}
+  \end{minipage}}\begin{minipage}[t]{0.65\textwidth}  % END: White triangle at bottom of "3 Big Things" (just below percentage change in vulnerable hosts)
+    \vspace*{-5.2mm}
+    %\hspace*{-1.85mm}
+    \begin{tikzpicture}
+  	   \draw[color=rc-dark-blue, fill=rc-dark-blue](0mm,0mm) -- (0mm,20mm) -- (90mm,20mm) -- cycle;
+    \end{tikzpicture}
+    \scalegraphicsnofig{assets/cisa-logo-blue}
+
+    \vspace*{5mm}
+    \begin{minipage}[t]{0.06\textwidth}
+      \  % Spacer column
+    \end{minipage}
+    \begin{minipage}[t]{0.92\textwidth}
+      \stackon[-16pt]{\begin{tikzpicture}
+        \draw[color=rc-dark-green, fill=rc-dark-green](0mm,0mm) -- (0mm,8mm) -- (10mm,8mm) -- (6mm,0mm) -- cycle;
+    	  \draw[color=rc-light-green, fill=rc-light-green](6mm,0mm) -- (10mm,8mm) -- (125mm,8mm) -- (120mm,0mm) -- cycle;
+      \end{tikzpicture}}
+      {\hspace*{-55mm} \resizebox{4.5cm}{!}{\textcolor{dhs-white}{\RCSourceSansProBoldFourteen HIGH LEVEL FINDINGS}}}
+
+      \vspace*{3mm}  % blank line needed on previous line for vertical spacing
+      \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen LATEST SCANS}
+
+      \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+      \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+      \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+      {\RCSourceSansProSemiBoldSixteen <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
+      {\RCSourceSansProTwelve Host Scans on All Addresses}
+
+      \vspace*{3mm}  % blank line needed on previous line for vertical spacing
+      {\RCSourceSansProSemiBoldSixteen <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
+      {\RCSourceSansProTwelve Vulnerability Scans on All Hosts}
+
+      \vspace*{4mm}  % blank line needed on previous line for vertical spacing
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ADDRESSES OWNED}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&calc.address_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.address_count_up_flag>>grey-up-arrow<</calc.address_count_up_flag>><<#calc.address_count_down_flag>>grey-down-arrow<</calc.address_count_down_flag>><<#calc.address_count_flat_flag>>no-change-blue-arrows<</calc.address_count_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.address_count_up_flag>>Increase of \textbf{\numprint{<<&calc.address_count_up>>}}<</calc.address_count_up_flag>>
+        <<#calc.address_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.address_count_down>>}}<</calc.address_count_down_flag>>
+        <<#calc.address_count_flat_flag>>No Change<</calc.address_count_flat_flag>>}
+      \end{minipage}  % END: ADDRESSES OWNED
+      \begin{minipage}[t]{0.1\textwidth}
+         \  % Spacer column
+      \end{minipage}
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ADDRESSES SCANNED}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&calc.addresses_scanned>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.addresses_scanned_up_flag>>grey-up-arrow<</calc.addresses_scanned_up_flag>><<#calc.addresses_scanned_down_flag>>grey-down-arrow<</calc.addresses_scanned_down_flag>><<#calc.addresses_scanned_flat_flag>>no-change-blue-arrows<</calc.addresses_scanned_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.addresses_scanned_up_flag>>Increase of \textbf{\numprint{<<&calc.addresses_scanned_up>>}}<</calc.addresses_scanned_up_flag>>
+        <<#calc.addresses_scanned_down_flag>>Decrease of \textbf{\numprint{<<&calc.addresses_scanned_down>>}}<</calc.addresses_scanned_down_flag>>
+        <<#calc.addresses_scanned_flat_flag>>No Change<</calc.addresses_scanned_flat_flag>>
+
+        % blank line needed on previous line for vertical spacing
+        \numprint{<<&calc.addresses_scanned_percent>>}\% of addresses scanned}
+      \end{minipage}  % END: ADDRESSES SCANNED
+
+      \vspace*{4mm}  % blank line needed on previous line for vertical spacing
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen HOSTS}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.host_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.host_count_up_flag>>grey-up-arrow<</calc.host_count_up_flag>><<#calc.host_count_down_flag>>grey-down-arrow<</calc.host_count_down_flag>><<#calc.host_count_flat_flag>>no-change-blue-arrows<</calc.host_count_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.host_count_up_flag>>Increase of \textbf{\numprint{<<&calc.host_count_up>>}}<</calc.host_count_up_flag>>
+        <<#calc.host_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.host_count_down>>}}<</calc.host_count_down_flag>>
+        <<#calc.host_count_flat_flag>>No Change<</calc.host_count_flat_flag>>}
+      \end{minipage}  % END: HOSTS
+      \begin{minipage}[t]{0.1\textwidth}
+         \  % Spacer column
+      \end{minipage}
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen SERVICES}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.port_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.port_count_up_flag>>grey-up-arrow<</calc.port_count_up_flag>><<#calc.port_count_down_flag>>grey-down-arrow<</calc.port_count_down_flag>><<#calc.port_count_flat_flag>>no-change-blue-arrows<</calc.port_count_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.port_count_up_flag>>Increase of \textbf{\numprint{<<&calc.port_count_up>>}}<</calc.port_count_up_flag>>
+        <<#calc.port_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.port_count_down>>}}<</calc.port_count_down_flag>>
+        <<#calc.port_count_flat_flag>>No Change<</calc.port_count_flat_flag>>}
+      \end{minipage}  % END: SERVICES
+
+      \vspace*{4mm}  % blank line needed on previous line for vertical spacing
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen VULNERABLE HOSTS}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.vulnerable_host_count>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.vuln_host_count_up_flag>>red-up-arrow<</calc.vuln_host_count_up_flag>><<#calc.vuln_host_count_down_flag>>green-down-arrow<</calc.vuln_host_count_down_flag>><<#calc.vuln_host_count_flat_flag>>no-change-blue-arrows<</calc.vuln_host_count_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.vuln_host_count_up_flag>>\textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_host_count_up>>}}}<</calc.vuln_host_count_up_flag>>
+        <<#calc.vuln_host_count_down_flag>>\textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_host_count_down>>}}}<</calc.vuln_host_count_down_flag>>
+        <<#calc.vuln_host_count_flat_flag>>No Change<</calc.vuln_host_count_flat_flag>>
+
+        % blank line needed on previous line for vertical spacing
+        <<&calc.vuln_host_percent>>\% of hosts vulnerable}
+      \end{minipage}  % END: VULNERABLE HOSTS
+      \begin{minipage}[t]{0.1\textwidth}
+         \  % Spacer column
+      \end{minipage}
+      \begin{minipage}[t]{0.45\textwidth}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen VULNERABILITIES}
+
+        \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+        \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
+
+        \vspace*{1mm}  % blank line needed on previous line for vertical spacing
+        {\RCSourceSansProSemiBoldEighteen \numprint{<<&ss0.vulnerabilities.total>>}} \scalegraphicsnofig[1.2]{assets/<<#calc.vuln_total_up_flag>>red-up-arrow<</calc.vuln_total_up_flag>><<#calc.vuln_total_down_flag>>green-down-arrow<</calc.vuln_total_down_flag>><<#calc.vuln_total_flat_flag>>no-change-blue-arrows<</calc.vuln_total_flat_flag>>}
+
+        {\RCSourceSansProTwelve <<#calc.vuln_total_up_flag>>\textcolor{rc-dark-red}{Increase of \textbf{\numprint{<<&calc.vuln_total_up>>}}}<</calc.vuln_total_up_flag>>
+        <<#calc.vuln_total_down_flag>>\textcolor{rc-dark-green}{Decrease of \textbf{\numprint{<<&calc.vuln_total_down>>}}}<</calc.vuln_total_down_flag>>
+        <<#calc.vuln_total_flat_flag>>No Change<</calc.vuln_total_flat_flag>>}
+      \end{minipage}  % END: VULNERABILITIES (within HIGH LEVEL FINDINGS)
+     \end{minipage}
+  \end{minipage}
+
+  \vspace*{-1mm}  % blank line needed on previous line for vertical spacing
+  \begin{minipage}[t]{0.04\textwidth}
+     \  % Spacer column
+  \end{minipage}
+  \begin{minipage}[t]{0.61\textwidth}
+    \vspace*{-3.5mm}
+    \stackon[-16pt]{\begin{tikzpicture}
+      \draw[color=rc-light-blue, fill=rc-light-blue](0mm,0mm) -- (0mm,8mm) -- (10mm,8mm) -- (6mm,0mm) -- cycle;
+      \draw[color=rc-dark-blue, fill=rc-dark-blue](6mm,0mm) -- (10mm,8mm) -- (130mm,8mm) -- (125mm,0mm) -- cycle;
+    \end{tikzpicture}}
+    {\hspace*{-60mm} \resizebox{4cm}{!}{\textcolor{dhs-white}{\RCSourceSansProBoldFourteen VULNERABILITIES}}}
+
+    \vspace*{3mm}  % blank line needed on previous line for vertical spacing
+    \begin{minipage}[t]{0.48\textwidth}
+      \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen SEVERITY BY\\
+      PROMINENCE}
+
+      \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+      \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
+      \scalegraphicsnofig[1.2]{vuln-severity-by-prominence}
+    \end{minipage}\begin{minipage}[t]{0.01\textwidth}  % END: SEVERITY BY PROMINENCE
+       \  % Spacer column
+    \end{minipage}\colorbox{dhs-white}{\begin{minipage}[t]{0.48\textwidth}
+      \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen VULNERABILITY\\
+      RESPONSE TIME}
+
+      \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+      \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
+
+      \centering % blank line needed on previous line for vertical spacing
+        \scalegraphicsnofig{max-age-active-criticals} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE CRITICALS}
+
+        \scalegraphicsnofig{max-age-active-highs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE HIGHS}
+    \end{minipage}}  % END: VULNERABILITY RESPONSE TIME
+  \end{minipage}  % END: VULNERABILITIES
+  \begin{minipage}[t]{0.01\textwidth}
+     \  % Spacer column
+  \end{minipage}
+  \begin{minipage}[t]{0.27\textwidth}
+    \textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen POTENTIALLY RISKY\\
+    OPEN SERVICES}
+
+    \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+    \textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
+    {\setlength{\tabcolsep}{1pt}  % Reduce horizontal padding between rows
+     \renewcommand{\arraystretch}{1.8}  % Increase vertical padding between rows
+      \begin{tabular}{clccl}
+        \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.rdp.count>>green-circle<</risky_services.rdp.count>><<#risky_services.rdp.count>><<#risky_services.rdp.any_newly_opened>>red-triangle<</risky_services.rdp.any_newly_opened>><<^risky_services.rdp.any_newly_opened>>blue-square<</risky_services.rdp.any_newly_opened>><</risky_services.rdp.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{RDP}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.rdp.count>>}}}}}} & \ \ \ \ \
+        & \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.ftp.count>>green-circle<</risky_services.ftp.count>><<#risky_services.ftp.count>><<#risky_services.ftp.any_newly_opened>>red-triangle<</risky_services.ftp.any_newly_opened>><<^risky_services.ftp.any_newly_opened>>blue-square<</risky_services.ftp.any_newly_opened>><</risky_services.ftp.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{FTP}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.ftp.count>>}}}}}} \\
+        \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.telnet.count>>green-circle<</risky_services.telnet.count>><<#risky_services.telnet.count>><<#risky_services.telnet.any_newly_opened>>red-triangle<</risky_services.telnet.any_newly_opened>><<^risky_services.telnet.any_newly_opened>>blue-square<</risky_services.telnet.any_newly_opened>><</risky_services.telnet.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{Telnet}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.telnet.count>>}}}}}} & \ \ \ \ \
+        & \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.rpc.count>>green-circle<</risky_services.rpc.count>><<#risky_services.rpc.count>><<#risky_services.rpc.any_newly_opened>>red-triangle<</risky_services.rpc.any_newly_opened>><<^risky_services.rpc.any_newly_opened>>blue-square<</risky_services.rpc.any_newly_opened>><</risky_services.rpc.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{RPC}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.rpc.count>>}}}}}} \\
+        \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.smb.count>>green-circle<</risky_services.smb.count>><<#risky_services.smb.count>><<#risky_services.smb.any_newly_opened>>red-triangle<</risky_services.smb.any_newly_opened>><<^risky_services.smb.any_newly_opened>>blue-square<</risky_services.smb.any_newly_opened>><</risky_services.smb.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{SMB}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.smb.count>>}}}}}} & \ \ \ \ \
+        & \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.sql.count>>green-circle<</risky_services.sql.count>><<#risky_services.sql.count>><<#risky_services.sql.any_newly_opened>>red-triangle<</risky_services.sql.any_newly_opened>><<^risky_services.sql.any_newly_opened>>blue-square<</risky_services.sql.any_newly_opened>><</risky_services.sql.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{SQL}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.sql.count>>}}}}}} \\
+        \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.ldap.count>>green-circle<</risky_services.ldap.count>><<#risky_services.ldap.count>><<#risky_services.ldap.any_newly_opened>>red-triangle<</risky_services.ldap.any_newly_opened>><<^risky_services.ldap.any_newly_opened>>blue-square<</risky_services.ldap.any_newly_opened>><</risky_services.ldap.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{LDAP}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.ldap.count>>}}}}}} & \ \ \ \ \
+        & \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.irc.count>>green-circle<</risky_services.irc.count>><<#risky_services.irc.count>><<#risky_services.irc.any_newly_opened>>red-triangle<</risky_services.irc.any_newly_opened>><<^risky_services.irc.any_newly_opened>>blue-square<</risky_services.irc.any_newly_opened>><</risky_services.irc.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{IRC}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.irc.count>>}}}}}} \\
+        \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.netbios.count>>green-circle<</risky_services.netbios.count>><<#risky_services.netbios.count>><<#risky_services.netbios.any_newly_opened>>red-triangle<</risky_services.netbios.any_newly_opened>><<^risky_services.netbios.any_newly_opened>>blue-square<</risky_services.netbios.any_newly_opened>><</risky_services.netbios.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{NETBIOS}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.netbios.count>>}}}}}} & \ \ \ \ \
+        & \raisebox{-0.55\height}{\scalegraphicsnofig[1.35]{assets/<<^risky_services.kerberos.count>>green-circle<</risky_services.kerberos.count>><<#risky_services.kerberos.count>><<#risky_services.kerberos.any_newly_opened>>red-triangle<</risky_services.kerberos.any_newly_opened>><<^risky_services.kerberos.any_newly_opened>>blue-square<</risky_services.kerberos.any_newly_opened>><</risky_services.kerberos.count>>}} & \vtop{\hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\textbf{Kerberos}}}}} \hbox{\strut {\textcolor{rc-dark-blue}{\RCSourceSansProTwelve{\numprint{<<&risky_services.kerberos.count>>}}}}}} \\
+      \end{tabular}
+    }
+
+    \vspace*{3mm}  % blank line needed on previous line for vertical spacing
+    {\setlength{\tabcolsep}{4pt}  % Reduce horizontal padding between columns
+     \renewcommand{\arraystretch}{0.8}  % Reduce vertical padding between rows
+     \begin{tabular}{lll}
+       \hspace*{-3mm} \scalegraphicsnofig[.75]{assets/green-circle} & \hspace*{-3mm} \scalegraphicsnofig[.75]{assets/blue-square} & \hspace*{-3mm} \scalegraphicsnofig[.75]{assets/red-triangle} \\
+       \RCSourceSansProTen{None Open} & \RCSourceSansProTen{Open, No New} & \RCSourceSansProTen{Newly Opened}
+     \end{tabular}
+    }
+
+    \vspace*{2mm}  % blank line needed on previous line for vertical spacing
+    \RCSourceSansProLightEight{\textit{Service counts are best guesses and may not be 100\% accurate. Details can be found in ''potentially-risky-services.csv'' in \autoref{app:attachments}.}}
+  \end{minipage}  % END: POTENTIALLY RISKY OPEN SERVICES
+
+  % Blue triangle at bottom right corner of page
+  \vspace*{-12.2mm}  % VERY IMPORTANT: If layout changes above result in vertical spacing differences, this vspace amount will need to be adjusted; this may not be obvious in every case, but if you end up with a blank page before the Report Card page, this is a good place to start
+  \hspace*{125mm}
+  \begin{tikzpicture}
+    \draw[color=rc-dark-blue, fill=rc-dark-blue](0mm,0mm) -- (90mm,0mm) -- (90mm,20mm) -- cycle;
+  \end{tikzpicture}
+\restoregeometry
 
 <<#owner_is_federal_executive>>
 \section{Emergency Directive 19-01 --- New Certificates Summary}
@@ -833,6 +936,12 @@ Additionally, the top high-risk \glspl{host} and top risk-based \glspl{vulnerabi
 		\end{figure}
 	\end{minipage}
 \end{minipage}
+
+%% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
+<<#expiring_soon_false_positive_tickets_count>>
+\vspace*{10mm}
+{\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
+See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
 
 \clearpage
 
@@ -1535,6 +1644,7 @@ If your PDF viewer supports embedded attachments you will see paperclip icons be
   \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=mitigated-vulnerabilities.csv]{mitigated-vulnerabilities.csv} mitigated-vulnerabilities.csv : List of vulnerabilities that were included on the last report, but were not detected in the latest scans.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=recently-detected.csv]{recently-detected.csv} recently-detected.csv : List of all vulnerabilities detected since the last report, but not detected in the latest scans.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full \gls{TCP} handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
+  \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} potentially-risky-services.csv : List of all potentially risky \glspl{service} detected and the associated \gls{IP} address and port.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=hosts.csv]{hosts.csv} hosts.csv : List of \glspl{host} discovered with \gls{IP} address, best-guess \gls{OS} identification, and hostname if available.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope.csv]{scope.csv} scope.csv : List of \gls{IP} addresses that were in scope for this report.
 	\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=false-positive-findings.csv]{false-positive-findings.csv} false-positive-findings.csv : List of all reported \gls{false positive} vulnerability findings.
