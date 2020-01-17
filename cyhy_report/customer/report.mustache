@@ -1130,8 +1130,6 @@ If a vulnerability that was previously reported to you is no longer detected by 
 
 We encourage you to validate the status of vulnerabilities in both \autoref{app:mitigated-vulnerabilities}: \nameref{app:mitigated-vulnerabilities} and \autoref{app:recently-detected-vulnerabilities}: \nameref{app:recently-detected-vulnerabilities} against your change control register. This will help to ensure that the vulnerability we detected has actually been remediated and is not simply unresponsive to our scans.
 
-% \gls{DNSSEC} Security Scan – \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning performs in-depth checks to ensure that all .GOV \gls{DNS} domains validate and a have properly implemented \gls{DNS} security extensions.
-
 \clearpage
 \section{Approximate Host Locations}
 \label{sec:host-locations}
@@ -1306,33 +1304,6 @@ To help decision-makers, this section provides a comparison of the current data 
 
 \vspace{0.2in}
 Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_vulnerabilities_per_host>> \glspl{vulnerability} per host.  For \glspl{vulnerable host}, \gls{AGENCY} averaged <<&calc.average_vulnerabilities_per_vulnerable_host.total>> total vulnerabilities per host.  By \gls{severity}, vulnerable hosts averaged <<&calc.average_vulnerabilities_per_vulnerable_host.critical>> critical, <<&calc.average_vulnerabilities_per_vulnerable_host.high>> high, <<&calc.average_vulnerabilities_per_vulnerable_host.medium>> medium, and <<&calc.average_vulnerabilities_per_vulnerable_host.low>> low vulnerabilities per host.
-
-
-% \clearpage
-% \section{DNSSEC Scan Results}
-% \label{sec:dnssec}
-% Implementing \gls{DNSSEC} helps secure government network infrastructures against serious threats such as domain name hijacking and spoofing.  This assessment reviews all second level .GOV domains associated with \gls{AGENCY}.  \gls{DNSSEC} scanning checks to ensure all important \gls{DNS} elements are up to date and reports any deficiencies.  The scan operates by mimicking the same process employed by Internet browsers to verify that a domain uses \gls{DNSSEC}.  \gls{DNSSEC} Scans are conducted weekly and incorporated into the Cyber Hygiene report.  \gls{AGENCY} had 0 of 1 (0\%) domains fully compliant with \gls{DNSSEC}.  \autoref{tab:dnssec-report} illustrates the current and quarterly \gls{DNSSEC} score for all \gls{AGENCY} domains.  Over the past thirteen months, \gls{AGENCY} compliance has stayed constant and, is generally below the CH average.  For full \gls{DNSSEC} results, please refer to \autoref{app:dnssec-results}.
-% \begin{figure}[H]
-% 	\centering
-% 	\scalegraphics{dnssec-domain-compliance}{Compliant vs. Not Compliant Domains}
-% \end{figure}
-% \begin{figure}[H]
-% 	\centering
-% 	\scalegraphics{dnssec-percent-compliant}{Percent of Compliant Domains}
-% \end{figure}
-%
-% \begin{table}[h!]
-%   \centering
-%   \rowcolors{2}{white}{row-gray}
-%   \begin{tabular}{lrr}
-% 	  \toprule
-% 	  Domain & Status & SOA Expiration Date \\
-% 	  \midrule
-% 	  \bottomrule
-%   \end{tabular}
-%   \caption{\gls{DNSSEC} Results by Domain}
-%   \label{tab:dnssec-report}
-% \end{table}
 
 \clearpage
 \section{Conclusion}
@@ -1650,14 +1621,6 @@ If your PDF viewer supports embedded attachments you will see paperclip icons be
 <<#display_owner>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=sub-org-summary.csv]{sub-org-summary.csv} sub-org-summary.csv : Data from the \nameref{sec:sub-org-summary}.<</display_owner>>
 \end{itemize}
 
-% Figures:
-% \begin{itemize}
-% 	\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=top-five-vulnerabilities-count.pdf]{top-five-vulnerabilities-count.pdf} top-five-vulnerabilities-count.pdf : The vulnerabilities detected most frequently on \gls{AGENCY} hosts  (\autoref{fig:top-five-vulnerabilities-count})
-% \end{itemize}
-
-% \section{\gls{DNSSEC} Scan Results}
-% \label{app:dnssec-results}
-% This section displays \gls{AGENCY} non-compliant \gls{DNS} domains.  In order to be considered compliant all the fields in the table below must be scored as true except for Domain Uses NSEC and NEC3, only one of which must be true.
 \newpage
 \section{Glossary and Acronyms}
 \printglossaries %TODO stop from printing subtitle Acronyms
