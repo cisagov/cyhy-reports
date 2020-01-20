@@ -1996,6 +1996,10 @@ class ReportGenerator(object):
         result['draft'] = self.__draft
         calc = dict() # calculated vaules for report
 
+        calc['vuln_host_count_pct_increase_flag'] = False
+        calc['vuln_host_count_pct_decrease_flag'] = False
+        calc['vuln_host_count_pct_flat_flag'] = False
+
         calc['no_history'] = self.__no_history
         if self.__no_history:
             ss1 = ss0
@@ -2004,16 +2008,12 @@ class ReportGenerator(object):
                 calc['unique_operating_systems_percent'] =\
                 calc['unique_services_percent'] =\
                 calc['unique_vulnerabilities_percent'] = '-'
-            calc['vuln_host_count_pct_no_change'] = True
-            calc['vuln_host_count_pct_increase'] = False
+            calc['vuln_host_count_pct_flat_flag'] = True
+            calc['vuln_host_count_pct_change_int'] = 0
         else:
             ss1 = self.__snapshots[1]
             calc['host_count_percent'] = self.__percent_change(ss1['host_count'], ss0['host_count'])
             calc['vulnerable_host_count_percent'] = self.__percent_change(ss1['vulnerable_host_count'], ss0['vulnerable_host_count'])
-
-            calc['vuln_host_count_pct_increase_flag'] = False
-            calc['vuln_host_count_pct_decrease_flag'] = False
-            calc['vuln_host_count_pct_flat_flag'] = False
 
             if calc['vulnerable_host_count_percent'] == '-':
                 # See __percent_change() for how/why this can happen
