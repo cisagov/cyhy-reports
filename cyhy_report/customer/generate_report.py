@@ -972,8 +972,8 @@ class ReportGenerator(object):
             vuln_data.append(
                 (
                     self.__snapshots[0]['vulnerabilities'][severity],
-                    self.__results['new_vulnerability_counts'][severity],
                     self.__results['resolved_vulnerability_counts'][severity],
+                    self.__results['new_vulnerability_counts'][severity],
                 )
             )
             active_vulns[severity] = self.__snapshots[0]['vulnerabilities'][severity]
