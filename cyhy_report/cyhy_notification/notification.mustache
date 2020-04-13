@@ -157,8 +157,8 @@ Cyber Hygiene scans of your host(s) conducted in the past day have detected new 
 	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection \\
 	<<#display_owner>> &  <</display_owner>>                  &          &      &      &             (UTC) &            (UTC) \\
 	\midrule \endhead
-	<<#tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
-	<</tickets>>
+	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
 
