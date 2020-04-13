@@ -168,6 +168,27 @@ Vulnerability details are attached; if your viewer supports embedded attachments
 \vspace*{1.0mm}
 <</detected_critical_high_vulns>>
 
+<<#detected_risky_services>>
+\CISAHeadingThree{New Potentially Risky Services Detected}
+
+Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.  CISA recommends reviewing hosts with potentially risky open services (e.g. RDP, telnet, etc.) to ensure that the service is purposefully available to the public.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrr}
+	\toprule
+	<<#display_owner>>Owner & <</display_owner>>Host & Port & Initial Detection & Latest Detection \\
+	<<#display_owner>> &  <</display_owner>>&      &             (UTC) &            (UTC) \\
+	\midrule \endhead
+	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<</based_on_portscan>><</tickets>>
+	\bottomrule
+\end{longtable}
+
+Potentially risky service details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
+
+\attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day, in CSV (comma-separated values) format.
+<</detected_risky_services>>
+
 If you have any questions, please contact our office: \href{mailto:ncats@hq.dhs.gov}{\underline{ncats@hq.dhs.gov}}
 
 \includegraphics[height=1.0in]{assets/cisa-logo}  % CISA logo
