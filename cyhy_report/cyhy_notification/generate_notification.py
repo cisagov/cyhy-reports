@@ -215,9 +215,9 @@ class NotificationGenerator(object):
     def __load_tickets(self, ticket_ids):
         """Load tickets into memory.
 
-        Also, merge some of their latest vulnerability fields.  These tickets
-        should not be saved back to the database because they receive extra
-        fields from their latest vulnerabilty scan.
+        Also, merge some of their latest vulnerability/portscan fields.  These
+        tickets should not be saved back to the database because they receive
+        extra fields from their latest vulnerabilty/port scan.
         """
         tickets = list(
             self.__cyhy_db.TicketDoc.find({"_id": {"$in": ticket_ids}}).sort(
@@ -233,34 +233,55 @@ class NotificationGenerator(object):
             # Neuter this monstrosity so it can't be saved (easily)
             ticket.connection = None
 
-            try:
-                latest_vuln = ticket.latest_vuln()
-            except database.VulnScanNotFoundException as e:
-                print("\n  Warning (non-fatal): {}".format(e.message))
-                # The vuln_scan has likely been archived; get the vuln_scan
-                #  _id and time from the VulnScanNotFoundException and set
-                # description and solution to 'Not available'
-                latest_vuln = {
-                    "_id": e.vuln_scan_id,
-                    "time": e.vuln_scan_time,
-                    "description": "Not available",
-                    "solution": "Not available",
-                }
+            # Process tickets that are based on vuln_scans
+            if ticket["source"] in ["nessus"]:
+                ticket["based_on_vulnscan"] = True
+                ticket["based_on_portscan"] = False
+                try:
+                    latest_vuln = ticket.latest_vuln()
+                except database.VulnScanNotFoundException as e:
+                    print("\n  Warning (non-fatal): {}".format(e.message))
+                    # The vuln_scan has likely been archived; get the vuln_scan
+                    #  _id and time from the VulnScanNotFoundException and set
+                    # description and solution to 'Not available'
+                    latest_vuln = {
+                        "_id": e.vuln_scan_id,
+                        "time": e.vuln_scan_time,
+                        "description": "Not available",
+                        "solution": "Not available",
+                    }
+                # Copy latest detection time to ticket and rename 'last_detected'
+                ticket["last_detected"] = latest_vuln["time"]
+            # Process tickets that are based on port_scans
+            elif ticket["source"] in ["nmap"]:
+                ticket["based_on_portscan"] = True
+                ticket["based_on_vulnscan"] = False
+                try:
+                    latest_port = ticket.latest_port()
+                except database.PortScanNotFoundException as e:
+                    print("\n  Warning (non-fatal): {}".format(e.message))
+                    # The port_scan has likely been archived; get the port_scan
+                    #  _id and time from the PortScanNotFoundException
+                    latest_port = {
+                        "_id": e.port_scan_id,
+                        "time": e.port_scan_time,
+                    }
+                # Copy latest detection time to ticket and rename 'last_detected'
+                ticket["last_detected"] = latest_port["time"]
 
             # Flatten structure by copying details to ticket root
             ticket.update(ticket["details"])
 
-            # Copy useful parts of latest vuln into ticket
-            ticket.update(
-                {
-                    k: latest_vuln.get(k)
-                    for k in ["description", "solution", "plugin_output"]
-                }
-            )
+            if ticket["based_on_vulnscan"]:
+                # Copy useful parts of latest vuln into ticket
+                ticket.update(
+                    {
+                        k: latest_vuln.get(k)
+                        for k in ["description", "solution", "plugin_output"]
+                    }
+                )
 
-            # Rename latest vuln's 'time' to more
-            # useful 'last_detected' in ticket
-            ticket["last_detected"] = latest_vuln["time"]
+            # Calculate ticket age and store in the ticket
             ticket["age"] = (ticket["last_detected"] - ticket["time_opened"]).days
 
         # Convert severity integer to text (e.g. 4 -> Critical)
