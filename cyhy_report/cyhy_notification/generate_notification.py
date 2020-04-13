@@ -377,7 +377,7 @@ class NotificationGenerator(object):
         self.__generate_findings_attachment()
 
     def __generate_findings_attachment(self):
-        """Create a CSV with info about the tickets in the notification."""
+        """Create CSV based on vulnerability tickets in the notification."""
         header_fields = [
             "owner",
             "ip_int",
@@ -427,7 +427,8 @@ class NotificationGenerator(object):
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for ticket in self.__results["tickets"]:
-                data_writer.writerow(ticket)
+                if ticket["based_on_vulnscan"]:
+                    data_writer.writerow(ticket)
 
     ##########################################################################
     # Final Document Generation and Assembly
