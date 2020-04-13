@@ -45,6 +45,7 @@ from cyhy_report.cyhy_notification._version import __version__
 # constants
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 VULNERABILITY_FINDINGS_CSV_FILE = "findings.csv"
+RISKY_SERVICES_CSV_FILE = "potentially-risky-services.csv"
 MUSTACHE_FILE = "notification.mustache"
 NOTIFICATION_JSON = "notification.json"
 NOTIFICATION_PDF = "notification.pdf"
@@ -375,6 +376,7 @@ class NotificationGenerator(object):
     def __generate_attachments(self):
         """Generate attachments to the notification PDF."""
         self.__generate_findings_attachment()
+        self.__generate_risky_services_attachment()
 
     def __generate_findings_attachment(self):
         """Create CSV based on vulnerability tickets in the notification."""
@@ -428,6 +430,44 @@ class NotificationGenerator(object):
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for ticket in self.__results["tickets"]:
                 if ticket["based_on_vulnscan"]:
+                    data_writer.writerow(ticket)
+
+    def __generate_risky_services_attachment(self):
+        """Create CSV based on portscan tickets in the notification."""
+        header_fields = [
+            "owner",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+        ]
+        data_fields = [
+            "owner",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "time_opened",
+            "last_detected",
+            "age",
+        ]
+
+        if self.__anonymize:
+            # Remove ip_int column if we are trying to be anonymous
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+
+        with open(RISKY_SERVICES_CSV_FILE, "wb") as out_file:
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
+            header_writer.writeheader()
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
+            for ticket in self.__results["tickets"]:
+                if ticket["based_on_portscan"]:
                     data_writer.writerow(ticket)
 
     ##########################################################################
