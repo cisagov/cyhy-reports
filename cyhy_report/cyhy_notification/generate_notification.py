@@ -445,15 +445,27 @@ class NotificationGenerator(object):
         result["days_until_criticals_overdue"] = DAYS_UNTIL_OVERDUE_CRITICAL
         result["days_until_highs_overdue"] = DAYS_UNTIL_OVERDUE_HIGH
 
+        # Initialize flags for ticket types in this notification
+        result["detected_critical_high_vulns"] = False
+        result["detected_risky_services"] = False
+
         result["tickets"] = self.__results["tickets"]
-        # Make port 0 into "NA" and make LaTeX-friendly dates and times
         for t in result["tickets"]:
+            # Make port 0 into "NA"
             if t["port"] == 0:
                 t["port"] = "NA"
+
+            # Make LaTeX-friendly dates and times
             t["time_opened_date_tex"] = t["time_opened"].strftime("{%d}{%m}{%Y}")
             t["time_opened_time_tex"] = t["time_opened"].strftime("{%H}{%M}{%S}")
             t["last_detected_date_tex"] = t["last_detected"].strftime("{%d}{%m}{%Y}")
             t["last_detected_time_tex"] = t["last_detected"].strftime("{%H}{%M}{%S}")
+
+            # Set flags for ticket types in this notification
+            if t["source"] in ["nessus"]:
+                result["detected_critical_high_vulns"] = True
+            if t["source"] in ["nmap"]:
+                result["detected_risky_services"] = True
 
         # Only need to display the owner if there are descendants involved
         if self.__results["owner_and_all_descendants"] != [self.__owner]:
