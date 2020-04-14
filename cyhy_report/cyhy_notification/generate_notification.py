@@ -80,6 +80,48 @@ LATEX_ESCAPE_MAP = {
 DAYS_UNTIL_OVERDUE_CRITICAL = 15
 DAYS_UNTIL_OVERDUE_HIGH = 30
 
+# The list of services below determined to be (potentially) risky was created
+# by the Cyber Hygiene team and it may change in the future.
+# The service names (keys in the dict below) come from the nmap services list:
+#  https://svn.nmap.org/nmap/nmap-services
+RISKY_SERVICES_MAP = {
+    "ms-wbt-server": "RDP",
+    "telnet": "Telnet",
+    "rtelnet": "Telnet",
+    "microsoft-ds": "SMB",
+    "smbdirect": "SMB",
+    "ldap": "LDAP",
+    "netbios-ns": "NetBIOS",
+    "netbios-dgm": "NetBIOS",
+    "netbios-ssn": "NetBIOS",
+    "ftp": "FTP",
+    "rsftp": "FTP",
+    "ni-ftp": "FTP",
+    "tftp": "FTP",
+    "bftp": "FTP",
+    "msrpc": "RPC",
+    "sqlnet": "SQL",
+    "sqlserv": "SQL",
+    "sql-net": "SQL",
+    "sqlsrv": "SQL",
+    "msql": "SQL",
+    "mini-sql": "SQL",
+    "mysql-cluster": "SQL",
+    "ms-sql-s": "SQL",
+    "ms-sql-m": "SQL",
+    "irc": "IRC",
+    "kerberos-sec": "Kerberos",
+    "kpasswd5": "Kerberos",
+    "klogin": "Kerberos",
+    "kshell": "Kerberos",
+    "kerberos-adm": "Kerberos",
+    "kerberos": "Kerberos",
+    "kerberos_master": "Kerberos",
+    "krb_prop": "Kerberos",
+    "krbupdate": "Kerberos",
+    "kpasswd": "Kerberos",
+}
+
 
 class NotificationGenerator(object):
     """The class for generating notification documents."""
@@ -234,6 +276,9 @@ class NotificationGenerator(object):
             # Neuter this monstrosity so it can't be saved (easily)
             ticket.connection = None
 
+            # Flatten structure by copying details to ticket root
+            ticket.update(ticket["details"])
+
             # Process tickets that are based on vuln_scans
             if ticket["source"] in ["nessus"]:
                 ticket["based_on_vulnscan"] = True
@@ -269,9 +314,8 @@ class NotificationGenerator(object):
                     }
                 # Copy latest detection time to ticket and rename 'last_detected'
                 ticket["last_detected"] = latest_port["time"]
-
-            # Flatten structure by copying details to ticket root
-            ticket.update(ticket["details"])
+                # Assign the category for this service
+                ticket["category"] = RISKY_SERVICES_MAP.get(ticket["service"])
 
             if ticket["based_on_vulnscan"]:
                 # Copy useful parts of latest vuln into ticket
@@ -440,6 +484,7 @@ class NotificationGenerator(object):
             "ip",
             "port",
             "service",
+            "category",
             "initial_detection",
             "latest_detection",
             "age_days",
@@ -450,6 +495,7 @@ class NotificationGenerator(object):
             "ip",
             "port",
             "service",
+            "category",
             "time_opened",
             "last_detected",
             "age",
