@@ -160,17 +160,14 @@ Cyber Hygiene scans of your host(s) conducted in the past day have detected new 
 	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
-
-Vulnerability details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
-
-\attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new critical and high vulnerability findings from the past day, in CSV (comma-separated values) format.
-\vspace*{1.0mm}
 <</detected_critical_high_vulns>>
 
 <<#detected_risky_services>>
 {\CISAHeadingThree{New Potentially Risky Services Detected}}
 
-Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.  CISA recommends reviewing hosts with potentially risky open services (e.g. RDP, telnet, etc.) to ensure that the service is purposefully available to the public.
+Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.
+
+These services warrant your attention.  All services are potentially at risk of attack, but some can be more risky when open to the public (e.g. RDP, Telnet, etc.)  CISA recommends validating that the services below are intentionally available to the public and, where applicable, the service is up-to-date on the latest version, correctly configured, and uses strong authentication.
 
 \rowcolors{3}{white}{row-gray}
 \begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrrrr}
@@ -182,11 +179,21 @@ Cyber Hygiene scans of your host(s) conducted in the past day have detected new 
 	<</based_on_portscan>><</tickets>>
 	\bottomrule
 \end{longtable}
-
-Potentially risky service details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
-
-\attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day, in CSV (comma-separated values) format.
 <</detected_risky_services>>
+
+{\CISAHeadingThree{Attachments}}
+
+Findings details are attached in CSV (comma-separated values) format; if your viewer supports embedded attachments you will see a paperclip icon below.
+
+\begin{itemize}
+<<#detected_critical_high_vulns>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new critical and high vulnerability findings from the past day
+<</detected_critical_high_vulns>>
+
+<<#detected_risky_services>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day
+<</detected_risky_services>>
+\end{itemize}
 
 If you have any questions, please contact our office: \href{mailto:ncats@hq.dhs.gov}{\underline{ncats@hq.dhs.gov}}
 
