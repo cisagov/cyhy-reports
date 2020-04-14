@@ -174,12 +174,12 @@ Vulnerability details are attached; if your viewer supports embedded attachments
 Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.  CISA recommends reviewing hosts with potentially risky open services (e.g. RDP, telnet, etc.) to ensure that the service is purposefully available to the public.
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrrrr}
 	\toprule
-	<<#display_owner>>Owner & <</display_owner>>Host & Port & Initial Detection & Latest Detection \\
-	<<#display_owner>> &  <</display_owner>>&      &             (UTC) &            (UTC) \\
+	<<#display_owner>>Owner & <</display_owner>>Host & Port & Service & Category & Initial Detection & Latest Detection \\
+	<<#display_owner>> &  <</display_owner>>& & & & (UTC) & (UTC) \\
 	\midrule \endhead
-	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & <<&service>> & <<&category>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
 	<</based_on_portscan>><</tickets>>
 	\bottomrule
 \end{longtable}
