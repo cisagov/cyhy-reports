@@ -141,27 +141,61 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 
-\vspace*{1.0mm}
-{\textcolor{cisa-blue}{\CISAHeadingTwo{<<&owner_acronym>> - Cyber Hygiene Alert - New Critical/High Vulnerabilities Detected - \usvardate\formatdate<<&notification_date_tex>>}}}
+{\textcolor{cisa-blue}{\CISAHeadingTwo{<<&owner_acronym>> - Cyber Hygiene Alert - \usvardate\formatdate<<&notification_date_tex>>}}}
 
-Cyber Hygiene scans conducted in the past day have detected potential new critical and/or high vulnerabilities on one or more of your hosts.
+<<#detected_critical_high_vulns>>
+{\CISAHeadingThree{New Critical/High Vulnerabilities Detected}}
+\vspace*{-0.35cm}  % Next line must be blank for proper vertical spacing
+
+Cyber Hygiene scans of your host(s) conducted in the past day have detected new critical and/or high vulnerabilities.
 
 <<#is_federal>>As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrr}
 	\toprule
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection \\
-	<<#display_owner>> &  <</display_owner>>                  &          &      &      &             (UTC) &            (UTC) \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection (UTC)\\
 	\midrule \endhead
-	<<#tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
-	<</tickets>>
+	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
+	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
+<</detected_critical_high_vulns>>
 
-Vulnerability details are attached; if your viewer supports embedded attachments you will see a paperclip icon below.
+<<#detected_risky_services>>
+{\CISAHeadingThree{New Potentially Risky Services Detected}}
+\vspace*{-0.35cm}  % Next line must be blank for proper vertical spacing
 
-\attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new critical and high vulnerability findings from the past day, in CSV (comma-separated values) format.
+Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.
+
+These services warrant your attention.  All services are potentially at risk of attack, but some can be more risky when open to the public (e.g. RDP, Telnet, etc.)  CISA recommends validating that each service below is intended to be available to the public and, where applicable, the service is up-to-date on the latest version, correctly configured, and uses strong authentication.
+
+\rowcolors{3}{white}{row-gray}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrrrr}
+	\toprule
+	<<#display_owner>>Owner & <</display_owner>>Host & Port & Service & Category & Initial Detection (UTC) \\
+	\midrule \endhead
+	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & <<&service>> & <<&category>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
+	<</based_on_portscan>><</tickets>>
+	\bottomrule
+\end{longtable}
+<</detected_risky_services>>
+
+{\CISAHeadingThree{Attachments}}
+\vspace*{-0.35cm}  % Next line must be blank for proper vertical spacing
+
+Findings details are attached in CSV (comma-separated values) format; if your viewer supports embedded attachments you will see a paperclip icon below.
+
+\vspace*{-0.6cm}
+\begin{itemize}
+<<#detected_critical_high_vulns>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new critical and high vulnerability findings from the past day
+<</detected_critical_high_vulns>>
+
+<<#detected_risky_services>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day
+<</detected_risky_services>>
+\end{itemize}
 
 If you have any questions, please contact our office: \href{mailto:ncats@hq.dhs.gov}{\underline{ncats@hq.dhs.gov}}
 

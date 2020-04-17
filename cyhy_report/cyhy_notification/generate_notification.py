@@ -45,6 +45,7 @@ from cyhy_report.cyhy_notification._version import __version__
 # constants
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 VULNERABILITY_FINDINGS_CSV_FILE = "findings.csv"
+RISKY_SERVICES_CSV_FILE = "potentially-risky-services.csv"
 MUSTACHE_FILE = "notification.mustache"
 NOTIFICATION_JSON = "notification.json"
 NOTIFICATION_PDF = "notification.pdf"
@@ -78,6 +79,48 @@ LATEX_ESCAPE_MAP = {
 # "overdue" to be mitigated
 DAYS_UNTIL_OVERDUE_CRITICAL = 15
 DAYS_UNTIL_OVERDUE_HIGH = 30
+
+# The list of services below determined to be (potentially) risky was created
+# by the Cyber Hygiene team and it may change in the future.
+# The service names (keys in the dict below) come from the nmap services list:
+#  https://svn.nmap.org/nmap/nmap-services
+RISKY_SERVICES_MAP = {
+    "ms-wbt-server": "RDP",
+    "telnet": "Telnet",
+    "rtelnet": "Telnet",
+    "microsoft-ds": "SMB",
+    "smbdirect": "SMB",
+    "ldap": "LDAP",
+    "netbios-ns": "NetBIOS",
+    "netbios-dgm": "NetBIOS",
+    "netbios-ssn": "NetBIOS",
+    "ftp": "FTP",
+    "rsftp": "FTP",
+    "ni-ftp": "FTP",
+    "tftp": "FTP",
+    "bftp": "FTP",
+    "msrpc": "RPC",
+    "sqlnet": "SQL",
+    "sqlserv": "SQL",
+    "sql-net": "SQL",
+    "sqlsrv": "SQL",
+    "msql": "SQL",
+    "mini-sql": "SQL",
+    "mysql-cluster": "SQL",
+    "ms-sql-s": "SQL",
+    "ms-sql-m": "SQL",
+    "irc": "IRC",
+    "kerberos-sec": "Kerberos",
+    "kpasswd5": "Kerberos",
+    "klogin": "Kerberos",
+    "kshell": "Kerberos",
+    "kerberos-adm": "Kerberos",
+    "kerberos": "Kerberos",
+    "kerberos_master": "Kerberos",
+    "krb_prop": "Kerberos",
+    "krbupdate": "Kerberos",
+    "kpasswd": "Kerberos",
+}
 
 
 class NotificationGenerator(object):
@@ -215,9 +258,9 @@ class NotificationGenerator(object):
     def __load_tickets(self, ticket_ids):
         """Load tickets into memory.
 
-        Also, merge some of their latest vulnerability fields.  These tickets
-        should not be saved back to the database because they receive extra
-        fields from their latest vulnerabilty scan.
+        Also, merge some of their latest vulnerability/portscan fields.  These
+        tickets should not be saved back to the database because they receive
+        extra fields from their latest vulnerabilty/port scan.
         """
         tickets = list(
             self.__cyhy_db.TicketDoc.find({"_id": {"$in": ticket_ids}}).sort(
@@ -233,34 +276,57 @@ class NotificationGenerator(object):
             # Neuter this monstrosity so it can't be saved (easily)
             ticket.connection = None
 
-            try:
-                latest_vuln = ticket.latest_vuln()
-            except database.VulnScanNotFoundException as e:
-                print("\n  Warning (non-fatal): {}".format(e.message))
-                # The vuln_scan has likely been archived; get the vuln_scan
-                #  _id and time from the VulnScanNotFoundException and set
-                # description and solution to 'Not available'
-                latest_vuln = {
-                    "_id": e.vuln_scan_id,
-                    "time": e.vuln_scan_time,
-                    "description": "Not available",
-                    "solution": "Not available",
-                }
-
             # Flatten structure by copying details to ticket root
             ticket.update(ticket["details"])
 
-            # Copy useful parts of latest vuln into ticket
-            ticket.update(
-                {
-                    k: latest_vuln.get(k)
-                    for k in ["description", "solution", "plugin_output"]
-                }
-            )
+            # Process tickets that are based on vuln_scans
+            if ticket["source"] in ["nessus"]:
+                ticket["based_on_vulnscan"] = True
+                ticket["based_on_portscan"] = False
+                try:
+                    latest_vuln = ticket.latest_vuln()
+                except database.VulnScanNotFoundException as e:
+                    print("\n  Warning (non-fatal): {}".format(e.message))
+                    # The vuln_scan has likely been archived; get the vuln_scan
+                    #  _id and time from the VulnScanNotFoundException and set
+                    # description and solution to 'Not available'
+                    latest_vuln = {
+                        "_id": e.vuln_scan_id,
+                        "time": e.vuln_scan_time,
+                        "description": "Not available",
+                        "solution": "Not available",
+                    }
+                # Copy latest detection time to ticket and rename 'last_detected'
+                ticket["last_detected"] = latest_vuln["time"]
+            # Process tickets that are based on port_scans
+            elif ticket["source"] in ["nmap"]:
+                ticket["based_on_portscan"] = True
+                ticket["based_on_vulnscan"] = False
+                try:
+                    latest_port = ticket.latest_port()
+                except database.PortScanNotFoundException as e:
+                    print("\n  Warning (non-fatal): {}".format(e.message))
+                    # The port_scan has likely been archived; get the port_scan
+                    #  _id and time from the PortScanNotFoundException
+                    latest_port = {
+                        "_id": e.port_scan_id,
+                        "time": e.port_scan_time,
+                    }
+                # Copy latest detection time to ticket and rename 'last_detected'
+                ticket["last_detected"] = latest_port["time"]
+                # Assign the category for this service
+                ticket["category"] = RISKY_SERVICES_MAP.get(ticket["service"])
 
-            # Rename latest vuln's 'time' to more
-            # useful 'last_detected' in ticket
-            ticket["last_detected"] = latest_vuln["time"]
+            if ticket["based_on_vulnscan"]:
+                # Copy useful parts of latest vuln into ticket
+                ticket.update(
+                    {
+                        k: latest_vuln.get(k)
+                        for k in ["description", "solution", "plugin_output"]
+                    }
+                )
+
+            # Calculate ticket age and store in the ticket
             ticket["age"] = (ticket["last_detected"] - ticket["time_opened"]).days
 
         # Convert severity integer to text (e.g. 4 -> Critical)
@@ -354,9 +420,10 @@ class NotificationGenerator(object):
     def __generate_attachments(self):
         """Generate attachments to the notification PDF."""
         self.__generate_findings_attachment()
+        self.__generate_risky_services_attachment()
 
     def __generate_findings_attachment(self):
-        """Create a CSV with info about the tickets in the notification."""
+        """Create CSV based on vulnerability tickets in the notification."""
         header_fields = [
             "owner",
             "ip_int",
@@ -406,7 +473,48 @@ class NotificationGenerator(object):
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for ticket in self.__results["tickets"]:
-                data_writer.writerow(ticket)
+                if ticket["based_on_vulnscan"]:
+                    data_writer.writerow(ticket)
+
+    def __generate_risky_services_attachment(self):
+        """Create CSV based on portscan tickets in the notification."""
+        header_fields = [
+            "owner",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "category",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+        ]
+        data_fields = [
+            "owner",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "category",
+            "time_opened",
+            "last_detected",
+            "age",
+        ]
+
+        if self.__anonymize:
+            # Remove ip_int column if we are trying to be anonymous
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+
+        with open(RISKY_SERVICES_CSV_FILE, "wb") as out_file:
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
+            header_writer.writeheader()
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
+            for ticket in self.__results["tickets"]:
+                if ticket["based_on_portscan"]:
+                    data_writer.writerow(ticket)
 
     ##########################################################################
     # Final Document Generation and Assembly
@@ -424,15 +532,27 @@ class NotificationGenerator(object):
         result["days_until_criticals_overdue"] = DAYS_UNTIL_OVERDUE_CRITICAL
         result["days_until_highs_overdue"] = DAYS_UNTIL_OVERDUE_HIGH
 
+        # Initialize flags for ticket types in this notification
+        result["detected_critical_high_vulns"] = False
+        result["detected_risky_services"] = False
+
         result["tickets"] = self.__results["tickets"]
-        # Make port 0 into "NA" and make LaTeX-friendly dates and times
         for t in result["tickets"]:
+            # Make port 0 into "NA"
             if t["port"] == 0:
                 t["port"] = "NA"
+
+            # Make LaTeX-friendly dates and times
             t["time_opened_date_tex"] = t["time_opened"].strftime("{%d}{%m}{%Y}")
             t["time_opened_time_tex"] = t["time_opened"].strftime("{%H}{%M}{%S}")
             t["last_detected_date_tex"] = t["last_detected"].strftime("{%d}{%m}{%Y}")
             t["last_detected_time_tex"] = t["last_detected"].strftime("{%H}{%M}{%S}")
+
+            # Set flags for ticket types in this notification
+            if t["source"] in ["nessus"]:
+                result["detected_critical_high_vulns"] = True
+            if t["source"] in ["nmap"]:
+                result["detected_risky_services"] = True
 
         # Only need to display the owner if there are descendants involved
         if self.__results["owner_and_all_descendants"] != [self.__owner]:
