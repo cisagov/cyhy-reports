@@ -467,7 +467,7 @@ You may wonder what you're supposed to do with all this information. While it's 
 
 You should be aware that Cyber Hygiene does not scan your entire scope (all of the addresses your organization has sent us) every week, but does attempt to scan every \gls{host} each week. For an explanation of how \gls{CyHy} works, see the \nameref{sec:methodology} section.
 
-As you review the report, you may have additional questions. Check out the answers we provide in the \nameref{app:FAQ} section. If you have any additional questions, email us at  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+As you review the report, you may have additional questions. Check out the answers we provide in the \nameref{app:FAQ} section. If you have any additional questions, email us at  \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
 
 \subsection{<<&owner.agency.acronym>> Points of Contact}
 \label{subsec:points-of-contact}
@@ -1308,7 +1308,7 @@ Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_
 \clearpage
 \section{Conclusion}
 \label{sec:conclusion}
-\gls{AGENCY} should use the data provided in this report to correct any identified \glspl{vulnerability}, configuration errors, and security concerns in your external network perimeter. If \gls{AGENCY} has questions, comments, or concerns about the findings or data contained in this report, please work with your designated technical point of contact when requesting assistance from \gls{CISA} at \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+\gls{AGENCY} should use the data provided in this report to correct any identified \glspl{vulnerability}, configuration errors, and security concerns in your external network perimeter. If \gls{AGENCY} has questions, comments, or concerns about the findings or data contained in this report, please work with your designated technical point of contact when requesting assistance from \gls{CISA} at \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
 
 \onecolumn
 \appendices
@@ -1533,7 +1533,7 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 
 	\item \textbf{I've added a new host and your scans are not picking it up.}
 	\begin{itemize}
-		\item \gls{CyHy} is not scanning your entire \gls{IP} scope every week. If you've stood up a new server in a range that we only recently scanned and found nothing in, it's possible that the new server would not appear for nearly 90 days. If you want the new host to be scanned immediately, you can email \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov} and we'll manually scan it, which will add it to your weekly report.
+		\item \gls{CyHy} is not scanning your entire \gls{IP} scope every week. If you've stood up a new server in a range that we only recently scanned and found nothing in, it's possible that the new server would not appear for nearly 90 days. If you want the new host to be scanned immediately, you can email \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov} and we'll manually scan it, which will add it to your weekly report.
 	\end{itemize}
 
 	\item \textbf{I'm getting SSL/TLS certificate vulnerabilities that I think are incorrect.}
@@ -1574,12 +1574,12 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 
 	\item \textbf{How can I change who receives my Cyber Hygiene report?}
 	\begin{itemize}
-		\item The \gls{CyHy} report will be delivered to a single address. Most organizations set up a distribution address which takes incoming mail and delivers it to individual mailboxes. \gls{CISA} strongly recommends this approach because it allows your organization to grant access to the report to whomever you'd like, as well as manage the change control of employees onboarding or leaving. If you need to change the distro we mail to, email us at \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+		\item The \gls{CyHy} report will be delivered to a single address. Most organizations set up a distribution address which takes incoming mail and delivers it to individual mailboxes. \gls{CISA} strongly recommends this approach because it allows your organization to grant access to the report to whomever you'd like, as well as manage the change control of employees onboarding or leaving. If you need to change the distro we mail to, email us at \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
 	\end{itemize}
 
 	\item \textbf{Can I change the password for my report?}
 	\begin{itemize}
-		\item If you need to request a new password for your report, email us at  \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}. Please let us know if you'd like the password texted, delivered over the phone (note if voicemail is ok), or just emailed back.
+		\item If you need to request a new password for your report, email us at  \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}. Please let us know if you'd like the password texted, delivered over the phone (note if voicemail is ok), or just emailed back.
 	\end{itemize}
 
 	\item \textbf{How is the age of each vulnerability calculated?}
@@ -1592,7 +1592,7 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
     certificate data.}
     \begin{itemize}
     \item If you believe we are missing 2nd-level domains, you can
-      reach out to \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}
+      reach out to \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}
       and request that we add them to our
       \href{https://github.com/cisagov/gatherer}{domain gatherer}.
     \end{itemize}
@@ -1605,8 +1605,8 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 If your PDF viewer supports embedded attachments you will see paperclip icons below for each attached file.
 \begin{itemize}
 <<#owner_is_federal_executive>><<^is_suborg>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=certificates.csv]{certificates.csv} certificates.csv : Data collected about each certificate found that was issued for a domain known to belong to you.<</is_suborg>><</owner_is_federal_executive>>
-\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-data-sharing-form.pdf]{assets/cyber-hygiene-data-sharing-form.pdf} cyber-hygiene-data-sharing-form.pdf: Form to request your weekly findings be shared with a trusted third party (e.g. MSP, ISAC, Consultant, etc.); send the completed form to \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
-\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-false-positive-assertion-form.pdf]{assets/cyber-hygiene-false-positive-assertion-form.pdf} cyber-hygiene-false-positive-assertion-form.pdf: Form to request that one or more vulnerabilities be marked as \glspl{false positive}; send the completed form to \href{mailto:ncats@hq.dhs.gov}{ncats@hq.dhs.gov}.
+\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-data-sharing-form.pdf]{assets/cyber-hygiene-data-sharing-form.pdf} cyber-hygiene-data-sharing-form.pdf: Form to request your weekly findings be shared with a trusted third party (e.g. MSP, ISAC, Consultant, etc.); send the completed form to \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
+\item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-false-positive-assertion-form.pdf]{assets/cyber-hygiene-false-positive-assertion-form.pdf} cyber-hygiene-false-positive-assertion-form.pdf: Form to request that one or more vulnerabilities be marked as \glspl{false positive}; send the completed form to \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-currently-active.csv]{days-currently-active.csv} days-currently-active.csv: Metrics over time for median and maximum age of active vulnerabilities (active as of date listed in each row).
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-to-mitigate.csv]{days-to-mitigate.csv} days-to-mitigate.csv: Metrics over time for median and maximum days to mitigate findings (calculated with vulnerabilities mitigated since date listed in each row).
 <<#owner_is_federal_executive>><<^is_suborg>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=domains.csv]{domains.csv} domains.csv : A \gls{CSV} containing all the base domains we know belong to you.<</is_suborg>><</owner_is_federal_executive>>
