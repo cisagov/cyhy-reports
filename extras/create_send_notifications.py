@@ -49,16 +49,16 @@ def build_cyhy_org_list(db):
     This is the list of CyHy organization IDs (and their descendants) that
     receive CyHy reports.
     """
-    cyhy_org_ids = list()
+    cyhy_org_ids = set()  # Use a set here to avoid duplicates
     for cyhy_request in list(
         db.RequestDoc.collection.find(
             {"report_types": "CYHY"}, {"_id": 1, "children": 1}
         ).sort([("_id", 1)])
     ):
-        cyhy_org_ids.append(cyhy_request["_id"])
+        cyhy_org_ids.add(cyhy_request["_id"])
         if cyhy_request.get("children"):
-            cyhy_org_ids.extend(db.RequestDoc.get_all_descendants(cyhy_request["_id"]))
-    return cyhy_org_ids
+            cyhy_org_ids.update(db.RequestDoc.get_all_descendants(cyhy_request["_id"]))
+    return list(cyhy_org_ids)
 
 
 def generate_notification_pdfs(db, org_ids, master_report_key):
