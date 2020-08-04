@@ -526,35 +526,19 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     failed_tp_snaps = list()
 
     for third_party_id in third_party_report_ids:
-        snapshot_start_time = time.time()
-        snapshot_process = subprocess.Popen(
-            [
-                "cyhy-snapshot",
-                "--section",
-                cyhy_db_section,
-                "create",
-                "--use-only-existing-snapshots",
-                third_party_id,
-            ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
         )
-        # Confirm the snapshot
-        data, err = snapshot_process.communicate("yes")
 
-        snapshot_duration = time.time() - snapshot_start_time
 
-        if snapshot_process.returncode == 0:
+    logging.info("Creating third-party snapshots...")
+    for third_party_id in third_party_report_ids:
+        snapshot_rc = create_snapshot(
+            db, cyhy_db_section, third_party_id, use_only_existing_snapshots=True
+        )
+
+        if snapshot_rc == 0:
             successful_tp_snaps.append(third_party_id)
-            logging.info(
-                "Successfully created third-party snapshot:"
-                " {} ({:.2f} s)".format(third_party_id, round(snapshot_duration, 2))
-            )
         else:
             failed_tp_snaps.append(third_party_id)
-            logging.error("Third-party snapshot failed: {}".format(third_party_id))
-            logging.error("Stderr failure detail: {} {}".format(data, err))
 
     logging.info(
         "Time to create all third-party snapshots:"
