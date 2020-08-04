@@ -574,7 +574,8 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
                 # remove them from list of third_party_report_ids so that we
                 # don't attempt to create them below.
                 for org_id in tp_dependence_map[grouping_node_id]:
-                    failed_tp_snaps.append(org_id)
+                    if org_id not in failed_tp_snaps:
+                        failed_tp_snaps.append(org_id)
                     if org_id in third_party_report_ids:
                         third_party_report_ids.remove(org_id)
 
