@@ -487,6 +487,39 @@ def resume_commander(db, pause_doc_id):
     return True
 
 
+def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
+    snapshot_start_time = time.time()
+
+    snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
+
+    if use_only_existing_snapshots:
+        snapshot_command.extend(["--use-only-existing-snapshots", org_id])
+    else:
+        snapshot_command.append(org_id)
+
+    snapshot_process = subprocess.Popen(
+        snapshot_command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # Confirm the snapshot creation
+    data, err = snapshot_process.communicate("yes")
+
+    snapshot_duration = time.time() - snapshot_start_time
+
+    if snapshot_process.returncode == 0:
+        logging.info(
+            "Successfully created snapshot:"
+            " {} ({:.2f} s)".format(org_id, round(snapshot_duration, 2))
+        )
+    else:
+        logging.error("Snapshot creation failed: %s", org_id)
+        logging.error("Stderr failure detail: %s %s", data, err)
+    return snapshot_process.returncode
+
+
 def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     all_tps_start_time = time.time()
     successful_tp_snaps = list()
