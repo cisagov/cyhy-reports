@@ -25,6 +25,7 @@ import threading
 import time
 
 from bson import ObjectId
+from collections import defaultdict
 from docopt import docopt
 
 from cyhy.core import SCAN_TYPE
@@ -487,44 +488,110 @@ def resume_commander(db, pause_doc_id):
     return True
 
 
+def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
+    snapshot_start_time = time.time()
+
+    snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
+
+    if use_only_existing_snapshots:
+        snapshot_command.extend(["--use-only-existing-snapshots", org_id])
+    else:
+        snapshot_command.append(org_id)
+
+    snapshot_process = subprocess.Popen(
+        snapshot_command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # Confirm the snapshot creation
+    data, err = snapshot_process.communicate("yes")
+
+    snapshot_duration = time.time() - snapshot_start_time
+
+    if snapshot_process.returncode == 0:
+        logging.info(
+            "Successfully created snapshot:"
+            " {} ({:.2f} s)".format(org_id, round(snapshot_duration, 2))
+        )
+    else:
+        logging.error("Snapshot creation failed: %s", org_id)
+        logging.error("Stderr failure detail: %s %s", data, err)
+    return snapshot_process.returncode
+
+
 def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     all_tps_start_time = time.time()
     successful_tp_snaps = list()
     failed_tp_snaps = list()
 
+    all_tp_descendants = set()
+    tp_dependence_map = defaultdict(list)
+    # Build set of all third-party descendants and a
+    # map of each descendant to the third-parties that require them.
     for third_party_id in third_party_report_ids:
-        snapshot_start_time = time.time()
-        snapshot_process = subprocess.Popen(
-            [
-                "cyhy-snapshot",
-                "--section",
-                cyhy_db_section,
-                "create",
-                "--use-only-existing-snapshots",
-                third_party_id,
-            ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        descendants = db.RequestDoc.get_all_descendants(third_party_id)
+        all_tp_descendants.update(descendants)
+        for d in descendants:
+            tp_dependence_map[d].append(third_party_id)
+
+    # Check descendants of all third-party orgs for "grouping nodes",
+    # then create snapshots, since they otherwise wouldn't have them.
+    grouping_node_ids = [
+        org["_id"]
+        for org in db.RequestDoc.collection.find(
+            {
+                "_id": {"$in": list(all_tp_descendants)},
+                "stakeholder": False,
+                "report_types": [],
+                "scan_types": [],
+            },
+            {"_id": 1},
         )
-        # Confirm the snapshot
-        data, err = snapshot_process.communicate("yes")
+    ]
 
-        snapshot_duration = time.time() - snapshot_start_time
-
-        if snapshot_process.returncode == 0:
-            successful_tp_snaps.append(third_party_id)
-            logging.info(
-                "Successfully created third-party snapshot:"
-                " {} ({:.2f} s)".format(third_party_id, round(snapshot_duration, 2))
+    if grouping_node_ids:
+        # Create required grouping node snapshots
+        logging.info(
+            "Creating grouping node snapshots needed for third-party reports..."
+        )
+        for grouping_node_id in grouping_node_ids:
+            snapshot_rc = create_snapshot(
+                db, cyhy_db_section, grouping_node_id, use_only_existing_snapshots=True
             )
+
+            if snapshot_rc != 0:
+                logging.error(
+                    "Grouping node %s snapshot creation failed!", grouping_node_id
+                )
+                logging.error(
+                    "Third-party snapshots (dependent on %s) cannot be created for: %s",
+                    grouping_node_id,
+                    tp_dependence_map[grouping_node_id],
+                )
+                # Add dependent third-party snapshot org IDs to failed list and
+                # remove them from list of third_party_report_ids so that we
+                # don't attempt to create them below.
+                for org_id in tp_dependence_map[grouping_node_id]:
+                    if org_id not in failed_tp_snaps:
+                        failed_tp_snaps.append(org_id)
+                    if org_id in third_party_report_ids:
+                        third_party_report_ids.remove(org_id)
+
+    logging.info("Creating third-party snapshots...")
+    for third_party_id in third_party_report_ids:
+        snapshot_rc = create_snapshot(
+            db, cyhy_db_section, third_party_id, use_only_existing_snapshots=True
+        )
+
+        if snapshot_rc == 0:
+            successful_tp_snaps.append(third_party_id)
         else:
             failed_tp_snaps.append(third_party_id)
-            logging.error("Third-party snapshot failed: {}".format(third_party_id))
-            logging.error("Stderr failure detail: {} {}".format(data, err))
 
     logging.info(
-        "Time to create all third-party snapshots:"
+        "Time to create all grouping node and third-party snapshots:"
         " {:.2f} minutes".format(round(time.time() - all_tps_start_time, 1) / 60)
     )
     return successful_tp_snaps, failed_tp_snaps
