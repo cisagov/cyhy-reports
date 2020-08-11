@@ -187,7 +187,7 @@ class MyStackedBar(object):
                     width > 0
                 ):  # TODO handle too labels getting squeezed, need box width in points
                     xloc = rect.get_x() + 0.5 * width
-                    clr = "white"
+                    clr = "black"
                     align = "right"
                     yloc = (
                         rect.get_y() + rect.get_height() / 2.0
