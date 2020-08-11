@@ -61,8 +61,8 @@ TOO_SMALL_WEDGE = 30
 
 def setup():
     fig_width_pt = (
-        505.89
-    )  # Get this from LaTeX using \showthe\columnwidth (see *.width file)
+        505.89  # Get this from LaTeX using \showthe\columnwidth (see *.width file)
+    )
     inches_per_pt = 1.0 / 72.27  # Convert pt to inch
     golden_mean = (np.sqrt(5) - 1.0) / 2.0  # Aesthetic ratio
     fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -361,9 +361,7 @@ class MyDistributionBar(object):
         self.final_bucket_accumulate = final_bucket_accumulate
         self.x_major_tick_count = x_major_tick_count
         self.region_colors = region_colors
-        self.x_limit_extra = (
-            x_limit_extra
-        )  # Used to add a little extra space to the end of the x axis to make the final bucket more readable
+        self.x_limit_extra = x_limit_extra  # Used to add a little extra space to the end of the x axis to make the final bucket more readable
 
     def plot(self, filename, size=1.0):
         fig = plt.figure(figsize=(8, 2.75))
