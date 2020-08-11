@@ -316,11 +316,9 @@ class MyBar(object):
 
             if axes_coords[1] < 0.30:
                 # above box
-                color = "black"
                 offset = (0, 7)
             else:
                 # in box
-                color = "white"
                 offset = (0, -14)
 
             labelString = "{:,d}".format(yloc)
@@ -334,7 +332,7 @@ class MyBar(object):
                 size=12,
                 ha="center",
                 weight="bold",
-                color=color,
+                color="black",
             )
 
         fig.set_tight_layout(True)
