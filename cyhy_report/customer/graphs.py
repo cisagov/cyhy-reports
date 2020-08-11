@@ -137,10 +137,14 @@ class MyStackedBar(object):
         majorLocator = MaxNLocator(nbins=5, integer=True)  # only mark integers
         ax.xaxis.set_major_locator(majorLocator)
 
+        # Remove unnecessary ticks on y-axis
         ax.tick_params(axis="y", which="both", length=0)
+
+        # Remove axis spines everywhere except bottom
         ax.spines["left"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+
         ax.xaxis.tick_bottom()
         ax.yaxis.tick_left()
 
