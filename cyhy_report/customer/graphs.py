@@ -137,6 +137,7 @@ class MyStackedBar(object):
         majorLocator = MaxNLocator(nbins=5, integer=True)  # only mark integers
         ax.xaxis.set_major_locator(majorLocator)
 
+        ax.tick_params(axis="y", which="both", length=0)
         ax.spines["left"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
