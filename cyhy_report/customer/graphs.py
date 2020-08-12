@@ -61,8 +61,8 @@ TOO_SMALL_WEDGE = 30
 
 def setup():
     fig_width_pt = (
-        505.89
-    )  # Get this from LaTeX using \showthe\columnwidth (see *.width file)
+        505.89  # Get this from LaTeX using \showthe\columnwidth (see *.width file)
+    )
     inches_per_pt = 1.0 / 72.27  # Convert pt to inch
     golden_mean = (np.sqrt(5) - 1.0) / 2.0  # Aesthetic ratio
     fig_width = fig_width_pt * inches_per_pt  # width in inches
@@ -137,9 +137,14 @@ class MyStackedBar(object):
         majorLocator = MaxNLocator(nbins=5, integer=True)  # only mark integers
         ax.xaxis.set_major_locator(majorLocator)
 
+        # Remove unnecessary ticks on y-axis
+        ax.tick_params(axis="y", which="both", length=0)
+
+        # Remove axis spines everywhere except bottom
         ax.spines["left"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+
         ax.xaxis.tick_bottom()
         ax.yaxis.tick_left()
 
@@ -185,9 +190,9 @@ class MyStackedBar(object):
                 labelString = "{:,d}".format(width)
                 if (
                     width > 0
-                ):  # TODO handle too labels getting squeezed, need box width in points
+                ):  # TODO handle two labels getting squeezed, need box width in points
                     xloc = rect.get_x() + 0.5 * width
-                    clr = "white"
+                    clr = "black"
                     align = "right"
                     yloc = (
                         rect.get_y() + rect.get_height() / 2.0
@@ -316,11 +321,9 @@ class MyBar(object):
 
             if axes_coords[1] < 0.30:
                 # above box
-                color = "black"
                 offset = (0, 7)
             else:
                 # in box
-                color = "white"
                 offset = (0, -14)
 
             labelString = "{:,d}".format(yloc)
@@ -334,7 +337,7 @@ class MyBar(object):
                 size=12,
                 ha="center",
                 weight="bold",
-                color=color,
+                color="black",
             )
 
         fig.set_tight_layout(True)
@@ -361,9 +364,7 @@ class MyDistributionBar(object):
         self.final_bucket_accumulate = final_bucket_accumulate
         self.x_major_tick_count = x_major_tick_count
         self.region_colors = region_colors
-        self.x_limit_extra = (
-            x_limit_extra
-        )  # Used to add a little extra space to the end of the x axis to make the final bucket more readable
+        self.x_limit_extra = x_limit_extra  # Used to add a little extra space to the end of the x axis to make the final bucket more readable
 
     def plot(self, filename, size=1.0):
         fig = plt.figure(figsize=(8, 2.75))
