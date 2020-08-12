@@ -1815,11 +1815,11 @@ class ReportGenerator(object):
         df = DataFrame.from_dict(ss0["services"], orient="index")
         if len(df) > 0:
             df = df.reset_index().rename(columns={"index": "service_name", 0: "count"})
+            df.sort_values(by="count", ascending=False, inplace=True)
             df["percent"] = df["count"] / float(np.sum(df["count"])) * 100
             other_count = np.sum(df[5:]["count"])
             other_percent = np.sum(df[5:]["percent"])
             df = df[:5]  # trim to top 5
-            df.sort_values(by="count", ascending=False, inplace=True)
             if other_count > 0:
                 df_other = DataFrame(
                     {
