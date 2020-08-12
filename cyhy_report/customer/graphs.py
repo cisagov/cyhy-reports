@@ -190,7 +190,7 @@ class MyStackedBar(object):
                 labelString = "{:,d}".format(width)
                 if (
                     width > 0
-                ):  # TODO handle too labels getting squeezed, need box width in points
+                ):  # TODO handle two labels getting squeezed, need box width in points
                     xloc = rect.get_x() + 0.5 * width
                     clr = "black"
                     align = "right"
