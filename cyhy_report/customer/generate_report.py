@@ -68,11 +68,14 @@ VERBOSE = True
 SECTION = None
 SNAPSHOT_HISTORY_LIMIT = 30
 MAX_REPORTCARD_BOX_DISPLAY = 5000
-CRITICAL_AGE_OVER_TIME_CUTOFF_DAYS = 365  # Determines how far back we look at tickets for critical-vuln-ages-over-time figure
-TICKET_AGE_BUCKET_CUTOFF_DAYS = (
-    30  # Dividing line between 'young' and 'old' tickets in Cyber Exposure-esque graphs
-)
-ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180  # Max number of days to display in __figure_active_critical_vuln_age_distribution()
+# Determines how far back we look at tickets for
+# critical-vuln-ages-over-time figure
+CRITICAL_AGE_OVER_TIME_CUTOFF_DAYS = 365
+# Dividing line between 'young' and 'old' tickets in Cyber Exposure-esque graphs
+TICKET_AGE_BUCKET_CUTOFF_DAYS = 30
+# Max number of days to display in
+# __figure_active_critical_vuln_age_distribution()
+ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180
 ACTIVE_CRITICAL_AGE_BUCKETS = [(0, 7), (7, 14), (14, 21), (21, 30), (30, 90)]
 FALSE_POSITIVE_EXPIRING_SOON_DAYS = 30
 STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
