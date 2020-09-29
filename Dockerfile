@@ -1,9 +1,33 @@
-FROM dhub.ncats.dhs.gov:5001/cyhy-core-with-latex-geos
-MAINTAINER David Redmin <david.redmin@hq.dhs.gov>
+FROM cisagov/cyhy-core as cyhy-core-with-latex-geos
+LABEL maintainer="David Redmin <david.redmin@cisa.dhs.gov>"
+LABEL description="Docker image to generate CyHy reports and scorecards."
+
+USER root
+
+# Install required packages
+RUN apt-get update && apt-get -y install \
+    libgeos-3.5.1 \
+    libgeos-dev \
+    python-mpltoolkits.basemap \
+    python-numpy \
+    python-dateutil \
+    python-netaddr \
+    python-pystache \
+    python-pandas \
+    python-progressbar \
+    python-docopt \
+    python-unicodecsv \
+    python-pypdf2 \
+    texlive \
+    texlive-fonts-extra \
+    texlive-latex-extra \
+    texlive-science \
+    texlive-xetex
+
+FROM cyhy-core-with-latex-geos
 ENV CYHY_REPORTS_SRC="/usr/src/cyhy-reports" \
     PHANTOMJS="phantomjs-2.1.1-linux-x86_64"
 
-USER root
 WORKDIR ${CYHY_REPORTS_SRC}
 
 # Install our own fonts
