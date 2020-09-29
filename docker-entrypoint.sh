@@ -11,8 +11,8 @@ elif [ "$1" = 'cyhy-m1513-scorecard' ]; then
   cyhy-m1513-scorecard ${@:2}
 else
   echo "Usage:"
-  echo "  docker run [DOCKER OPTIONS] dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-report [OPTIONS]"
-  echo "  docker run [DOCKER OPTIONS] dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-cybex-scorecard [OPTIONS]"
-  echo "  docker run [DOCKER OPTIONS] dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-bod-scorecard [OPTIONS]"
-  echo "  docker run [DOCKER OPTIONS] dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-m1513-scorecard [OPTIONS]"
+  echo "  docker run [DOCKER OPTIONS] cisagov/cyhy-reports cyhy-report [OPTIONS]"
+  echo "  docker run [DOCKER OPTIONS] cisagov/cyhy-reports cyhy-cybex-scorecard [OPTIONS]"
+  echo "  docker run [DOCKER OPTIONS] cisagov/cyhy-reports cyhy-bod-scorecard [OPTIONS]"
+  echo "  docker run [DOCKER OPTIONS] cisagov/cyhy-reports cyhy-m1513-scorecard [OPTIONS]"
 fi
