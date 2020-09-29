@@ -36,6 +36,7 @@ RUN fc-cache -fsv
 
 # Install PhantomJS (used by cyhy-bod-scorecard and potentially by cyhy-cybex-scorecard); may not be needed in the future
 RUN apt-get update && apt-get -y install \
+    curl \
     build-essential chrpath libssl-dev libxft-dev \
     libfreetype6 libfreetype6-dev \
     libfontconfig1 libfontconfig1-dev
