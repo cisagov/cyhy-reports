@@ -48,7 +48,6 @@ RUN curl -sLO https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS}.tar.b
 COPY . ${CYHY_REPORTS_SRC}
 
 RUN pip install --no-cache-dir -r requirements.txt
-#RUN ln -snf ${CYHY_REPORTS_SRC}/var/getenv /usr/local/bin
 COPY ./docker-entrypoint.sh /
 
 USER cyhy
