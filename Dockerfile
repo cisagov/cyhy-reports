@@ -1,9 +1,33 @@
-FROM dhub.ncats.dhs.gov:5001/cyhy-core-with-latex-geos
-MAINTAINER David Redmin <david.redmin@hq.dhs.gov>
+FROM cisagov/cyhy-core AS cyhy-core-with-latex-geos
+LABEL maintainer="David Redmin <david.redmin@cisa.dhs.gov>"
+LABEL description="Docker image to generate CyHy reports and scorecards."
+
+USER root
+
+# Install required packages
+RUN apt-get update && apt-get -y install \
+    libgeos-3.5.1 \
+    libgeos-dev \
+    python-dateutil \
+    python-docopt \
+    python-mpltoolkits.basemap \
+    python-netaddr \
+    python-numpy \
+    python-pandas \
+    python-progressbar \
+    python-pypdf2 \
+    python-pystache \
+    python-unicodecsv \
+    texlive \
+    texlive-fonts-extra \
+    texlive-latex-extra \
+    texlive-science \
+    texlive-xetex
+
+FROM cyhy-core-with-latex-geos
 ENV CYHY_REPORTS_SRC="/usr/src/cyhy-reports" \
     PHANTOMJS="phantomjs-2.1.1-linux-x86_64"
 
-USER root
 WORKDIR ${CYHY_REPORTS_SRC}
 
 # Install our own fonts
@@ -12,9 +36,15 @@ RUN fc-cache -fsv
 
 # Install PhantomJS (used by cyhy-bod-scorecard and potentially by cyhy-cybex-scorecard); may not be needed in the future
 RUN apt-get update && apt-get -y install \
-    build-essential chrpath libssl-dev libxft-dev \
-    libfreetype6 libfreetype6-dev \
-    libfontconfig1 libfontconfig1-dev
+    build-essential \
+    chrpath \
+    curl \
+    libfontconfig1 \
+    libfontconfig1-dev \
+    libfreetype6 \
+    libfreetype6-dev \
+    libssl-dev \
+    libxft-dev
 RUN curl -sLO https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS}.tar.bz2 && \
     tar xvjf ${PHANTOMJS}.tar.bz2 && \
     mv ${PHANTOMJS} /usr/local/share && \
@@ -23,7 +53,6 @@ RUN curl -sLO https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS}.tar.b
 COPY . ${CYHY_REPORTS_SRC}
 
 RUN pip install --no-cache-dir -r requirements.txt
-#RUN ln -snf ${CYHY_REPORTS_SRC}/var/getenv /usr/local/bin
 COPY ./docker-entrypoint.sh /
 
 USER cyhy

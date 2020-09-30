@@ -18,34 +18,18 @@ Support for Docker has been added.  Note that the container's cyhy user can only
 
 To build the Docker container for cyhy-reports:
 
-```bash
-docker build -t dhub.ncats.dhs.gov:5001/cyhy-reports .
+```console
+docker build -t cisagov/cyhy-reports .
 ```
 
 To generate a CyHy report:
-```bash
-docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-report [OPTIONS]
+
+```console
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy cisagov/cyhy-reports cyhy-report [OPTIONS]
 ```
 
 To generate a Cyber Exposure (CybEx) scorecard:
-```bash
-docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy dhub.ncats.dhs.gov:5001/cyhy-reports cyhy-cybex-scorecard [OPTIONS]
+
+```console
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy cisagov/cyhy-reports cyhy-cybex-scorecard [OPTIONS]
 ```
-
-<!-- OUTDATED INFO BELOW...
-
-To run the container:
-```bash
-docker run --name cyhy-reports --detach --volume /private/etc/cyhy:/etc/cyhy --volume /tmp/cyhy:/home/cyhy --dns=172.20.11.20 ncats/cyhy-reports
-```
-
-Create aliases to the containers commands:
-```bash
-eval "$(docker exec cyhy-reports getenv)"
-```
-
-To attach a shell:
-```bash
-docker exec -ti cyhy-reports /bin/bash
-``` 
--->
