@@ -8,16 +8,16 @@ USER root
 RUN apt-get update && apt-get -y install \
     libgeos-3.5.1 \
     libgeos-dev \
-    python-mpltoolkits.basemap \
-    python-numpy \
     python-dateutil \
+    python-docopt \
+    python-mpltoolkits.basemap \
     python-netaddr \
-    python-pystache \
+    python-numpy \
     python-pandas \
     python-progressbar \
-    python-docopt \
-    python-unicodecsv \
     python-pypdf2 \
+    python-pystache \
+    python-unicodecsv \
     texlive \
     texlive-fonts-extra \
     texlive-latex-extra \
@@ -36,10 +36,15 @@ RUN fc-cache -fsv
 
 # Install PhantomJS (used by cyhy-bod-scorecard and potentially by cyhy-cybex-scorecard); may not be needed in the future
 RUN apt-get update && apt-get -y install \
+    build-essential \
+    chrpath \
     curl \
-    build-essential chrpath libssl-dev libxft-dev \
-    libfreetype6 libfreetype6-dev \
-    libfontconfig1 libfontconfig1-dev
+    libfontconfig1 \
+    libfontconfig1-dev \
+    libfreetype6 \
+    libfreetype6-dev \
+    libssl-dev \
+    libxft-dev
 RUN curl -sLO https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS}.tar.bz2 && \
     tar xvjf ${PHANTOMJS}.tar.bz2 && \
     mv ${PHANTOMJS} /usr/local/share && \
