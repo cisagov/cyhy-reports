@@ -1,4 +1,4 @@
-FROM cisagov/cyhy-core as cyhy-core-with-latex-geos
+FROM cisagov/cyhy-core AS cyhy-core-with-latex-geos
 LABEL maintainer="David Redmin <david.redmin@cisa.dhs.gov>"
 LABEL description="Docker image to generate CyHy reports and scorecards."
 
