@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-"""
+"""Generate the weekly Cyber Exposure scorecard and all CyHy reports.
+
 Usage:
   create_snapshots_reports_scorecard.py [options] CYHY_DB_SECTION SCAN_DB_SECTION
-
-Generate the weekly cybex scorecard and all the weekly persistent reports.
 
 Options:
   -h, --help            show this help message and exit
