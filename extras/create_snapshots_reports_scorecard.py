@@ -219,7 +219,7 @@ def create_weekly_snapshots(db, cyhy_db_section):
     # request_list = ['49ers', 'USAID', 'Hawaii', 'DAS-BEST', 'COC', 'DHS', 'COLA', 'COA', 'COGG']
 
     for i in request_list:
-        # If the customer is in the decsendant org list then don't snap, add to successful
+        # If the customer is in the descendant org list then don't snap, add to successful
         # Assume that parent orgs will always be snapped first
         if i in successful_descendant_snaps:
             successful_snaps.append(i)
