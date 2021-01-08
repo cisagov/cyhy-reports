@@ -38,6 +38,7 @@ current_time = util.utcnow()
 LOGGING_LEVEL = logging.INFO
 LOG_FILE = "snapshots_reports_scorecard_automation.log"
 REPORT_THREADS = 16
+SNAPSHOT_THREADS = 16
 
 NCATS_DHUB_URL = "dhub.ncats.cyber.dhs.gov:5001"
 NCATS_WEB_URL = "web.data.ncats.cyber.dhs.gov"
@@ -53,10 +54,24 @@ CYHY_REPORT_DIR = os.path.join(
 CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
 
-# Global variables for threading
+# Global variables and their associated thread locks
+successful_snapshots = list()
+ss_lock = threading.Lock()
+
+failed_snapshots = list()
+fs_lock = threading.Lock()
+
+snapshot_durations = list()
+sd_lock = threading.Lock()
+
 successful_reports = list()
+sr_lock = threading.Lock()
+
 failed_reports = list()
+fr_lock = threading.Lock()
+
 report_durations = list()
+rd_lock = threading.Lock()
 
 
 def create_subdirectories():
