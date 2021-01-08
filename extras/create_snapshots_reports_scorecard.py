@@ -214,8 +214,6 @@ def create_weekly_snapshots(db, cyhy_db_section):
             )
         ]
     )
-    # request_list = ['49ers', 'USAID', 'Hawaii', 'DAS-BEST', 'COC', 'DHS', 'COLA', 'COA', 'COGG', 'AGRS', 'FEC', 'FHFA', 'FMC', 'LPG', 'MSFG', 'OGE', 'PRC', 'SJI', 'USAB', 'VB']
-    # request_list = ['49ers', 'USAID', 'Hawaii', 'DAS-BEST', 'COC', 'DHS', 'COLA', 'COA', 'COGG']
 
     for i in request_list:
         # If the customer is in the descendant org list then don't snap, add to successful
@@ -832,8 +830,6 @@ def main():
                     )
                 ]
             )
-            # For testing:
-            # success_snaps = ['49ers', 'USAID', 'Hawaii', 'DAS-BEST', 'COC', 'DHS', 'SDSD', 'COLA', 'COA', 'COGG', 'AGRS', 'FEC', 'FHFA', 'FMC', 'LPG', 'MSFG', 'OGE', 'PRC', 'SJI', 'USAB', 'VB']
         else:
             success_snaps, failed_snaps = create_weekly_snapshots(db, cyhy_db_section)
 
@@ -915,10 +911,6 @@ def main():
 
         logging.info("Total time: %.2f minutes", (round(time.time() - start, 1) / 60))
         logging.info("END\n\n")
-
-        # logging.info('Kicking off the emailing of reports...')
-        # subprocess.call('/var/cyhy/cyhy-mailer/start.sh')
-        # logging.info('Done.')
 
 
 if __name__ == "__main__":
