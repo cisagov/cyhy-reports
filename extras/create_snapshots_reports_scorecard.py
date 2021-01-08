@@ -379,7 +379,7 @@ def chunks(l, n):
 def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, nolog):
     for i in customer_list:
         report_time = time.time()
-        logging.info("%s Starting report for: %s", threading.current_thread().name, i)
+        logging.info("[%s] Starting report for: %s", threading.current_thread().name, i)
         if use_docker == 1:
             if nolog:
                 p = subprocess.Popen(
@@ -470,7 +470,7 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
         return_code = p.returncode
         if return_code == 0:
             logging.info(
-                "%s Successful report generated: %s (%.2f s)",
+                "[%s] Successful report generated: %s (%.2f s)",
                 threading.current_thread().name,
                 i,
                 round(report_time, 2),
@@ -478,10 +478,12 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
             successful_reports.append(i)
         else:
             logging.info(
-                "%s Failure to generate report: %s", threading.current_thread().name, i
+                "[%s] Failure to generate report: %s",
+                threading.current_thread().name,
+                i,
             )
             logging.info(
-                "%s Stderr report detail: %s%s",
+                "[%s] Stderr report detail: %s%s",
                 threading.current_thread().name,
                 data,
                 err,
@@ -492,9 +494,10 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
 def gen_weekly_reports(
     db, successful_snaps, cyhy_db_section, scan_db_section, use_docker, nolog
 ):
+    # TODO Clean this function up and make it similar to generate_weekly_snapshots()
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
-    start = time.time()
-    # Create a list that from the results of the function chunks:
+    start_time = time.time()
+    # Create a list from the results of the function chunks
     threads = []
     thread_list = list(
         chunks(
@@ -517,10 +520,10 @@ def gen_weekly_reports(
         t.join()
     report_durations.sort(key=lambda tup: tup[1], reverse=True)
     logging.info("Longest Reports:")
-        logging.info("%s: %s seconds", i[0], str(round(i[1], 1)))
     for i in report_durations[:10]:
+        logging.info("%s: %.1f seconds", i[0], i[1])
     logging.info(
-        "Time to complete reports: %.2f minutes", (round(time.time() - start, 1) / 60)
+        "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
     )
 
     # Create a symlink to the latest reports.  This is for the
