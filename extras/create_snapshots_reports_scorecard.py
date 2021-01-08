@@ -54,9 +54,9 @@ CRITICAL_SEVERITY = 4
 HIGH_SEVERITY = 3
 
 # Global variables for threading
-reports_generated = []
-reports_failed = []
-longest_reports = []
+successful_reports = list()
+failed_reports = list()
+report_durations = list()
 
 
 def create_subdirectories():
@@ -357,7 +357,7 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                 )
         data, err = p.communicate()
         report_time = time.time() - report_time
-        longest_reports.append((i, report_time))
+        report_durations.append((i, report_time))
         return_code = p.returncode
         if return_code == 0:
             logging.info(
@@ -366,7 +366,7 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                 i,
                 round(report_time, 2),
             )
-            reports_generated.append(i)
+            successful_reports.append(i)
         else:
             logging.info(
                 "%s Failure to generate report: %s", threading.current_thread().name, i
@@ -377,7 +377,7 @@ def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, 
                 data,
                 err,
             )
-            reports_failed.append(i)
+            failed_reports.append(i)
 
 
 def gen_weekly_reports(
@@ -406,10 +406,10 @@ def gen_weekly_reports(
             print("Error: Unable to start thread")
     for t in threads:
         t.join()
-    longest_reports.sort(key=lambda tup: tup[1], reverse=True)
+    report_durations.sort(key=lambda tup: tup[1], reverse=True)
     logging.info("Longest Reports:")
-    for i in longest_reports[:10]:
         logging.info("%s: %s seconds", i[0], str(round(i[1], 1)))
+    for i in report_durations[:10]:
     logging.info(
         "Time to complete reports: %.2f minutes", (round(time.time() - start, 1) / 60)
     )
@@ -471,7 +471,7 @@ def pause_commander(db):
 
 def resume_commander(db, pause_doc_id):
     # if failed_reports > 5; keep the commander paused & notify of failure
-    if len(reports_failed) > 5:
+    if len(failed_reports) > 5:
         logging.error("Large number of reports failing. Keeping commander paused")
         return False
     doc = db.SystemControlDoc.find_one({"_id": ObjectId(pause_doc_id)})
@@ -903,14 +903,14 @@ def main():
 
         logging.info(
             "Number of reports generated: %d",
-            len(reports_generated + successful_tp_reports),
+            len(successful_reports + successful_tp_reports),
         )
         logging.info(
-            "Number of reports failed: %d", len(reports_failed + failed_tp_reports)
+            "Number of reports failed: %d", len(failed_reports + failed_tp_reports)
         )
-        if reports_failed or failed_tp_reports:
+        if failed_reports or failed_tp_reports:
             logging.info("Failed reports:")
-            for i in reports_failed + failed_tp_reports:
+            for i in failed_reports + failed_tp_reports:
                 logging.info(i)
 
         logging.info("Total time: %.2f minutes", (round(time.time() - start, 1) / 60))
