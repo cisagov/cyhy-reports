@@ -211,13 +211,9 @@ def sample_report(cyhy_db_section, scan_db_section, nolog):
         logging.info("Stderr report detail: %s%s", data, err)
 
 
-def create_weekly_snapshots(db, cyhy_db_section):
-    start = time.time()
-    successful_descendant_snaps = []
-    successful_snaps = []
-    failure_snaps = []
-    longest_snaps = []
-    request_list = sorted(
+def create_list_of_reports_to_generate(db):
+    """Create list of organizations that need reports generated."""
+    return sorted(
         [
             i["_id"]
             for i in db.RequestDoc.collection.find(
@@ -230,46 +226,146 @@ def create_weekly_snapshots(db, cyhy_db_section):
         ]
     )
 
-    for i in request_list:
-        # If the customer is in the descendant org list then don't snap, add to successful
-        # Assume that parent orgs will always be snapped first
-        if i in successful_descendant_snaps:
-            successful_snaps.append(i)
-            logging.info("Added to successful snaps (descendant_snapshot): %s", i)
-            continue
 
-        snap_time = time.time()
-        output = subprocess.Popen(
-            ["cyhy-snapshot", "--section", cyhy_db_section, "create", i],
-            stdout=subprocess.PIPE,
-            stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        data, err = output.communicate("yes")
-        snap_time = time.time() - snap_time
-        longest_snaps.append((i, snap_time))
-        return_code = output.returncode
+def create_list_of_snapshots_to_generate(db, reports_to_generate):
+    """Create list of organizations that need snapshots generated."""
+    # Find all descendants of orgs that get reports and have children
+    report_org_descendants = set()
+    for i in db.RequestDoc.collection.find(
+        {
+            "report_period": REPORT_PERIOD.WEEKLY,
+            "report_types": REPORT_TYPE.CYHY,
+            "children": {"$exists": True, "$ne": []},
+        },
+        {"_id": 1},
+    ):
+        report_org_descendants.update(db.RequestDoc.get_all_descendants(i["_id"]))
 
-        if return_code == 0:
-            successful_snaps.append(i)
-            # TODO: If the org has children & their requestdoc has CYHY, add to descendant org list
-            successful_descendant_snaps += db.RequestDoc.get_all_descendants(i)
-            logging.info(
-                "Added to successful snaps: %s (%.2f s)", i, round(snap_time, 2)
-            )
-        else:
-            failure_snaps.append(i)
-            logging.info("Added to failed snaps: %s", i)
-            logging.info("Stderr failure detail: %s%s", data, err)
+    # Create the list of snapshots to generate by removing
+    # report_org_descendants (their snapshots will be created when their
+    # parent org's snapshot is created)
+    return sorted(list(set(reports_to_generate) - report_org_descendants))
 
-    longest_snaps.sort(key=lambda tup: tup[1], reverse=True)
-    logging.info("Longest Snapshots:")
-    for i in longest_snaps[:10]:
-        logging.info("%s: %s seconds", i[0], str(round(i[1], 1)))
-    logging.info(
-        "Time to complete snapshots: %.2f minutes", (round(time.time() - start, 1) / 60)
+
+def make_list_chunks(my_list, num_chunks):
+    """Split a list into a specified number of smaller lists."""
+    for i in range(0, num_chunks):
+        yield my_list[i::num_chunks]
+
+
+def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
+    """Create a snapshot for a specified organization."""
+    snapshot_start_time = time.time()
+
+    snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
+
+    if use_only_existing_snapshots:
+        snapshot_command.extend(["--use-only-existing-snapshots", org_id])
+    else:
+        snapshot_command.append(org_id)
+
+    snapshot_process = subprocess.Popen(
+        snapshot_command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
-    return successful_snaps, failure_snaps
+
+    # Confirm the snapshot creation
+    data, err = snapshot_process.communicate("yes")
+
+    snapshot_duration = time.time() - snapshot_start_time
+    with sd_lock:
+        snapshot_durations.append((org_id, snapshot_duration))
+
+    # Determine org's descendants for logging below
+    org_descendants = list()
+    if not use_only_existing_snapshots:
+        if snapshot_process.returncode == 0:
+            org_descendants = db.SnapshotDoc.find_one(
+                {"latest": True, "owner": org_id}
+            )["descendants_included"]
+        else:
+            # Since snapshot creation failed, we must use this (slower)
+            # method of finding all descendants
+            org_descendants = db.RequestDoc.get_all_descendants(org_id)
+
+    if snapshot_process.returncode == 0:
+        logging.info("Successful snapshot: %s (%.2f s))", org_id, snapshot_duration)
+        with ss_lock:
+            successful_snapshots.append(org_id)
+            if org_descendants and not use_only_existing_snapshots:
+                logging.info(
+                    " - Includes successful descendant snapshot(s): %s", org_descendants
+                )
+                successful_snapshots.extend(org_descendants)
+    else:
+        logging.error("Unsuccessful snapshot: %s", org_id)
+        with fs_lock:
+            failed_snapshots.append(org_id)
+            if org_descendants and not use_only_existing_snapshots:
+                logging.error(
+                    " - Unsuccessful descendant snapshot(s): %s", org_descendants,
+                )
+                failed_snapshots.extend(org_descendants)
+        logging.error("Stderr failure detail: %s %s", data, err)
+    return snapshot_process.returncode
+
+
+def create_snapshots(org_list, db, cyhy_db_section):
+    """Create a snapshot for each organization in a list."""
+    for org_id in org_list:
+        logging.info(
+            "[%s] Starting snapshot for: %s", threading.current_thread().name, org_id
+        )
+        create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots=False)
+
+
+def generate_weekly_snapshots(db, cyhy_db_section):
+    """Generate all snapshots needed in order to generate the CyHy reports."""
+    start_time = time.time()
+
+    logging.info("Building list of reports to generate...")
+    reports_to_generate = create_list_of_reports_to_generate(db)
+
+    logging.info("Building list of snapshots to generate...")
+    snapshots_to_generate = create_list_of_snapshots_to_generate(
+        db, reports_to_generate
+    )
+
+    # List to keep track of our snapshot creation threads
+    snapshot_threads = list()
+
+    # Lists of orgs for each snapshot thread to process
+    snapshots_to_generate = list(
+        make_list_chunks(snapshots_to_generate, SNAPSHOT_THREADS)
+    )
+
+    # Start up the threads to create snapshots
+    for orgs in snapshots_to_generate:
+        try:
+            snapshot_thread = threading.Thread(
+                target=create_snapshots, args=(orgs, db, cyhy_db_section),
+            )
+            snapshot_threads.append(snapshot_thread)
+            snapshot_thread.start()
+        except:
+            print("Error: Unable to start snapshot thread for %s", orgs)
+
+    # Wait until each thread terminates
+    for snapshot_thread in snapshot_threads:
+        snapshot_thread.join()
+
+    snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
+    logging.info("Longest Snapshots:")
+    for i in snapshot_durations[:10]:
+        logging.info("%s: %.1f seconds", i[0], i[1])
+    logging.info(
+        "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
+    )
+
+    reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
+    return sorted(list(reports_to_generate))
 
 
 # Create a function called "chunks" with two arguments, l and n:
@@ -436,8 +532,6 @@ def gen_weekly_reports(
         os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR), latest_cyhy_reports
     )
 
-    return reports_generated, reports_failed
-
 
 def sync_all_tallies(db):
     owners = []
@@ -498,39 +592,6 @@ def resume_commander(db, pause_doc_id):
         )
     )
     return True
-
-
-def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
-    snapshot_start_time = time.time()
-
-    snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
-
-    if use_only_existing_snapshots:
-        snapshot_command.extend(["--use-only-existing-snapshots", org_id])
-    else:
-        snapshot_command.append(org_id)
-
-    snapshot_process = subprocess.Popen(
-        snapshot_command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-    # Confirm the snapshot creation
-    data, err = snapshot_process.communicate("yes")
-
-    snapshot_duration = time.time() - snapshot_start_time
-
-    if snapshot_process.returncode == 0:
-        logging.info(
-            "Successfully created snapshot:"
-            " {} ({:.2f} s)".format(org_id, round(snapshot_duration, 2))
-        )
-    else:
-        logging.error("Snapshot creation failed: %s", org_id)
-        logging.error("Stderr failure detail: %s %s", data, err)
-    return snapshot_process.returncode
 
 
 def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
@@ -719,16 +780,12 @@ def main():
         format="%(asctime)-15s %(levelname)s - %(message)s",
         level=LOGGING_LEVEL,
     )
-    start = time.time()
+    start_time = time.time()
     logging.info("BEGIN")
 
     cyhy_db_section = args["CYHY_DB_SECTION"]
     scan_db_section = args["SCAN_DB_SECTION"]
     use_docker = 1
-    success_snaps = list()
-    failed_snaps = list()
-    reports_generated = list()
-    reports_failed = list()
     # To track third-party snapshot and report status
     successful_tp_snaps = list()
     failed_tp_snaps = list()
@@ -833,26 +890,15 @@ def main():
         if args["--no-snapshots"]:
             # Skip creation of snapshots
             logging.info("Skipping snapshot creation due to --no-snapshots parameter")
-            success_snaps = sorted(
-                [
-                    i["_id"]
-                    for i in db.RequestDoc.collection.find(
-                        {
-                            "report_period": REPORT_PERIOD.WEEKLY,
-                            "report_types": REPORT_TYPE.CYHY,
-                        },
-                        {"_id": 1},
-                    )
-                ]
-            )
+            reports_to_generate = create_list_of_reports_to_generate(db)
         else:
-            success_snaps, failed_snaps = create_weekly_snapshots(db, cyhy_db_section)
+            reports_to_generate = generate_weekly_snapshots(db, cyhy_db_section)
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
         )  # Create the sample (anonymized) report
-        reports_generated, reports_failed = gen_weekly_reports(
-            db, success_snaps, cyhy_db_section, scan_db_section, use_docker, nolog
+        gen_weekly_reports(
+            db, reports_to_generate, cyhy_db_section, scan_db_section, use_docker, nolog
         )
 
         # Fetch list of third-party report IDs with children; if a third-party
@@ -901,15 +947,14 @@ def main():
             logging.info("Number of snapshots failed: 0")
         else:
             logging.info(
-                "Number of snapshots generated: %d",
-                len(success_snaps + successful_tp_snaps),
+                "Number of snapshots generated: %d", len(successful_snapshots),
             )
             logging.info(
-                "Number of snapshots failed: %d", len(failed_snaps + failed_tp_snaps)
+                "Number of snapshots failed: %d", len(failed_snapshots),
             )
-            if failed_snaps or failed_tp_snaps:
+            if failed_snapshots:
                 logging.error("Failed snapshots:")
-                for i in failed_snaps + failed_tp_snaps:
+                for i in failed_snapshots:
                     logging.error(i)
 
         logging.info(
@@ -924,7 +969,7 @@ def main():
             for i in failed_reports + failed_tp_reports:
                 logging.info(i)
 
-        logging.info("Total time: %.2f minutes", (round(time.time() - start, 1) / 60))
+        logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
 
 
