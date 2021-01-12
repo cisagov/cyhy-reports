@@ -495,6 +495,7 @@ def gen_weekly_reports(
     db, successful_snaps, cyhy_db_section, scan_db_section, use_docker, nolog
 ):
     # TODO Clean this function up and make it similar to generate_weekly_snapshots()
+    # See https://github.com/cisagov/cyhy-reports/issues/59
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start_time = time.time()
     # Create a list from the results of the function chunks
@@ -656,6 +657,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
                         third_party_report_ids.remove(org_id)
 
     # TODO Create third-party snapshots in threads
+    # See https://github.com/cisagov/cyhy-reports/issues/60
     logging.info("Creating third-party snapshots...")
     for third_party_id in third_party_report_ids:
         snapshot_rc = create_snapshot(
