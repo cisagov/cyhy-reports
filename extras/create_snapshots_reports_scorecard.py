@@ -655,6 +655,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
                     if org_id in third_party_report_ids:
                         third_party_report_ids.remove(org_id)
 
+    # TODO Create third-party snapshots in threads
     logging.info("Creating third-party snapshots...")
     for third_party_id in third_party_report_ids:
         snapshot_rc = create_snapshot(
