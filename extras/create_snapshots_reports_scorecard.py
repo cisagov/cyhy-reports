@@ -312,7 +312,7 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
     return snapshot_process.returncode
 
 
-def create_snapshots(org_list, db, cyhy_db_section):
+def create_snapshots_from_list(org_list, db, cyhy_db_section):
     """Create a snapshot for each organization in a list."""
     for org_id in org_list:
         logging.info(
@@ -345,7 +345,7 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     for orgs in snapshots_to_generate:
         try:
             snapshot_thread = threading.Thread(
-                target=create_snapshots, args=(orgs, db, cyhy_db_section),
+                target=create_snapshots_from_list, args=(orgs, db, cyhy_db_section),
             )
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
