@@ -956,24 +956,42 @@ def main():
                 "Number of snapshots generated: %d", len(successful_snapshots),
             )
             logging.info(
+                "  Third-party snapshots generated: %d", len(successful_tp_snaps),
+            )
+            logging.info(
                 "Number of snapshots failed: %d", len(failed_snapshots),
+            )
+            logging.info(
+                "  Third-party snapshots failed: %d", len(failed_tp_snaps),
             )
             if failed_snapshots:
                 logging.error("Failed snapshots:")
                 for i in failed_snapshots:
-                    logging.error(i)
+                    if i in failed_tp_snaps:
+                        logging.error("%s (third-party)", i)
+                    else:
+                        logging.error(i)
 
         logging.info(
             "Number of reports generated: %d",
             len(successful_reports + successful_tp_reports),
         )
         logging.info(
+            "  Third-party reports generated: %d", len(successful_tp_reports),
+        )
+        logging.info(
             "Number of reports failed: %d", len(failed_reports + failed_tp_reports)
+        )
+        logging.info(
+            "  Third-party reports failed: %d", len(failed_tp_reports),
         )
         if failed_reports or failed_tp_reports:
             logging.info("Failed reports:")
             for i in failed_reports + failed_tp_reports:
-                logging.info(i)
+                if i in failed_tp_reports:
+                    logging.error("%s (third-party)", i)
+                else:
+                    logging.error(i)
 
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
