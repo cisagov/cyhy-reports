@@ -260,9 +260,9 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
     snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
 
     if use_only_existing_snapshots:
-        snapshot_command.extend(["--use-only-existing-snapshots", org_id])
-    else:
-        snapshot_command.append(org_id)
+        snapshot_command.append("--use-only-existing-snapshots")
+
+    snapshot_command.append(org_id)
 
     snapshot_process = subprocess.Popen(
         snapshot_command,
