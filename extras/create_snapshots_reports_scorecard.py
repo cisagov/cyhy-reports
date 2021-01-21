@@ -355,14 +355,14 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
         snapshot_thread.join()
+    logging.info(
+        "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
+    )
 
     snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
     logging.info("Longest Snapshots:")
     for i in snapshot_durations[:10]:
         logging.info("%s: %.1f seconds", i[0], i[1])
-    logging.info(
-        "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
-    )
 
     reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
     return sorted(list(reports_to_generate))
