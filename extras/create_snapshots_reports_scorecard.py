@@ -350,7 +350,7 @@ def generate_weekly_snapshots(db, cyhy_db_section):
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
         except Exception:
-            print("Error: Unable to start snapshot thread for %s", orgs)
+            logging.error("Unable to start snapshot thread for %s", orgs)
 
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
