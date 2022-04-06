@@ -265,6 +265,7 @@ class NotificationGenerator(object):
         tickets = list(
             self.__cyhy_db.TicketDoc.find({"_id": {"$in": ticket_ids}}).sort(
                 [
+                    ("details.kev", -1),
                     ("details.cvss_base_score", -1),
                     ("time_opened", 1),
                     ("details.name", 1),
