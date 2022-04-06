@@ -533,7 +533,7 @@ class NotificationGenerator(object):
         result["days_until_highs_overdue"] = DAYS_UNTIL_OVERDUE_HIGH
 
         # Initialize flags for ticket types in this notification
-        result["detected_critical_high_vulns"] = False
+        result["detected_urgent_vulns"] = False
         result["detected_risky_services"] = False
 
         result["tickets"] = self.__results["tickets"]
@@ -550,7 +550,7 @@ class NotificationGenerator(object):
 
             # Set flags for ticket types in this notification
             if t["source"] in ["nessus"]:
-                result["detected_critical_high_vulns"] = True
+                result["detected_urgent_vulns"] = True
             if t["source"] in ["nmap"]:
                 result["detected_risky_services"] = True
 

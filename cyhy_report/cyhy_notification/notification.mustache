@@ -143,7 +143,7 @@
 
 {\textcolor{cisa-blue}{\CISAHeadingTwo{<<&owner_acronym>> - Cyber Hygiene Alert - \usvardate\formatdate<<&notification_date_tex>>}}}
 
-<<#detected_critical_high_vulns>>
+<<#detected_urgent_vulns>>
 {\CISAHeadingThree{Urgent Vulnerabilities Detected}}
 \vspace*{-0.35cm}  % Next line must be blank for proper vertical spacing
 
@@ -161,7 +161,7 @@ As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, criti
 	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
-<</detected_critical_high_vulns>>
+<</detected_urgent_vulns>>
 
 <<#detected_risky_services>>
 {\CISAHeadingThree{New Potentially Risky Services Detected}}
@@ -189,9 +189,9 @@ Findings details are attached in CSV (comma-separated values) format; if your vi
 
 \vspace*{-0.6cm}
 \begin{itemize}
-<<#detected_critical_high_vulns>>
+<<#detected_urgent_vulns>>
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new known exploited, critical, and high vulnerability findings from the past day
-<</detected_critical_high_vulns>>
+<</detected_urgent_vulns>>
 
 <<#detected_risky_services>>
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day
