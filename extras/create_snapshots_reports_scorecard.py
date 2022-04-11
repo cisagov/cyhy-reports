@@ -51,9 +51,6 @@ CYHY_REPORT_DIR = os.path.join(
     "report_archive", "reports{}".format(current_time.strftime("%Y%m%d"))
 )
 
-CRITICAL_SEVERITY = 4
-HIGH_SEVERITY = 3
-
 # Global variables and their associated thread locks
 successful_snapshots = list()
 ss_lock = threading.Lock()
