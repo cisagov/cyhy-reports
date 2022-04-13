@@ -275,7 +275,9 @@
 
 
 % Set formats for each heading level
-\titleformat*{\section}{\NCCICHeadingOne\color{dhs-blue}}
+% \raggedright is used to prevent section headers from splitting words
+% across long lines
+\titleformat*{\section}{\NCCICHeadingOne\raggedright\color{dhs-blue}}
 \titleformat*{\subsection}{\NCCICHeadingTwo\color{dhs-dark-gray}}
 \titleformat*{\subsubsection}{\NCCICHeadingThree\color{dhs-blue}}
 
