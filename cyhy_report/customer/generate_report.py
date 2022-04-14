@@ -1134,7 +1134,9 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        self.__figure_kev_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
+        self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
         self.__figure_top_five_high_risk_hosts()
@@ -1177,6 +1179,36 @@ class ReportGenerator(object):
             bubble_sizes.append(2 * vulns_ranked[severity] + 10)
         return bubble_sizes
 
+    def __figure_kev_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        kev_data = list()
+        active_kevs = dict()
+        for severity in severities:
+            active_kevs[severity] = self.__results["active_kev_counts"][severity]
+            kev_data.append(
+                (
+                    active_kevs[severity],
+                    self.__results["resolved_kev_counts"][severity],
+                    self.__results["new_kev_counts"][severity],
+                )
+            )
+
+        bubble_sizes = self.__determine_bubble_sizes(severities, active_kevs)
+
+        bubbles = graphs.MyBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            [50, 20, 65, 35],  # Bubble x coordinates
+            [80, 55, 45, 20],  # Bubble y coordinates
+            bubble_sizes,
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            kev_data,
+            ["RESOLVED", "NEW"],
+        )
+        bubbles.plot("kev-severity-by-prominence", size=1.0)
+
     def __figure_vuln_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
         vuln_data = list()
@@ -1206,6 +1238,14 @@ class ReportGenerator(object):
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("vuln-severity-by-prominence", size=1.0)
+
+    def __figure_max_age_of_active_kevs(self):
+        max_age_kevs = self.__results["active_kev_max_age"]
+        # 14 days is top end of gauge for KEVs
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_kevs, 14, RC_LIGHT_RED, RC_DARK_BLUE
+        )
+        gauge.plot("max-age-active-kevs", size=1.0)
 
     def __figure_max_age_of_active_criticals(self):
         max_age_criticals = self.__results["ss0_tix_days_open"]["critical"]["max"]
