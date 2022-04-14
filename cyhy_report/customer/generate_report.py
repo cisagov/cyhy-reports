@@ -1925,6 +1925,7 @@ class ReportGenerator(object):
                 "ip",
                 "name",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -1943,6 +1944,7 @@ class ReportGenerator(object):
                     "ip",
                     "name",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -1959,6 +1961,7 @@ class ReportGenerator(object):
                     "ip",
                     "name",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -1980,7 +1983,9 @@ class ReportGenerator(object):
 
         NULL_TIMESTAMP = pd.Timestamp("1970-01-01 00:00:00.000+0000")
         for df in (df0, df1):
-            # Without the fillna below, the groupby will drop rows where time_closed is None (NaT)
+            # Without the fillna steps below, groupby will drop rows where
+            # kev is None (NaN) and time_closed is None (NaT)
+            df["kev"].fillna("", inplace=True)
             df["time_closed"].fillna(
                 NULL_TIMESTAMP, inplace=True, downcast="infer"
             )  # This changes 'time_closed' dtype to object; downcast='infer' needed to avoid "NotImplementedError: reshaping is not supported for Index objects" (pandas 0.19.1)
@@ -2003,6 +2008,7 @@ class ReportGenerator(object):
                     "plugin_name",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2019,6 +2025,7 @@ class ReportGenerator(object):
                     "plugin_name",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2041,6 +2048,7 @@ class ReportGenerator(object):
                 "plugin_name",
                 "ip",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -2071,6 +2079,7 @@ class ReportGenerator(object):
                 "plugin_name",
                 "ip",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -2123,6 +2132,49 @@ class ReportGenerator(object):
         self.__results["new_vulnerability_counts"] = d_new_counts
         self.__results["resolved_vulnerabilities"] = d_resolved_vulns
         self.__results["resolved_vulnerability_counts"] = d_resolved_counts
+
+        # Calculate Known Exploited Vulnerability (KEV) Counts
+        # Active KEV counts and find maximum active KEV age
+        active_kev_counts = Series([0, 0, 0, 0])
+        if len(df0):
+            df_active_kev = df0[df0["kev"] == True]
+
+            kev_max_age = 0
+            if len(df_active_kev):
+                kev_max_age = df_active_kev["age"].max()
+                active_kev_counts = df_active_kev.groupby(
+                    "severity"
+                ).size()
+        active_kev_counts = active_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        active_kev_counts = active_kev_counts.apply(np.int)
+        d_active_kev_counts = active_kev_counts.to_dict()
+        d_active_kev_counts = self.__level_keys_to_text(d_active_kev_counts, lowercase=True)
+        self.__results["active_kev_counts"] = d_active_kev_counts
+        self.__results["active_kev_max_age"] = kev_max_age
+
+        # New KEV counts
+        new_kev_counts = Series([0, 0, 0, 0])
+        if len(df_new):
+            new_kev_counts = df_new[df_new["kev"] == True].groupby(
+                "severity"
+            ).size()
+        new_kev_counts = new_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        new_kev_counts = new_kev_counts.apply(np.int)
+        d_new_kev_counts = new_kev_counts.to_dict()
+        d_new_kev_counts = self.__level_keys_to_text(d_new_kev_counts, lowercase=True)
+        self.__results["new_kev_counts"] = d_new_kev_counts
+
+        # Resolved KEV counts
+        resolved_kev_counts = Series([0, 0, 0, 0])
+        if len(df_resolved):
+            resolved_kev_counts = df_resolved[df_resolved["kev"] == True].groupby(
+                "severity"
+            ).size()
+        resolved_kev_counts = resolved_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        resolved_kev_counts = resolved_kev_counts.apply(np.int)
+        d_resolved_kev_counts = resolved_kev_counts.to_dict()
+        d_resolved_kev_counts = self.__level_keys_to_text(d_resolved_kev_counts, lowercase=True)
+        self.__results["resolved_kev_counts"] = d_resolved_kev_counts
 
     def __table_new_and_redetected_vulns(self):
         """Split up 'new_vulnerabilities' (tickets in current snapshot that weren't in previous snapshot) into
