@@ -2177,16 +2177,23 @@ class ReportGenerator(object):
         # Active KEV counts and find maximum active KEV age
         active_kev_counts = Series([0, 0, 0, 0])
         if len(df0):
+            # Filter for KEV tickets in df0 (open tickets)
             df_active_kev = df0[df0["kev"] == True]
 
             kev_max_age = 0
             if len(df_active_kev):
                 kev_max_age = df_active_kev["age"].max()
+                # Get count of tickets with each severity
                 active_kev_counts = df_active_kev.groupby(
                     "severity"
                 ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
         active_kev_counts = active_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
         active_kev_counts = active_kev_counts.apply(np.int)
+        # Convert Series to dictionary
         d_active_kev_counts = active_kev_counts.to_dict()
         d_active_kev_counts = self.__level_keys_to_text(d_active_kev_counts, lowercase=True)
         self.__results["active_kev_counts"] = d_active_kev_counts
@@ -2195,11 +2202,19 @@ class ReportGenerator(object):
         # New KEV counts
         new_kev_counts = Series([0, 0, 0, 0])
         if len(df_new):
+            # Filter for KEV tickets in df_new
+            # (tickets opened since last snapshot)
+            # and get count of tickets with each severity
             new_kev_counts = df_new[df_new["kev"] == True].groupby(
                 "severity"
             ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
         new_kev_counts = new_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
         new_kev_counts = new_kev_counts.apply(np.int)
+        # Convert Series to dictionary
         d_new_kev_counts = new_kev_counts.to_dict()
         d_new_kev_counts = self.__level_keys_to_text(d_new_kev_counts, lowercase=True)
         self.__results["new_kev_counts"] = d_new_kev_counts
@@ -2207,11 +2222,19 @@ class ReportGenerator(object):
         # Resolved KEV counts
         resolved_kev_counts = Series([0, 0, 0, 0])
         if len(df_resolved):
+            # Filter for KEV tickets in df_resolved 
+            # (tickets resolved since last snapshot)
+            # and get count of tickets with each severity
             resolved_kev_counts = df_resolved[df_resolved["kev"] == True].groupby(
                 "severity"
             ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
         resolved_kev_counts = resolved_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
         resolved_kev_counts = resolved_kev_counts.apply(np.int)
+        # Convert Series to dictionary
         d_resolved_kev_counts = resolved_kev_counts.to_dict()
         d_resolved_kev_counts = self.__level_keys_to_text(d_resolved_kev_counts, lowercase=True)
         self.__results["resolved_kev_counts"] = d_resolved_kev_counts
