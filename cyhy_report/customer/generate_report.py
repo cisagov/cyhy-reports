@@ -2154,8 +2154,7 @@ class ReportGenerator(object):
             ).size()  # get counts of each severity
         new_counts = new_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         new_counts = new_counts.apply(np.int)
-        d_new_counts = new_counts.to_dict()
-        d_new_counts = self.__level_keys_to_text(d_new_counts, lowercase=True)
+        d_new_counts = self.__level_keys_to_text(new_counts.to_dict(), lowercase=True)
 
         # Calculate Resolved Vulnerability Counts
         resolved_counts = Series([0, 0, 0, 0])
@@ -2165,8 +2164,7 @@ class ReportGenerator(object):
             ).size()  # get counts of each severity
         resolved_counts = resolved_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         resolved_counts = resolved_counts.apply(np.int)
-        d_resolved_counts = resolved_counts.to_dict()
-        d_resolved_counts = self.__level_keys_to_text(d_resolved_counts, lowercase=True)
+        d_resolved_counts = self.__level_keys_to_text(resolved_counts.to_dict(), lowercase=True)
 
         self.__results["new_vulnerabilities"] = d_new_vulns
         self.__results["new_vulnerability_counts"] = d_new_counts
@@ -2193,9 +2191,8 @@ class ReportGenerator(object):
         active_kev_counts = active_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         active_kev_counts = active_kev_counts.apply(np.int)
-        # Convert Series to dictionary
-        d_active_kev_counts = active_kev_counts.to_dict()
-        d_active_kev_counts = self.__level_keys_to_text(d_active_kev_counts, lowercase=True)
+        # Convert Series to dictionary and severity keys to text
+        d_active_kev_counts = self.__level_keys_to_text(active_kev_counts.to_dict(), lowercase=True)
         self.__results["active_kev_counts"] = d_active_kev_counts
         self.__results["active_kev_max_age"] = kev_max_age
 
@@ -2214,9 +2211,8 @@ class ReportGenerator(object):
         new_kev_counts = new_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         new_kev_counts = new_kev_counts.apply(np.int)
-        # Convert Series to dictionary
-        d_new_kev_counts = new_kev_counts.to_dict()
-        d_new_kev_counts = self.__level_keys_to_text(d_new_kev_counts, lowercase=True)
+        # Convert Series to dictionary and severity keys to text
+        d_new_kev_counts = self.__level_keys_to_text(new_kev_counts.to_dict(), lowercase=True)
         self.__results["new_kev_counts"] = d_new_kev_counts
 
         # Resolved KEV counts
@@ -2234,9 +2230,8 @@ class ReportGenerator(object):
         resolved_kev_counts = resolved_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         resolved_kev_counts = resolved_kev_counts.apply(np.int)
-        # Convert Series to dictionary
-        d_resolved_kev_counts = resolved_kev_counts.to_dict()
-        d_resolved_kev_counts = self.__level_keys_to_text(d_resolved_kev_counts, lowercase=True)
+        # Convert Series to dictionary and severity keys to text
+        d_resolved_kev_counts = self.__level_keys_to_text(resolved_kev_counts.to_dict(), lowercase=True)
         self.__results["resolved_kev_counts"] = d_resolved_kev_counts
 
     def __table_new_and_redetected_vulns(self):
