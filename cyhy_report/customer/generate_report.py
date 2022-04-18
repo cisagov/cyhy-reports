@@ -79,6 +79,10 @@ ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180
 ACTIVE_CRITICAL_AGE_BUCKETS = [(0, 7), (7, 14), (14, 21), (21, 30), (30, 90)]
 FALSE_POSITIVE_EXPIRING_SOON_DAYS = 30
 STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
+# Note: CyHy does not ingest any vulnerability scan reports with severity 0
+# ("Informational"), therefore there are no _vulnerability scan_ tickets in
+# the database with severity 0.  The only way severity 0 tickets can be
+# generated is from _port scans_ of "potentially risky services".
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 OMITTED_MESSAGE_NO_VULNS = "No Vulnerabilities Detected\nFigure Omitted"
 OMITTED_MESSAGE_NO_VULNS_MITIGATED = "No Vulnerabilities Mitigated\nFigure Omitted"
