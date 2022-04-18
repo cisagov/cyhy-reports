@@ -25,43 +25,37 @@ Options:
   -t --title-date=YYYYMMDD       Change the title page date.
 """
 
-# standard python libraries
-import csv
-import sys
-import os
-import copy
-import datetime
-import time
-import json
+# Standard Python Libraries
 import codecs
-import tempfile
+from collections import OrderedDict
+import csv
+import datetime
+import json
+import os
+import re
 import shutil
 import subprocess
-import re
-from unicodecsv import DictWriter
-from collections import OrderedDict
-from dateutil import tz
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
-from netaddr import IPAddress
-import dateutil
-import pystache
-from pandas import Series, DataFrame
-import pandas as pd
-import numpy as np
-import progressbar as pb
+# Third-Party Libraries
 from bson import ObjectId
+from dateutil import parser, tz
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
+from netaddr import IPAddress
+import numpy as np
+import pandas as pd
+from pandas import DataFrame, Series
+from pyPdf import PdfFileReader, PdfFileWriter
+import pystache
+from unicodecsv import DictWriter
 
-# from PyPDF2 import PdfFileWriter, PdfFileReader
-
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
-from cyhy.util import *
 from cyhy.db import database
-import queries
+from cyhy.util import *
 import graphs
+import queries
 
 # constants
 VERBOSE = True
@@ -3492,7 +3486,7 @@ def main():
             snapshot_id = None
 
         if args["--title-date"]:
-            title_date = dateutil.parser.parse(args["--title-date"])
+            title_date = parser.parse(args["--title-date"])
         else:
             title_date = None
 
