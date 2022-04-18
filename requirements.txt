@@ -1,11 +1,3 @@
 --index-url https://pypi.python.org/simple/
 
 -e .
-
-# pip install of older basemap fails: see https://github.com/matplotlib/basemap/issues/251
-# Pin to basemap 1.2.2, the last release before they changed their package
-# structure.  Newer versions of basemap are once again installable via pip
-# (see https://pypi.org/search/?q=basemap), however they require a newer
-# version of numpy and that is a can of worms that we don't want to open
-# at this time.
-https://github.com/matplotlib/basemap/archive/refs/tags/v1.2.2rel.zip
