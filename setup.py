@@ -48,6 +48,14 @@ setup(
     description="Reporting components for Cyber Hygiene",
     # long_description=open('README.txt').read(),
     install_requires=[
+        # pip install of older basemap fails: see 
+        # https://github.com/matplotlib/basemap/issues/251
+        # Pin to basemap 1.2.2, the last release before they changed their package
+        # structure.  Newer versions of basemap are once again installable via pip
+        # (see https://pypi.org/search/?q=basemap), however they require a newer
+        # version of numpy and that is a can of worms that we don't want to open
+        # at this time.
+        "basemap @ https://github.com/matplotlib/basemap/archive/refs/tags/v1.2.2rel.zip",
         "cyhy-core >= 0.0.2",
         "docopt >= 0.6.2",
         "matplotlib == 1.5.3",
@@ -60,7 +68,5 @@ setup(
         "python-dateutil >= 2.2",
         "requests >= 2.21.0",
         "unicodecsv >= 0.9.4",
-        # pip install of basemap currently fails; see requirements.txt
-        # "basemap >= 1.0.6",
     ],
 )

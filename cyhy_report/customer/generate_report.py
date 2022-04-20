@@ -25,43 +25,37 @@ Options:
   -t --title-date=YYYYMMDD       Change the title page date.
 """
 
-# standard python libraries
-import csv
-import sys
-import os
-import copy
-import datetime
-import time
-import json
+# Standard Python Libraries
 import codecs
-import tempfile
+from collections import OrderedDict
+import csv
+import datetime
+import json
+import os
+import re
 import shutil
 import subprocess
-import re
-from unicodecsv import DictWriter
-from collections import OrderedDict
-from dateutil import tz
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
-from netaddr import IPAddress
-import dateutil
-import pystache
-from pandas import Series, DataFrame
-import pandas as pd
-import numpy as np
-import progressbar as pb
+# Third-Party Libraries
 from bson import ObjectId
+from dateutil import parser, tz
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
+from netaddr import IPAddress
+import numpy as np
+import pandas as pd
+from pandas import DataFrame, Series
+from pyPdf import PdfFileReader, PdfFileWriter
+import pystache
+from unicodecsv import DictWriter
 
-# from PyPDF2 import PdfFileWriter, PdfFileReader
-
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
-from cyhy.util import *
 from cyhy.db import database
-import queries
+from cyhy.util import *
 import graphs
+import queries
 
 # constants
 VERBOSE = True
@@ -79,6 +73,10 @@ ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180
 ACTIVE_CRITICAL_AGE_BUCKETS = [(0, 7), (7, 14), (14, 21), (21, 30), (30, 90)]
 FALSE_POSITIVE_EXPIRING_SOON_DAYS = 30
 STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
+# Note: CyHy does not ingest any vulnerability scan reports with severity 0
+# ("Informational"), therefore there are no _vulnerability scan_ tickets in
+# the database with severity 0.  The only way severity 0 tickets can be
+# generated is from _port scans_ of "potentially risky services".
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 OMITTED_MESSAGE_NO_VULNS = "No Vulnerabilities Detected\nFigure Omitted"
 OMITTED_MESSAGE_NO_VULNS_MITIGATED = "No Vulnerabilities Mitigated\nFigure Omitted"
@@ -1134,7 +1132,9 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        self.__figure_kev_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
+        self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
         self.__figure_top_five_high_risk_hosts()
@@ -1177,6 +1177,36 @@ class ReportGenerator(object):
             bubble_sizes.append(2 * vulns_ranked[severity] + 10)
         return bubble_sizes
 
+    def __figure_kev_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        kev_data = list()
+        active_kevs = dict()
+        for severity in severities:
+            active_kevs[severity] = self.__results["active_kev_counts"][severity]
+            kev_data.append(
+                (
+                    active_kevs[severity],
+                    self.__results["resolved_kev_counts"][severity],
+                    self.__results["new_kev_counts"][severity],
+                )
+            )
+
+        bubble_sizes = self.__determine_bubble_sizes(severities, active_kevs)
+
+        bubbles = graphs.MyBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # bubble chart that looks reasonably good and that will never
+            # have overlapping bubbles
+            [50, 20, 65, 35],  # Bubble x coordinates
+            [80, 55, 45, 20],  # Bubble y coordinates
+            bubble_sizes,
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            kev_data,
+            ["RESOLVED", "NEW"],
+        )
+        bubbles.plot("kev-severity-by-prominence", size=1.0)
+
     def __figure_vuln_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
         vuln_data = list()
@@ -1206,6 +1236,14 @@ class ReportGenerator(object):
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("vuln-severity-by-prominence", size=1.0)
+
+    def __figure_max_age_of_active_kevs(self):
+        max_age_kevs = self.__results["active_kev_max_age"]
+        # 14 days is top end of gauge for KEVs
+        gauge = graphs.MyColorGauge(
+            "Days", max_age_kevs, 14, RC_LIGHT_RED, RC_DARK_BLUE
+        )
+        gauge.plot("max-age-active-kevs", size=1.0)
 
     def __figure_max_age_of_active_criticals(self):
         max_age_criticals = self.__results["ss0_tix_days_open"]["critical"]["max"]
@@ -1925,6 +1963,7 @@ class ReportGenerator(object):
                 "ip",
                 "name",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -1943,6 +1982,7 @@ class ReportGenerator(object):
                     "ip",
                     "name",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -1959,6 +1999,7 @@ class ReportGenerator(object):
                     "ip",
                     "name",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -1980,7 +2021,9 @@ class ReportGenerator(object):
 
         NULL_TIMESTAMP = pd.Timestamp("1970-01-01 00:00:00.000+0000")
         for df in (df0, df1):
-            # Without the fillna below, the groupby will drop rows where time_closed is None (NaT)
+            # Without the fillna steps below, groupby will drop rows where
+            # kev is None (NaN) and time_closed is None (NaT)
+            df["kev"].fillna("", inplace=True)
             df["time_closed"].fillna(
                 NULL_TIMESTAMP, inplace=True, downcast="infer"
             )  # This changes 'time_closed' dtype to object; downcast='infer' needed to avoid "NotImplementedError: reshaping is not supported for Index objects" (pandas 0.19.1)
@@ -2003,6 +2046,7 @@ class ReportGenerator(object):
                     "plugin_name",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2019,6 +2063,7 @@ class ReportGenerator(object):
                     "plugin_name",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2041,6 +2086,7 @@ class ReportGenerator(object):
                 "plugin_name",
                 "ip",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -2071,6 +2117,7 @@ class ReportGenerator(object):
                 "plugin_name",
                 "ip",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -2105,8 +2152,7 @@ class ReportGenerator(object):
             ).size()  # get counts of each severity
         new_counts = new_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         new_counts = new_counts.apply(np.int)
-        d_new_counts = new_counts.to_dict()
-        d_new_counts = self.__level_keys_to_text(d_new_counts, lowercase=True)
+        d_new_counts = self.__level_keys_to_text(new_counts.to_dict(), lowercase=True)
 
         # Calculate Resolved Vulnerability Counts
         resolved_counts = Series([0, 0, 0, 0])
@@ -2116,13 +2162,75 @@ class ReportGenerator(object):
             ).size()  # get counts of each severity
         resolved_counts = resolved_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
         resolved_counts = resolved_counts.apply(np.int)
-        d_resolved_counts = resolved_counts.to_dict()
-        d_resolved_counts = self.__level_keys_to_text(d_resolved_counts, lowercase=True)
+        d_resolved_counts = self.__level_keys_to_text(resolved_counts.to_dict(), lowercase=True)
 
         self.__results["new_vulnerabilities"] = d_new_vulns
         self.__results["new_vulnerability_counts"] = d_new_counts
         self.__results["resolved_vulnerabilities"] = d_resolved_vulns
         self.__results["resolved_vulnerability_counts"] = d_resolved_counts
+
+        # Calculate Known Exploited Vulnerability (KEV) Counts
+        # Active KEV counts and find maximum active KEV age
+        active_kev_counts = Series([0, 0, 0, 0])
+        if len(df0):
+            # Filter for KEV tickets in df0 (open tickets)
+            df_active_kev = df0[df0["kev"] == True]
+
+            kev_max_age = 0
+            if len(df_active_kev):
+                kev_max_age = df_active_kev["age"].max()
+                # Get count of tickets with each severity
+                active_kev_counts = df_active_kev.groupby(
+                    "severity"
+                ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
+        active_kev_counts = active_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
+        active_kev_counts = active_kev_counts.apply(np.int)
+        # Convert Series to dictionary and severity keys to text
+        d_active_kev_counts = self.__level_keys_to_text(active_kev_counts.to_dict(), lowercase=True)
+        self.__results["active_kev_counts"] = d_active_kev_counts
+        self.__results["active_kev_max_age"] = kev_max_age
+
+        # New KEV counts
+        new_kev_counts = Series([0, 0, 0, 0])
+        if len(df_new):
+            # Filter for KEV tickets in df_new
+            # (tickets opened since last snapshot)
+            # and get count of tickets with each severity
+            new_kev_counts = df_new[df_new["kev"] == True].groupby(
+                "severity"
+            ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
+        new_kev_counts = new_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
+        new_kev_counts = new_kev_counts.apply(np.int)
+        # Convert Series to dictionary and severity keys to text
+        d_new_kev_counts = self.__level_keys_to_text(new_kev_counts.to_dict(), lowercase=True)
+        self.__results["new_kev_counts"] = d_new_kev_counts
+
+        # Resolved KEV counts
+        resolved_kev_counts = Series([0, 0, 0, 0])
+        if len(df_resolved):
+            # Filter for KEV tickets in df_resolved 
+            # (tickets resolved since last snapshot)
+            # and get count of tickets with each severity
+            resolved_kev_counts = df_resolved[df_resolved["kev"] == True].groupby(
+                "severity"
+            ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
+        resolved_kev_counts = resolved_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
+        resolved_kev_counts = resolved_kev_counts.apply(np.int)
+        # Convert Series to dictionary and severity keys to text
+        d_resolved_kev_counts = self.__level_keys_to_text(resolved_kev_counts.to_dict(), lowercase=True)
+        self.__results["resolved_kev_counts"] = d_resolved_kev_counts
 
     def __table_new_and_redetected_vulns(self):
         """Split up 'new_vulnerabilities' (tickets in current snapshot that weren't in previous snapshot) into
@@ -2352,6 +2460,7 @@ class ReportGenerator(object):
             header_fields = (
                 "ip",
                 "port",
+                "known_exploited",
                 "severity",
                 "initial_detection",
                 "latest_detection",
@@ -2367,6 +2476,7 @@ class ReportGenerator(object):
             data_fields = (
                 "ip",
                 "port",
+                "kev",
                 "severity",
                 "time_opened",
                 "last_detected",
@@ -2386,6 +2496,7 @@ class ReportGenerator(object):
                     "ip_int",
                     "ip",
                     "port",
+                    "known_exploited",
                     "severity",
                     "initial_detection",
                     "latest_detection",
@@ -2403,6 +2514,7 @@ class ReportGenerator(object):
                     "ip_int",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "last_detected",
@@ -2420,6 +2532,7 @@ class ReportGenerator(object):
                     "ip_int",
                     "ip",
                     "port",
+                    "known_exploited",
                     "severity",
                     "initial_detection",
                     "latest_detection",
@@ -2436,6 +2549,7 @@ class ReportGenerator(object):
                     "ip_int",
                     "ip",
                     "port",
+                    "kev",
                     "severity",
                     "time_opened",
                     "last_detected",
@@ -2522,6 +2636,7 @@ class ReportGenerator(object):
                 "owner",
                 "name",
                 "cve",
+                "known_exploited",
                 "severity",
                 "ip",
                 "port",
@@ -2533,6 +2648,7 @@ class ReportGenerator(object):
                 "owner",
                 "name",
                 "cve",
+                "kev",
                 "severity",
                 "ip",
                 "port",
@@ -2544,6 +2660,7 @@ class ReportGenerator(object):
             header_fields = (
                 "name",
                 "cve",
+                "known_exploited",
                 "severity",
                 "ip",
                 "port",
@@ -2554,6 +2671,7 @@ class ReportGenerator(object):
             data_fields = (
                 "name",
                 "cve",
+                "kev",
                 "severity",
                 "ip",
                 "port",
@@ -3368,7 +3486,7 @@ def main():
             snapshot_id = None
 
         if args["--title-date"]:
-            title_date = dateutil.parser.parse(args["--title-date"])
+            title_date = parser.parse(args["--title-date"])
         else:
             title_date = None
 
