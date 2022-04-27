@@ -1490,7 +1490,7 @@ class ReportGenerator(object):
 
     def __figure_total_vulnerabilities_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex_axis(["total"], axis=1)  # reorder and filter
+        data = DataFrame(d1).T.reindex(["total"], axis=1)  # reorder and filter
         data.columns = [i.title() for i in data.columns]
         line = graphs.MyLine(
             data,
@@ -1502,7 +1502,7 @@ class ReportGenerator(object):
 
     def __figure_critical_high_vulns_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex_axis(
+        data = DataFrame(d1).T.reindex(
             ["critical", "high"], axis=1
         )  # reorder and filter
         data.columns = [i.title() for i in data.columns]
@@ -1516,7 +1516,7 @@ class ReportGenerator(object):
 
     def __figure_medium_low_vulns_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex_axis(
+        data = DataFrame(d1).T.reindex(
             ["medium", "low"], axis=1
         )  # reorder and filter
         data.columns = [i.title() for i in data.columns]
@@ -2150,7 +2150,7 @@ class ReportGenerator(object):
             new_counts = df_new.groupby(
                 "severity"
             ).size()  # get counts of each severity
-        new_counts = new_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        new_counts = new_counts.reindex([4, 3, 2, 1]).fillna(0)
         new_counts = new_counts.apply(np.int)
         d_new_counts = self.__level_keys_to_text(new_counts.to_dict(), lowercase=True)
 
@@ -2160,7 +2160,7 @@ class ReportGenerator(object):
             resolved_counts = df_resolved.groupby(
                 "severity"
             ).size()  # get counts of each severity
-        resolved_counts = resolved_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        resolved_counts = resolved_counts.reindex([4, 3, 2, 1]).fillna(0)
         resolved_counts = resolved_counts.apply(np.int)
         d_resolved_counts = self.__level_keys_to_text(resolved_counts.to_dict(), lowercase=True)
 
@@ -2186,7 +2186,7 @@ class ReportGenerator(object):
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
-        active_kev_counts = active_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        active_kev_counts = active_kev_counts.reindex([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         active_kev_counts = active_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
@@ -2206,7 +2206,7 @@ class ReportGenerator(object):
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
-        new_kev_counts = new_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        new_kev_counts = new_kev_counts.reindex([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         new_kev_counts = new_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
@@ -2225,7 +2225,7 @@ class ReportGenerator(object):
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
-        resolved_kev_counts = resolved_kev_counts.reindex_axis([4, 3, 2, 1]).fillna(0)
+        resolved_kev_counts = resolved_kev_counts.reindex([4, 3, 2, 1]).fillna(0)
         # Convert counts to integers
         resolved_kev_counts = resolved_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
