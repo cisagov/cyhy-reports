@@ -51,9 +51,6 @@ CYHY_REPORT_DIR = os.path.join(
     "report_archive", "reports{}".format(current_time.strftime("%Y%m%d"))
 )
 
-CRITICAL_SEVERITY = 4
-HIGH_SEVERITY = 3
-
 # Global variables and their associated thread locks
 successful_snapshots = list()
 ss_lock = threading.Lock()
@@ -760,20 +757,12 @@ def pull_cybex_ticket_csvs(db):
         shutil.copy(path, latest_path)
 
     save_csv(
-        "cybex_open_tickets_critical_{}.csv".format(today),
-        cybex_queries.csv_get_open_tickets(db, CRITICAL_SEVERITY),
+        "cybex_open_tickets_urgent_{}.csv".format(today),
+        cybex_queries.csv_get_open_tickets(db, "urgent"),
     )
     save_csv(
-        "cybex_closed_tickets_critical_{}.csv".format(today),
-        cybex_queries.csv_get_closed_tickets(db, CRITICAL_SEVERITY),
-    )
-    save_csv(
-        "cybex_open_tickets_high_{}.csv".format(today),
-        cybex_queries.csv_get_open_tickets(db, HIGH_SEVERITY),
-    )
-    save_csv(
-        "cybex_closed_tickets_high_{}.csv".format(today),
-        cybex_queries.csv_get_closed_tickets(db, HIGH_SEVERITY),
+        "cybex_closed_tickets_urgent_{}.csv".format(today),
+        cybex_queries.csv_get_closed_tickets(db, "urgent"),
     )
 
 

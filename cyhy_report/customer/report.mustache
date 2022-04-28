@@ -275,7 +275,9 @@
 
 
 % Set formats for each heading level
-\titleformat*{\section}{\NCCICHeadingOne\color{dhs-blue}}
+% \raggedright is used to prevent section headers from splitting words
+% across long lines
+\titleformat*{\section}{\NCCICHeadingOne\raggedright\color{dhs-blue}}
 \titleformat*{\subsection}{\NCCICHeadingTwo\color{dhs-dark-gray}}
 \titleformat*{\subsubsection}{\NCCICHeadingThree\color{dhs-blue}}
 
@@ -361,6 +363,7 @@
 \newacronym{HTTPS}{HTTPS}{Hypertext Transfer Protocol Secure}
 \newacronym{IP}{IP}{Internet Protocol}
 \newacronym{IT}{IT}{Information Technology}
+\newacronym[longplural={Known Exploited Vulnerabilities}]{KEV}{KEV}{Known Exploited Vulnerability}
 \newacronym[description={National Institute of Standards and Technology; for more information refer to \href{http://www.nist.gov}{http://www.nist.gov}}]{NIST}{NIST}{National Institute of Standards and Technology}
 \newacronym[description={National Vulnerability Database; for more information refer to \href{https://nvd.nist.gov}{https://nvd.nist.gov}}]{NVD}{NVD}{National Vulnerability Database}
 \newacronym{OS}{OS}{Operating System}
@@ -375,6 +378,7 @@
 \newglossaryentry{host}{name={host}, description={A device that has a least one open port/listening service}}
 \newglossaryentry{initial detection}{name={initial detection}, description={The initial point in time when Cyber Hygiene scans identified a vulnerability. This date is used to calculate the vulnerability's age}}
 \newglossaryentry{IP address}{name={IP address}, description={A numerical label that identifies each device using the Internet Protocol to communicate over a network}}
+\newglossaryentry{known exploited vulnerability}{name={known exploited vulnerability}, description={A vulnerability listed in \href{https://www.cisa.gov/known-exploited-vulnerabilities-catalog}{CISA's catalog of known exploited vulnerabilities}. For more information, please refer to \autoref{sec:known-exploited-vulnerabilities}: \nameref{sec:known-exploited-vulnerabilities}}, plural={known exploited vulnerabilities}}
 \newglossaryentry{latest detection}{name={latest detection}, description={The most recent time when Cyber Hygiene scans identified a particular vulnerability}}
 \newglossaryentry{mitigation detection}{name={mitigation detection}, description={The date when a previously identified vulnerability was no longer detected by Cyber Hygiene scans}}
 \newglossaryentry{service}{name={service}, description={An application running at the network application layer that provides communications capabilities across an IP computer network}}
@@ -755,6 +759,73 @@ As you review the report, you may have additional questions. Check out the answe
   \end{tikzpicture}
 \restoregeometry
 
+<<#owner_is_federal_executive>>
+\section{Binding Operational Directive 22-01 --- Reducing the Significant Risk of Known Exploited Vulnerabilities}<</owner_is_federal_executive>><<^owner_is_federal_executive>>\section{Reducing the Significant Risk of Known Exploited Vulnerabilities}<</owner_is_federal_executive>>
+\label{sec:known-exploited-vulnerabilities}
+
+Malicious cyber campaigns frequently use \glspl{KEV} to threaten the public
+sector, the private sector, and ultimately the security and privacy of
+individual citizens. Therefore it is essential to quickly remediate \glspl{KEV}
+to protect
+<<#owner_is_federal_executive>>federal<</owner_is_federal_executive>><<^owner_is_federal_executive>>your<</owner_is_federal_executive>>
+information systems and reduce cyber incidents<<^owner_is_federal_executive>>
+affecting critical infrastructure<</owner_is_federal_executive>>.
+
+<<#owner_is_federal_executive>>\gls{CISA} issued
+\href{https://www.cisa.gov/binding-operational-directive-22-01}{Binding
+Operational Directive (BOD) 22-01: Reducing the Significant Risk of Known
+Exploited Vulnerabilties} to evolve the federal government's approach to
+\gls{vulnerability} management and keep pace with threat activity.  The
+directive establishes a
+\href{https://www.cisa.gov/known-exploited-vulnerabilities}{CISA managed
+catalog} of \glspl{known exploited vulnerability} and requires federal civilian
+agencies to identify and remediate these vulnerabilities found on your
+information systems within two
+weeks.<</owner_is_federal_executive>><<^owner_is_federal_executive>>\gls{CISA}
+established a \href{https://www.cisa.gov/known-exploited-vulnerabilities}{CISA
+managed catalog} of \glspl{known exploited vulnerability} and requires federal
+civilian agencies to identify and remediate these \glspl{vulnerability} found on
+their information systems within two weeks \textit{- and emphatically recommends
+that all information system owners and operators do the
+same.}<</owner_is_federal_executive>>
+
+CISA updates this catalog with new vulnerabilities when the following conditions
+are met:
+\begin{itemize}
+	\item The vulnerability has an assigned \gls{CVE} ID.
+	\item There is reliable evidence that the vulnerability has been actively
+	exploited in the wild.
+	\item There is a clear remediation action for the vulnerability, such as a
+	vendor provided update.
+\end{itemize}
+
+To report newly exploited vulnerabilities that are not in this catalog, please
+email CISA Central at \href{mailto:central@cisa.dhs.gov}{central@cisa.dhs.gov}.
+
+Details on the below findings can be found in ``findings.csv" in
+\autoref{app:attachments}.
+
+\begin{minipage}[t]{0.48\textwidth}
+	\textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen KEV SEVERITY BY PROMINENCE}
+
+	\vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+	\textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
+	\scalegraphicsnofig[1.5]{kev-severity-by-prominence}
+\end{minipage}  % END: KEV SEVERITY BY PROMINENCE
+\begin{minipage}[t]{0.01\textwidth}
+	 \  % Spacer column
+\end{minipage}\colorbox{dhs-white}
+{\begin{minipage}[t]{0.48\textwidth}
+	\textcolor{rc-dark-blue}{\RCSourceSansProBoldFourteen KEV RESPONSE TIME}
+
+	\vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
+	\textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
+
+	\centering % blank line needed on previous line for vertical spacing
+	  \scalegraphicsnofig{max-age-active-kevs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE KEVS}
+\end{minipage}}  % END: KEV RESPONSE TIME
+
+\newpage
 <<#owner_is_federal_executive>>
 \section{Emergency Directive 19-01 --- New Certificates Summary}
 \label{sec:ed1901}

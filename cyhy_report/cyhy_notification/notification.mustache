@@ -143,24 +143,25 @@
 
 {\textcolor{cisa-blue}{\CISAHeadingTwo{<<&owner_acronym>> - Cyber Hygiene Alert - \usvardate\formatdate<<&notification_date_tex>>}}}
 
-<<#detected_critical_high_vulns>>
-{\CISAHeadingThree{New Critical/High Vulnerabilities Detected}}
+<<#detected_urgent_vulns>>
+{\CISAHeadingThree{Urgent Vulnerabilities Detected}}
 \vspace*{-0.35cm}  % Next line must be blank for proper vertical spacing
 
-Cyber Hygiene scans of your host(s) conducted in the past day have detected new critical and/or high vulnerabilities.
+Cyber Hygiene scans of your host(s) conducted in the past day have detected new vulnerabilities requiring <<#is_federal>>immediate<</is_federal>><<^is_federal>>urgent<</is_federal>> attention. These vulnerabilities may be critical or high in severity and/or \href{https://www.cisa.gov/known-exploited-vulnerabilities-catalog}{\underline{known to be exploited}}<<#is_federal>> and present an unacceptable risk to the federal enterprise<</is_federal>>.
 
-<<#is_federal>>As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
+<<#is_federal>>As part of \href{https://cyber.dhs.gov/bod/22-01/}{\underline{BOD 22-01}}, certain "known exploited" findings need to be remediated within two weeks.\\
+As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating known exploited vulnerabilities within two weeks, and otherwise remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrrr}
 	\toprule
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection (UTC)\\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Known Exploited? & Severity & Host & Port & Initial Detection (UTC)\\
 	\midrule \endhead
-	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
+	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<#kev>>\color{cisa-red}\textbf{<</kev>><<&name>><<#kev>>}<</kev>> & <<#kev>>\color{cisa-red}\textbf{Yes}<</kev>><<^kev>>No<</kev>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
 	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
-<</detected_critical_high_vulns>>
+<</detected_urgent_vulns>>
 
 <<#detected_risky_services>>
 {\CISAHeadingThree{New Potentially Risky Services Detected}}
@@ -188,9 +189,9 @@ Findings details are attached in CSV (comma-separated values) format; if your vi
 
 \vspace*{-0.6cm}
 \begin{itemize}
-<<#detected_critical_high_vulns>>
-\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new critical and high vulnerability findings from the past day
-<</detected_critical_high_vulns>>
+<<#detected_urgent_vulns>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=findings.csv]{findings.csv} \textit{findings.csv} - Detailed list of all new known exploited, critical, and high vulnerability findings from the past day
+<</detected_urgent_vulns>>
 
 <<#detected_risky_services>>
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} \textit{potentially-risky-services.csv} - Detailed list of all new potentially risky services from the past day

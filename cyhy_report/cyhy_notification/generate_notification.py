@@ -265,6 +265,7 @@ class NotificationGenerator(object):
         tickets = list(
             self.__cyhy_db.TicketDoc.find({"_id": {"$in": ticket_ids}}).sort(
                 [
+                    ("details.kev", -1),
                     ("details.cvss_base_score", -1),
                     ("time_opened", 1),
                     ("details.name", 1),
@@ -429,6 +430,7 @@ class NotificationGenerator(object):
             "ip_int",
             "ip",
             "port",
+            "known_exploited",
             "severity",
             "initial_detection",
             "latest_detection",
@@ -447,6 +449,7 @@ class NotificationGenerator(object):
             "ip_int",
             "ip",
             "port",
+            "kev",
             "severity",
             "time_opened",
             "last_detected",
@@ -533,7 +536,7 @@ class NotificationGenerator(object):
         result["days_until_highs_overdue"] = DAYS_UNTIL_OVERDUE_HIGH
 
         # Initialize flags for ticket types in this notification
-        result["detected_critical_high_vulns"] = False
+        result["detected_urgent_vulns"] = False
         result["detected_risky_services"] = False
 
         result["tickets"] = self.__results["tickets"]
@@ -550,7 +553,7 @@ class NotificationGenerator(object):
 
             # Set flags for ticket types in this notification
             if t["source"] in ["nessus"]:
-                result["detected_critical_high_vulns"] = True
+                result["detected_urgent_vulns"] = True
             if t["source"] in ["nmap"]:
                 result["detected_risky_services"] = True
 
