@@ -56,6 +56,7 @@ setup(
         # version of numpy and that is a can of worms that we don't want to open
         # at this time.
         "basemap @ https://github.com/matplotlib/basemap/archive/refs/tags/v1.2.2rel.zip",
+        "chevron >= 0.14.0",
         "cyhy-core >= 0.0.2",
         "docopt >= 0.6.2",
         "matplotlib == 1.5.3",
@@ -64,7 +65,6 @@ setup(
         "pandas == 0.23.3",
         "progressbar >=2.3-dev",
         "pyPdf >= 1.13",
-        "pystache >= 0.5.3",
         "python-dateutil >= 2.2",
         "requests >= 2.21.0",
         "unicodecsv >= 0.9.4",
