@@ -2172,11 +2172,11 @@ class ReportGenerator(object):
         # Calculate Known Exploited Vulnerability (KEV) Counts
         # Active KEV counts and find maximum active KEV age
         active_kev_counts = Series([0, 0, 0, 0])
+        kev_max_age = 0
         if len(df0):
             # Filter for KEV tickets in df0 (open tickets)
             df_active_kev = df0[df0["kev"] == True]
 
-            kev_max_age = 0
             if len(df_active_kev):
                 kev_max_age = df_active_kev["age"].max()
                 # Get count of tickets with each severity
