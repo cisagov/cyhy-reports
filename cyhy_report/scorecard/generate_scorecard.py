@@ -37,12 +37,11 @@ from bson import ObjectId
 import chevron
 import dateutil
 from docopt import docopt
-import numpy as np 
-from pyPdf import PdfFileWriter, PdfFileReader
+import numpy as np
 
 # cisagov Libraries
 from cyhy.core import *
-from cyhy.db import database, CHDatabase
+from cyhy.db import database
 from cyhy.util import *
 import queries
 

@@ -30,11 +30,10 @@ import tempfile
 # Third-Party Libraries
 import chevron
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
 
 # cisagov Libraries
 from cyhy.core import *
-from cyhy.db import CHDatabase, database
+from cyhy.db import database
 from cyhy.util import *
 
 # constants

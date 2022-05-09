@@ -32,7 +32,6 @@ from bson import ObjectId
 import chevron
 from docopt import docopt
 import matplotlib.pyplot as plt
-from pyPdf import PdfFileWriter, PdfFileReader
 
 # cisagov Libraries
 from cyhy.core import *
