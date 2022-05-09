@@ -36,7 +36,7 @@ from collections import defaultdict
 import random
 
 # third-party libraries (install with pip)
-import pystache
+import chevron
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
@@ -3336,13 +3336,12 @@ class ScorecardGenerator(object):
             out.write(to_json(result))
 
     def __generate_latex(self, mustache_file, json_file, latex_file):
-        renderer = pystache.Renderer()
         template = codecs.open(mustache_file,'r', encoding='utf-8').read()
 
         with codecs.open(json_file,'r', encoding='utf-8') as data_file:
             data = json.load(data_file)
 
-        r = pystache.render(template, data)
+        r = chevron.render(template, data)
         with codecs.open(latex_file,'w', encoding='utf-8') as output:
             output.write(r)
 

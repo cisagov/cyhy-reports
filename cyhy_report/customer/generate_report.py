@@ -40,6 +40,7 @@ import tempfile
 
 # Third-Party Libraries
 from bson import ObjectId
+import chevron
 from dateutil import parser, tz
 from docopt import docopt
 from netaddr import IPAddress
@@ -47,7 +48,6 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from pyPdf import PdfFileReader, PdfFileWriter
-import pystache
 from unicodecsv import DictWriter
 
 # cisagov Libraries
@@ -3397,13 +3397,12 @@ class ReportGenerator(object):
             out.write(to_json(result))
 
     def __generate_latex(self, mustache_file, json_file, latex_file):
-        renderer = pystache.Renderer()
         template = codecs.open(mustache_file, "r", encoding="utf-8").read()
 
         with codecs.open(json_file, "r", encoding="utf-8") as data_file:
             data = json.load(data_file)
 
-        r = pystache.render(template, data)
+        r = chevron.render(template, data)
         with codecs.open(latex_file, "w", encoding="utf-8") as output:
             output.write(r)
 
