@@ -15,36 +15,27 @@ Options:
   --version                      Show version.
 '''
 
-# standard python libraries
-import sys
-import os
-import copy
-from datetime import datetime, timedelta
-from dateutil import parser, relativedelta, tz
-import time
-import json
+# Standard Python Libraries
 import codecs
-import tempfile
+import csv
+from datetime import timedelta
+from dateutil import parser, tz
+import json
+import os
 import shutil
 import subprocess
-import re
-import csv
-from collections import OrderedDict, defaultdict
-import random
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
+# Third-Party Libraries
 import chevron
-from pandas import Series, DataFrame 
-#import pandas as pd
-#import numpy as np 
-from bson import ObjectId
 from docopt import docopt
 from pyPdf import PdfFileWriter, PdfFileReader
 
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
+from cyhy.db import CHDatabase, database
 from cyhy.util import *
-from cyhy.db import database, queries, CHDatabase
 
 # constants
 SCORING_ENGINE_VERSION = '1.0'

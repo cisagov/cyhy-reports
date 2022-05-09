@@ -19,36 +19,31 @@ Options:
   --version                      Show version.
 '''
 
-# standard python libraries
-import sys
-import os
-import copy
-from datetime import datetime, timedelta
-import time
-import json
+# Standard Python Libraries
 import codecs
-import tempfile
+import csv
+from datetime import timedelta
+import json
+import os
+import random
+import re
 import shutil
 import subprocess
-import re
-import csv
-from collections import OrderedDict
-import random
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
+# Third-Party Libraries
+from bson import ObjectId
 import chevron
 import dateutil
-from pandas import Series, DataFrame 
-import pandas as pd
-import numpy as np 
-from bson import ObjectId
 from docopt import docopt
+import numpy as np 
 from pyPdf import PdfFileWriter, PdfFileReader
 
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
-from cyhy.util import *
 from cyhy.db import database, CHDatabase
+from cyhy.util import *
 import queries
 
 # constants

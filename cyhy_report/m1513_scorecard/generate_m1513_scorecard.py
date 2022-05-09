@@ -13,43 +13,30 @@ Options:
   --version                      Show version.
   -s SECTION --section=SECTION   Configuration section to use.
 '''
-# standard python libraries
-import sys
-import os
-import copy
-from pymongo import MongoClient
-from datetime import datetime, timedelta
-from dateutil import parser, relativedelta, tz
-import time
-import json
+
+# Standard Python Libraries
+from dateutil import parser
 import codecs
-import tempfile
+import csv
+import json
+import numpy as np
+import os
+from pymongo import MongoClient
 import shutil
 import subprocess
-import re
-import csv
-from collections import OrderedDict, defaultdict
-import random
-import numpy as np
+import sys
+import tempfile
 
-
-# third-party libraries (install with pip)
-import chevron
-from pandas import Series, DataFrame 
-import pandas as pd
-#import numpy as np 
+# Third-Party Libraries
 from bson import ObjectId
+import chevron
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
 import matplotlib.pyplot as plt
-from matplotlib import font_manager as fm
+from pyPdf import PdfFileWriter, PdfFileReader
 
-
-
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
 from cyhy.util import *
-from cyhy.db import database, queries, CHDatabase
 import graphs
 
 # constants
