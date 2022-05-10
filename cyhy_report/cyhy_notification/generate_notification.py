@@ -19,7 +19,7 @@ Options:
                                  cyhy database.
 """
 
-# standard python libraries
+# Standard Python Libraries
 import codecs
 import csv
 import json
@@ -30,13 +30,13 @@ import subprocess
 import sys
 import tempfile
 
-# third-party libraries (install with pip)
+# Third-Party Libraries
+import chevron
 from docopt import docopt
 from netaddr import IPAddress
 from pyPdf import PdfFileWriter, PdfFileReader
-import pystache
 
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import Config
 from cyhy.db import database
 from cyhy.util import to_json, utcnow
@@ -574,7 +574,7 @@ class NotificationGenerator(object):
         with codecs.open(json_file, "r", encoding="utf-8") as data_file:
             data = json.load(data_file)
 
-        r = pystache.render(template, data)
+        r = chevron.render(template, data)
         with codecs.open(latex_file, "w", encoding="utf-8") as output:
             output.write(r)
 

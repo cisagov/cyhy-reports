@@ -16,7 +16,6 @@ RUN apt-get update && apt-get -y install \
     python-pandas \
     python-progressbar \
     python-pypdf2 \
-    python-pystache \
     python-unicodecsv \
     texlive \
     texlive-fonts-extra \

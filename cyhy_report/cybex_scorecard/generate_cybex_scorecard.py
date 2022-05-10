@@ -20,34 +20,34 @@ CYHY_DB_SECTION and SCAN_DB_SECTION refer to sections
 within /etc/cyhy/cyhy.conf
 '''
 
-# standard python libraries
-import sys
-import os
+# Standard Python Libraries
+from collections import defaultdict
+import codecs
 import copy
+import csv
 from datetime import timedelta
 from dateutil import parser
 import json
-import codecs
-import tempfile
+import os
+import random
 import shutil
 import subprocess
-import csv
-from collections import defaultdict
-import random
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
-import pystache
-from pandas import Series, DataFrame
-import pandas as pd
-import numpy as np
+# Third-Party Libraries
 from bson import ObjectId
+import chevron
 from docopt import docopt
+import numpy as np
+import pandas as pd
+from pandas import Series, DataFrame
 import requests
 
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
-from cyhy.util import *
 from cyhy.db import database, scheduler
+from cyhy.util import *
 import graphs
 
 # constants
@@ -3336,13 +3336,12 @@ class ScorecardGenerator(object):
             out.write(to_json(result))
 
     def __generate_latex(self, mustache_file, json_file, latex_file):
-        renderer = pystache.Renderer()
         template = codecs.open(mustache_file,'r', encoding='utf-8').read()
 
         with codecs.open(json_file,'r', encoding='utf-8') as data_file:
             data = json.load(data_file)
 
-        r = pystache.render(template, data)
+        r = chevron.render(template, data)
         with codecs.open(latex_file,'w', encoding='utf-8') as output:
             output.write(r)
 

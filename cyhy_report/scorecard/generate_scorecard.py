@@ -19,36 +19,30 @@ Options:
   --version                      Show version.
 '''
 
-# standard python libraries
-import sys
-import os
-import copy
-from datetime import datetime, timedelta
-import time
-import json
+# Standard Python Libraries
 import codecs
-import tempfile
+import csv
+from datetime import timedelta
+import json
+import os
+import random
+import re
 import shutil
 import subprocess
-import re
-import csv
-from collections import OrderedDict
-import random
+import sys
+import tempfile
 
-# third-party libraries (install with pip)
-import dateutil
-import pystache
-from pandas import Series, DataFrame 
-import pandas as pd
-import numpy as np 
+# Third-Party Libraries
 from bson import ObjectId
+import chevron
+import dateutil
 from docopt import docopt
-from pyPdf import PdfFileWriter, PdfFileReader
+import numpy as np
 
-# intra-project modules
+# cisagov Libraries
 from cyhy.core import *
+from cyhy.db import database
 from cyhy.util import *
-from cyhy.db import database, CHDatabase
 import queries
 
 # constants
@@ -579,13 +573,12 @@ class ScorecardGenerator(object):
             out.write(to_json(result))
         
     def __generate_latex(self, mustache_file, json_file, latex_file):
-        renderer = pystache.Renderer()
         template = codecs.open(mustache_file,'r', encoding='utf-8').read()
 
         with codecs.open(json_file,'r', encoding='utf-8') as data_file:
             data = json.load(data_file)
 
-        r = pystache.render(template, data)
+        r = chevron.render(template, data)
         with codecs.open(latex_file,'w', encoding='utf-8') as output:
             output.write(r)
 
