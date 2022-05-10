@@ -485,7 +485,9 @@ class ReportGenerator(object):
         return tickets
 
     def __load_ticket_age_data(self, start_date, severity, graph_bucket_cutoff_days):
-        tomorrow = self.__generated_time + datetime.timedelta(days=1)
+        tomorrow = pd.to_datetime(
+            self.__generated_time + datetime.timedelta(days=1), utc=True
+        )
         days_to_graph = pd.to_datetime(
             pd.date_range(start_date, self.__generated_time), utc=True
         )
@@ -507,10 +509,8 @@ class ReportGenerator(object):
         tix = list(tix)
         if len(tix):
             df = DataFrame(tix)
-            df.time_closed = df.time_closed.fillna(
-                tomorrow, downcast="infer"
-            )  # for accounting purposes, say all open tix will close tomorrow
-            # downcast='infer' needed above to avoid "NotImplementedError: reshaping is not supported for Index objects" (pandas 0.19.1)
+            # for accounting purposes, say all open tix will close tomorrow
+            df.time_closed = df.time_closed.fillna(tomorrow)
             df.time_closed = pd.to_datetime(
                 df.time_closed, utc=True
             )  # convert times to datetime64
@@ -2024,9 +2024,8 @@ class ReportGenerator(object):
             # Without the fillna steps below, groupby will drop rows where
             # kev is None (NaN) and time_closed is None (NaT)
             df["kev"].fillna("", inplace=True)
-            df["time_closed"].fillna(
-                NULL_TIMESTAMP, inplace=True, downcast="infer"
-            )  # This changes 'time_closed' dtype to object; downcast='infer' needed to avoid "NotImplementedError: reshaping is not supported for Index objects" (pandas 0.19.1)
+            # This changes 'time_closed' dtype to object
+            df["time_closed"].fillna(NULL_TIMESTAMP, inplace=True)  
             for col in ("time_opened", "time_closed", "last_detected"):
                 df[col] = pd.to_datetime(
                     df[col], utc=True
@@ -2172,11 +2171,11 @@ class ReportGenerator(object):
         # Calculate Known Exploited Vulnerability (KEV) Counts
         # Active KEV counts and find maximum active KEV age
         active_kev_counts = Series([0, 0, 0, 0])
+        kev_max_age = 0
         if len(df0):
             # Filter for KEV tickets in df0 (open tickets)
             df_active_kev = df0[df0["kev"] == True]
 
-            kev_max_age = 0
             if len(df_active_kev):
                 kev_max_age = df_active_kev["age"].max()
                 # Get count of tickets with each severity
