@@ -574,7 +574,7 @@ class NotificationGenerator(object):
         with codecs.open(json_file, "r", encoding="utf-8") as data_file:
             data = json.load(data_file)
 
-        r = chevron.render(template, data)
+        r = chevron.render(template, data).decode("utf-8")
         with codecs.open(latex_file, "w", encoding="utf-8") as output:
             output.write(r)
 
