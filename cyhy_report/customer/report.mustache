@@ -372,7 +372,6 @@
 \newacronym{SMTP}{SMTP}{Simple Mail Transfer Protocol}
 \newacronym{SSH}{SSH}{Secure Shell}
 \newacronym{TCP}{TCP}{Transmission Control Protocol}
-\newacronym[description={Vulnerability Priority Rating; for more information refer to \href{https://docs.tenable.com/nessus/Content/RiskMetrics.htm}{https://docs.tenable.com/nessus/Content/RiskMetrics.htm}}]{VPR}{VPR}{Vulnerability Priority Rating}
 
 \newglossaryentry{active vulnerability}{name={active vulnerability}, plural={active vulnerabilities}, description={A vulnerability that was detected in the most recent scan of a host used for this report}}
 \newglossaryentry{false positive}{name={false positive}, description={Any normal or expected behavior that is identified in this report as a potentially exploitable vulnerability}}
@@ -1196,14 +1195,6 @@ rankings of ``Low", ``Medium", ``High", and ``Critical" in addition to the
 numeric \gls{CVSS} scores, but
 \href{https://nvd.nist.gov/vuln-metrics/cvss}{these qualitative rankings are
 simply mapped from the numeric \gls{CVSS} base scores}.
-
-Nessus also uses a dynamic Tenable-calculated \gls{VPR}
-[\href{https://docs.tenable.com/nessus/Content/RiskMetrics.htm}{https://docs.tenable.com/nessus/Content/RiskMetrics.htm}]
-to help vulnerability analysts quantify the risk and urgency of a
-vulnerability. \gls{VPR} takes both \gls{CVSS} scoring and exploitability
-likelihood into account to attempt to reflect the current threat landscape.
-\gls{VPR} values range from 0.1-10.0, with a higher value representing a
-higher likelihood of exploit.
 
 Within this report, qualitative severity rankings are determined primarily by
 a vulnerability's \gls{CVSS}v3 base score. If a \gls{CVSS}v3 base score has

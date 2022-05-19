@@ -2473,7 +2473,6 @@ class ReportGenerator(object):
                 "solution",
                 "source",
                 "plugin_id",
-                "vpr_score",
             )
             data_fields = (
                 "ip",
@@ -2492,7 +2491,6 @@ class ReportGenerator(object):
                 "solution",
                 "source",
                 "source_id",
-                "vpr_score",
             )
         else:
             if self.__snapshots[0].get("descendants_included"):
@@ -2515,7 +2513,6 @@ class ReportGenerator(object):
                     "solution",
                     "source",
                     "plugin_id",
-                    "vpr_score",
                 )
                 data_fields = (
                     "owner",
@@ -2536,7 +2533,6 @@ class ReportGenerator(object):
                     "solution",
                     "source",
                     "source_id",
-                    "vpr_score",
                 )
             else:
                 header_fields = (
@@ -2557,7 +2553,6 @@ class ReportGenerator(object):
                     "solution",
                     "source",
                     "plugin_id",
-                    "vpr_score",
                 )
                 data_fields = (
                     "ip_int",
@@ -2577,7 +2572,6 @@ class ReportGenerator(object):
                     "solution",
                     "source",
                     "source_id",
-                    "vpr_score",
                 )
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
