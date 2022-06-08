@@ -1181,15 +1181,28 @@ Vulnerabilities are assigned an age in order to track timeliness of remediation.
 \newpage
 \textbf{\underline{Vulnerability Scoring}}
 
-The Nessus vulnerability scanner references the \gls{NVD} [\href{https://nvd.nist.gov/}{https://nvd.nist.gov/}] for its vulnerability information. The \gls{NVD} provides \gls{CVSS} scores for many known vulnerabilities. In particular, \gls{NVD} supports the \gls{CVSS} version standard for all \gls{CVE} vulnerabilities.
+The Nessus vulnerability scanner references the \gls{NVD}
+[\href{https://nvd.nist.gov/}{https://nvd.nist.gov/}] for its vulnerability
+information. The \gls{NVD} provides \gls{CVSS} scores for many known
+vulnerabilities. In particular, \gls{NVD} supports the \gls{CVSS} version
+standard for all \gls{CVE} vulnerabilities.
 
-The \gls{CVSS} is a free and open industry standard for assessing the severity of computer system security vulnerabilities. \gls{CVSS} attempts to assign severity scores to vulnerabilities, allowing responders to prioritize responses and resources according to threat. The \gls{NVD} uses severity rankings of ``Low," ``Medium," and ``High" in addition to the numeric \gls{CVSS} scores, but these qualitative rankings are simply mapped from the numeric \gls{CVSS} base scores:
-\begin{itemize}
-\item Vulnerabilities are labeled ``Low" severity if they have a \gls{CVSS} base score of 0.0-3.9.
-\item Vulnerabilities will be labeled ``Medium" severity if they have a base \gls{CVSS} score of 4.0-6.9.
-\item Vulnerabilities will be labeled ``High" severity if they have a \gls{CVSS} base score of 7.0-10.0.
-\end{itemize}
-Nessus has a ``critical" rating which it uses for \gls{CVSS} 10 vulnerabilities. Where the \gls{NVD} has not provided a \gls{CVE} severity rating, the Nessus scanner relies on its own rankings.
+The \gls{CVSS} is a free and open industry standard for assessing the severity
+of computer system security vulnerabilities. \gls{CVSS} attempts to assign
+severity scores to vulnerabilities, allowing responders to prioritize
+responses and resources according to threat. The \gls{NVD} uses severity
+rankings of ``Low", ``Medium", ``High", and ``Critical" in addition to the
+numeric \gls{CVSS} scores, but
+\href{https://nvd.nist.gov/vuln-metrics/cvss}{these qualitative rankings are
+simply mapped from the numeric \gls{CVSS} base scores}.
+
+Within this report, qualitative severity rankings are determined primarily by
+a vulnerability's \gls{CVSS}v3 base score. If a \gls{CVSS}v3 base score has
+not been assigned to a vulnerability, but a \gls{CVSS}v2 base score has, this
+report will use the \gls{CVSS}v2 base score to determine the severity rating
+with the exception that a base score of 10 will be reported as ``Critical."
+Where the \gls{NVD} has not provided a \gls{CVE} severity rating, this report
+relies on the Nessus scanner's own rating.
 
 \textbf{\underline{What's In The Report?}}
 
