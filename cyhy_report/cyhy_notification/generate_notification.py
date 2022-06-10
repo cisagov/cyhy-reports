@@ -285,9 +285,6 @@ class NotificationGenerator(object):
         )
 
         for ticket in tickets:
-            # Neuter this monstrosity so it can't be saved (easily)
-            ticket.connection = None
-
             # Flatten structure by copying details to ticket root
             ticket.update(ticket["details"])
 
@@ -296,7 +293,7 @@ class NotificationGenerator(object):
                 ticket["based_on_vulnscan"] = True
                 ticket["based_on_portscan"] = False
                 try:
-                    latest_vuln = ticket.latest_vuln()
+                    latest_vuln = self.__cyhy_db.TicketDoc(ticket).latest_vuln()
                 except database.VulnScanNotFoundException as e:
                     print("\n  Warning (non-fatal): {}".format(e.message))
                     # The vuln_scan has likely been archived; get the vuln_scan
@@ -315,7 +312,7 @@ class NotificationGenerator(object):
                 ticket["based_on_portscan"] = True
                 ticket["based_on_vulnscan"] = False
                 try:
-                    latest_port = ticket.latest_port()
+                    latest_port = self.__cyhy_db.TicketDoc(ticket).latest_port()
                 except database.PortScanNotFoundException as e:
                     print("\n  Warning (non-fatal): {}".format(e.message))
                     # The port_scan has likely been archived; get the port_scan
