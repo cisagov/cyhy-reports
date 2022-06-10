@@ -262,14 +262,25 @@ class NotificationGenerator(object):
         tickets should not be saved back to the database because they receive
         extra fields from their latest vulnerabilty/port scan.
         """
+        # We use an aggregation here because a regular find/sort query can
+        # exceed the memory limit of MongoDB: "Sort operation used more than
+        # the maximum 33554432 bytes of RAM. Add an index, or specify a
+        # smaller limit."
         tickets = list(
-            self.__cyhy_db.TicketDoc.find({"_id": {"$in": ticket_ids}}).sort(
+            self.__cyhy_db.TicketDoc.collection.aggregate(
                 [
-                    ("details.kev", -1),
-                    ("details.cvss_base_score", -1),
-                    ("time_opened", 1),
-                    ("details.name", 1),
-                ]
+                    {"$match": {"_id": {"$in": ticket_ids}}},
+                    {"$sort":
+                        {
+                            "details.kev": -1,
+                            "details.cvss_base_score": -1,
+                            "time_opened": 1,
+                            "details.name": 1
+                        },
+                    }
+                ],
+                cursor={},
+                allowDiskUse=True,
             )
         )
 
