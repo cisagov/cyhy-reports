@@ -133,7 +133,8 @@ def main():
         os.chdir(CYHY_MAILER_DIR)
         p = subprocess.Popen(
             [
-                "docker-compose",
+                "docker",
+                "compose",
                 "-f",
                 "docker-compose.yml",
                 "-f",
