@@ -21,7 +21,6 @@ Options:
 
 # Standard Python Libraries
 import codecs
-import csv
 from datetime import timedelta
 import json
 import os
@@ -38,6 +37,7 @@ import chevron
 import dateutil
 from docopt import docopt
 import numpy as np
+import unicodecsv as csv
 
 # cisagov Libraries
 from cyhy.core import *

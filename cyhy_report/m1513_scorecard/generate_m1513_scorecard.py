@@ -17,7 +17,6 @@ Options:
 # Standard Python Libraries
 from dateutil import parser
 import codecs
-import csv
 import json
 import numpy as np
 import os
@@ -32,6 +31,7 @@ from bson import ObjectId
 import chevron
 from docopt import docopt
 import matplotlib.pyplot as plt
+import unicodecsv as csv
 
 # cisagov Libraries
 from cyhy.core import *

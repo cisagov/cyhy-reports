@@ -28,7 +28,6 @@ Options:
 # Standard Python Libraries
 import codecs
 from collections import OrderedDict
-import csv
 import datetime
 import json
 import os
@@ -48,7 +47,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from pyPdf import PdfFileReader, PdfFileWriter
-from unicodecsv import DictWriter
+import unicodecsv as csv
 
 # cisagov Libraries
 from cyhy.core import *
@@ -2401,7 +2400,7 @@ class ReportGenerator(object):
                 # unknown field appears it indicates an error
                 # (probably a typo).  That's why we're using
                 # extrasaction='raise' here.
-                writer = DictWriter(f, fields, extrasaction="raise")
+                writer = csv.DictWriter(f, fields, extrasaction="raise")
                 writer.writeheader()
                 for d in data:
                     not_after = d["not_after"].replace(tzinfo=today.tzinfo)
@@ -2575,9 +2574,9 @@ class ReportGenerator(object):
                 )
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
                 data_writer.writerow(row)
 
@@ -2624,9 +2623,9 @@ class ReportGenerator(object):
             )
         data = self.__results["resolved_vulnerabilities"]
         with open("mitigated-vulnerabilities.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
                 # If enough time has passed between snapshot creation and report generation,
                 # we may see tickets that were closed when the snapshot was created, but
@@ -2692,9 +2691,9 @@ class ReportGenerator(object):
             )
         data = self.__results["recently_detected_closed_tickets"]
         with open("recently-detected.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
                 data_writer.writerow(row)
 
@@ -2709,7 +2708,7 @@ class ReportGenerator(object):
                 fields = ("ip_int", "ip", "port", "service")
         data = self.__results["services_attachment"]
         with open("services.csv", "wb") as out_file:
-            writer = DictWriter(out_file, fields, extrasaction="ignore")
+            writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
             writer.writeheader()
             for row in data:
                 writer.writerow(row)
@@ -2746,7 +2745,7 @@ class ReportGenerator(object):
                 )
         data = self.__results["risky_services_tickets"]
         with open("potentially-risky-services.csv", "wb") as out_file:
-            writer = DictWriter(out_file, fields, extrasaction="ignore")
+            writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
             writer.writeheader()
             for row in data:
                 writer.writerow(row)
@@ -2765,8 +2764,8 @@ class ReportGenerator(object):
                 data_fields = ("ip_int", "ip", "name", "hostname")
         data = self.__results["hosts_attachment"]
         with open("hosts.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             header_writer.writeheader()
             for row in data:
                 data_writer.writerow(row)
@@ -2781,7 +2780,7 @@ class ReportGenerator(object):
             header_fields = ("cidr", "first", "last", "count")
         data = self.__snapshots[0]["networks"]
         with open("scope.csv", "wb") as out_file:
-            writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             writer.writeheader()
             for net in data:
                 if self.__anonymize:
@@ -2889,9 +2888,9 @@ class ReportGenerator(object):
                 )
         data = self.__results["false_positive_tickets"]
         with open("false-positive-findings.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
                 data_writer.writerow(row)
 
@@ -2942,11 +2941,11 @@ class ReportGenerator(object):
                 "tix_days_open.low.median",
             )
             with open("sub-org-summary.csv", "wb") as out_file:
-                header_writer = DictWriter(
+                header_writer = csv.DictWriter(
                     out_file, header_fields, extrasaction="ignore"
                 )
                 header_writer.writeheader()
-                data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+                data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
                 # Output data from descendant orgs
                 for row in self.__results["ss0_descendant_data"]:
                     for severity in ("critical", "high", "medium", "low"):
@@ -3008,9 +3007,9 @@ class ReportGenerator(object):
             "tix_closed_after_date",
         )
         with open("days-to-mitigate.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for snap in self.__snapshots:
                 snap["report_date"] = snap["tix_msec_open"][
                     "tix_open_as_of_date"
@@ -3051,9 +3050,9 @@ class ReportGenerator(object):
             "tix_days_open.low.max",
         )
         with open("days-currently-active.csv", "wb") as out_file:
-            header_writer = DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
-            data_writer = DictWriter(out_file, data_fields, extrasaction="ignore")
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for snap in self.__snapshots:
                 snap["report_date"] = snap["tix_msec_open"][
                     "tix_open_as_of_date"
@@ -3542,7 +3541,7 @@ def main():
         print "Generating overview CSV ...",
         fields = overview_data[0].keys()
         with open(args["--overview"], "w") as csv_out:
-            csv_writer = DictWriter(csv_out, fields, extrasaction="ignore")
+            csv_writer = csv.DictWriter(csv_out, fields, extrasaction="ignore")
             csv_writer.writeheader()
             for row in overview_data:
                 csv_writer.writerow(row)
