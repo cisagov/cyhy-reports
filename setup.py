@@ -67,6 +67,6 @@ setup(
         "pyPdf >= 1.13",
         "python-dateutil >= 2.2",
         "requests >= 2.21.0",
-        "unicodecsv >= 0.9.4",
+        "unicodecsv >= 0.14.1",
     ],
 )
