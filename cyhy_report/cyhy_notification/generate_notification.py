@@ -21,7 +21,6 @@ Options:
 
 # Standard Python Libraries
 import codecs
-import csv
 import json
 import os
 import re
@@ -35,6 +34,7 @@ import chevron
 from docopt import docopt
 from netaddr import IPAddress
 from pyPdf import PdfFileWriter, PdfFileReader
+import unicodecsv as csv
 
 # cisagov Libraries
 from cyhy.core import Config

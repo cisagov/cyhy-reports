@@ -24,7 +24,6 @@ within /etc/cyhy/cyhy.conf
 from collections import defaultdict
 import codecs
 import copy
-import csv
 from datetime import timedelta
 from dateutil import parser
 import json
@@ -43,6 +42,7 @@ import numpy as np
 import pandas as pd
 from pandas import Series, DataFrame
 import requests
+import unicodecsv as csv
 
 # cisagov Libraries
 from cyhy.core import *
