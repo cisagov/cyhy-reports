@@ -61,7 +61,7 @@ setup(
         "docopt >= 0.6.2",
         "matplotlib == 1.5.3",
         "netaddr >= 0.7.10",
-        "numpy == 1.16.2",
+        "numpy == 1.22.0",
         "pandas == 0.23.3",
         "progressbar >=2.3-dev",
         "pyPdf >= 1.13",
