@@ -288,7 +288,7 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             org_descendants = db.RequestDoc.get_all_descendants(org_id)
 
     if snapshot_process.returncode == 0:
-        logging.info("Successful snapshot: %s (%.2f s))", org_id, snapshot_duration)
+        logging.info("Successful snapshot: %s (%.2f s)", org_id, snapshot_duration)
         with ss_lock:
             successful_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
