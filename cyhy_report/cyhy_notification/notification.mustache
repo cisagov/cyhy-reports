@@ -149,8 +149,8 @@
 
 Cyber Hygiene scans of your host(s) conducted in the past day have detected new vulnerabilities requiring <<#is_federal>>immediate<</is_federal>><<^is_federal>>urgent<</is_federal>> attention. These vulnerabilities may be critical or high in severity and/or \href{https://www.cisa.gov/known-exploited-vulnerabilities-catalog}{\underline{known to be exploited}}<<#is_federal>> and present an unacceptable risk to the federal enterprise<</is_federal>>.
 
-<<#is_federal>>As part of \href{https://cyber.dhs.gov/bod/22-01/}{\underline{BOD 22-01}}, certain "known exploited" findings need to be remediated within two weeks.\\
-As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating known exploited vulnerabilities within two weeks, and otherwise remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
+<<#is_federal>>As part of \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-22-01/}{\underline{BOD 22-01}}, certain "known exploited" findings need to be remediated within two weeks.\\
+As part of \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating known exploited vulnerabilities within two weeks, and otherwise remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
 
 \rowcolors{3}{white}{row-gray}
 \begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrrr}
@@ -169,7 +169,9 @@ As part of \href{https://cyber.dhs.gov/bod/19-02/}{\underline{BOD 19-02}}, criti
 
 Cyber Hygiene scans of your host(s) conducted in the past day have detected new potentially risky services.
 
-These services warrant your attention.  All services are potentially at risk of attack, but some can be more risky when open to the public (e.g. RDP, Telnet, etc.)  CISA recommends validating that each service below is intended to be available to the public and, where applicable, the service is up-to-date on the latest version, correctly configured, and uses strong authentication.
+These services warrant your attention.  All services are potentially at risk of attack, but some can be more risky when open to the public (e.g. RDP, Telnet, etc.), especially if they are open as Networked Management Interfaces.  CISA recommends validating that each service below is intended to be available to the public and, where applicable, the service is up-to-date on the latest version, correctly configured, and uses strong authentication.
+
+<<#is_federal>>As part of \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-23-02/}{\underline{BOD 23-02}}, within 14 days of notification, Networked Management Interfaces exposed to the public internet must either be removed from the public internet or protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture.\\ <</is_federal>>
 
 \rowcolors{3}{white}{row-gray}
 \begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>rrrrrr}
