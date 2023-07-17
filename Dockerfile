@@ -1,4 +1,4 @@
-FROM cisagov/cyhy-core AS cyhy-core-with-latex-geos
+FROM cisagov/cyhy-core AS cyhy-core-with-latex
 LABEL maintainer="David Redmin <david.redmin@cisa.dhs.gov>"
 LABEL description="Docker image to generate CyHy reports and scorecards."
 
@@ -6,8 +6,6 @@ USER root
 
 # Install required packages
 RUN apt-get update && apt-get -y install \
-    libgeos-3.5.1 \
-    libgeos-dev \
     python-dateutil \
     python-docopt \
     python-mpltoolkits.basemap \
@@ -23,7 +21,7 @@ RUN apt-get update && apt-get -y install \
     texlive-science \
     texlive-xetex
 
-FROM cyhy-core-with-latex-geos
+FROM cyhy-core-with-latex
 ENV CYHY_REPORTS_SRC="/usr/src/cyhy-reports" \
     PHANTOMJS="phantomjs-2.1.1-linux-x86_64"
 
