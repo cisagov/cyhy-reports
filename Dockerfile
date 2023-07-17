@@ -6,7 +6,7 @@ USER root
 
 # Install required packages
 RUN apt-get update && apt-get -y install \
-    libgeos-3.5.1 \
+    libgeos-3.7.1 \
     libgeos-dev \
     python-dateutil \
     python-docopt \
