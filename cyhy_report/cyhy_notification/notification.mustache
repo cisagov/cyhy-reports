@@ -178,7 +178,7 @@ These services warrant your attention.  All services are potentially at risk of 
 	\toprule
 	<<#display_owner>>Owner & <</display_owner>>Host & Port & Service & Category & Initial Detection (UTC) \\
 	\midrule \endhead
-	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & <<&service>> & <<&category>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
+	<<#tickets>><<#based_on_portscan>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&port>> & <<#possible_nmi>>\color{cisa-red}\textbf{<</possible_nmi>><<&service>><<#possible_nmi>>}<</possible_nmi>> & <<#possible_nmi>>\color{cisa-red}\textbf{<</possible_nmi>><<&category>><<#possible_nmi>>*}<</possible_nmi>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
 	<</based_on_portscan>><</tickets>>
 	\bottomrule
 \end{longtable}
