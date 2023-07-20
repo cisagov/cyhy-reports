@@ -122,6 +122,20 @@ RISKY_SERVICES_MAP = {
     "kpasswd": "Kerberos",
 }
 
+# For BOD 23-02, we define a list of services that may indicate potential
+# publicly-accessible networked management interfaces that should be protected.
+POTENTIAL_NMI_SERVICES = [
+    "bftp",           # FTP
+    "ftp",            # FTP
+    "microsoft-ds",   # SMB
+    "ms-wbt-server",  # RDP
+    "ni-ftp",         # FTP
+    "rsftp",          # FTP
+    "rtelnet",        # Telnet
+    "smbdirect",      # SMB
+    "telnet",         # Telnet
+    "tftp",           # TFTP
+]
 
 class NotificationGenerator(object):
     """The class for generating notification documents."""
@@ -325,6 +339,9 @@ class NotificationGenerator(object):
                 ticket["last_detected"] = latest_port["time"]
                 # Assign the category for this service
                 ticket["category"] = RISKY_SERVICES_MAP.get(ticket["service"])
+                # Check if this service is in the list of potential
+                # network management interface services
+                ticket["possible_nmi"] = ticket.get("service") in POTENTIAL_NMI_SERVICES
 
             if ticket["based_on_vulnscan"]:
                 # Copy useful parts of latest vuln into ticket
@@ -496,6 +513,7 @@ class NotificationGenerator(object):
             "port",
             "service",
             "category",
+            "possible_nmi",
             "initial_detection",
             "latest_detection",
             "age_days",
@@ -507,6 +525,7 @@ class NotificationGenerator(object):
             "port",
             "service",
             "category",
+            "possible_nmi",
             "time_opened",
             "last_detected",
             "age",
