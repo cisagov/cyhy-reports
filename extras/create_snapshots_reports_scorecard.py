@@ -757,6 +757,14 @@ def pull_cybex_ticket_csvs(db):
         shutil.copy(path, latest_path)
 
     save_csv(
+        "cybex_open_tickets_potentially_risky_services_{}.csv".format(today),
+        cybex_queries.csv_get_open_tickets(db, "risky_services"),
+    )
+    save_csv(
+        "cybex_closed_tickets_potentially_risky_services_{}.csv".format(today),
+        cybex_queries.csv_get_closed_tickets(db, "risky_services"),
+    )
+    save_csv(
         "cybex_open_tickets_urgent_{}.csv".format(today),
         cybex_queries.csv_get_open_tickets(db, "urgent"),
     )
