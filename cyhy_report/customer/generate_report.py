@@ -583,6 +583,9 @@ class ReportGenerator(object):
             t.pop("details")
 
             t["category"] = RISKY_SERVICES_MAP.get(t["service"])
+            # Check if this service is in the list of potential
+            # network management interface services
+            t["possible_nmi"] = t["service"] in POTENTIAL_NMI_SERVICES
             if not self.__no_history:
                 previous_snapshot_timestamp = self.__snapshots[1]["end_time"]
             t["newly_opened_since_last_report"] = False
@@ -2736,6 +2739,7 @@ class ReportGenerator(object):
                 "port",
                 "service",
                 "category",
+                "possible_nmi",
                 "newly_opened_since_last_report",
             )
         else:
@@ -2747,6 +2751,7 @@ class ReportGenerator(object):
                     "port",
                     "service",
                     "category",
+                    "possible_nmi",
                     "newly_opened_since_last_report",
                 )
             else:
@@ -2756,6 +2761,7 @@ class ReportGenerator(object):
                     "port",
                     "service",
                     "category",
+                    "possible_nmi",
                     "newly_opened_since_last_report",
                 )
         data = self.__results["risky_services_tickets"]
