@@ -1154,6 +1154,7 @@ class ReportGenerator(object):
         self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
+        self.__figure_potential_nmi_service_counts()
         self.__figure_top_five_high_risk_hosts()
         self.__figure_top_five_risk_based_vulnerabilities()
         self.__figure_top_five_vulnerabilities_count()
@@ -1276,6 +1277,30 @@ class ReportGenerator(object):
         gauge = graphs.MyColorGauge("Days", max_age_highs, 30, RC_ORANGE, RC_DARK_BLUE)
         gauge.plot("max-age-active-highs", size=0.75)
 
+    def __figure_potential_nmi_service_counts(self):
+        nmi_categories = set()
+        for service in POTENTIAL_NMI_SERVICES:
+            nmi_categories.add(RISKY_SERVICES_MAP[service])
+
+        df = DataFrame(self.__results["risky_services_metrics"])
+        # All we care about here is the count data, so grab that and sort it
+        # by index (i.e. the service category)
+        counts = df.loc["count"].sort_index()
+
+        # Get rid of counts from non-NMI categories
+        for k in counts.keys():
+            if k not in nmi_categories:
+                counts.pop(k)
+        
+        if counts.sum() > 0:
+            # 2 = medium severity = yellow color for our graph bars
+            severity_colors = [2] * len(counts)
+            bar = graphs.MyBar(counts, barSeverities=severity_colors)
+            bar.plot("potential-nmi-service-counts", size=0.5)
+        else:
+            message = graphs.MyMessage(OMITTED_MESSAGE_NO_SERVICES)
+            message.plot("potential-nmi-service-counts", size=0.5)
+    
     def __figure_top_five_high_risk_hosts(self):
         if self.__results["tickets_0"]:
             df = self.__top_risky_hosts(self.__results["tickets_0"])
