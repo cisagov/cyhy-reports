@@ -179,6 +179,21 @@ RISKY_SERVICES_MAP = {
     "kpasswd": "kerberos",
 }
 
+# For BOD 23-02, we define a list of services that may indicate potential
+# publicly-accessible network management interfaces that should be protected.
+# This list may change in the future.
+POTENTIAL_NMI_SERVICES = [
+    "bftp",           # FTP
+    "ftp",            # FTP
+    "microsoft-ds",   # SMB
+    "ms-wbt-server",  # RDP
+    "ni-ftp",         # FTP
+    "rsftp",          # FTP
+    "rtelnet",        # Telnet
+    "smbdirect",      # SMB
+    "telnet",         # Telnet
+    "tftp",           # TFTP
+]
 
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
