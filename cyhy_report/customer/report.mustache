@@ -831,6 +831,26 @@ Details on the below findings can be found in ``findings.csv" in
 
 \newpage
 <<#owner_is_federal_executive>>
+\section{Binding Operational Directive 23-02 --- Mitigating the Risk from Internet-Exposed Management Interfaces}<</owner_is_federal_executive>><<^owner_is_federal_executive>>\section{Mitigating the Risk from Internet-Exposed Management Interfaces}<</owner_is_federal_executive>>
+\label{sec:internet-exposed-management-interfaces}
+
+Threat actors often use certain classes of network devices to gain unrestricted access to organizational networks leading to full scale compromises. Inadequate security, misconfigurations, and out-of-date software make these devices more vulnerable to exploitation. The risk is further compounded if device management interfaces are connected directly to, and accessible from, the public-facing Internet. Most device management interfaces are designed to be accessed from dedicated physical interfaces and/or management networks and are not meant to be accessible directly from the public Internet.
+
+\gls{CISA} <<#owner_is_federal_executive>>issued \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-23-02}{Binding Operational Directive (BOD) 23-02} to push the federal government to take steps toward reducing the attack surface created by insecure or misconfigured management interfaces across certain classes of devices. The BOD requires networked management interfaces (NMIs) using certain protocols over the Internet to <</owner_is_federal_executive>><<^owner_is_federal_executive>>recommends that networked management interfaces (NMIs) using certain protocols over the Internet <</owner_is_federal_executive>>be removed from the public Internet or to be protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture (ZTA) within 14 days of discovery.
+
+We also recommend reviewing all hosts with potentially risky open services, especially if they are functioning as networked management interfaces, to ensure that each service is intended to be available to the public and, where applicable, the service is up to date on the latest version, correctly configured, and uses strong authentication.
+
+You can find a list of potentially risky services detected as available on your external network within this report's ``potentially-risky-services.csv" attachment. In it, there is a column which denotes those that may be associated with NMIs to help with prioritization.
+
+\begin{figure}[H]
+	\centering
+	\scalegraphics{potential-nmi-service-counts}{Potential Network Management Interface (NMI) Service Counts}
+\end{figure}
+
+The details for these findings can be found within the ``potentially-risky-services.csv" file located in \autoref{app:attachments}: \nameref{app:attachments}. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paperclip icon to the left of the CSV file in order to open it.
+
+\newpage
+<<#owner_is_federal_executive>>
 \section{Emergency Directive 19-01 --- New Certificates Summary}
 \label{sec:ed1901}
 Issued on 22 January 2019, Emergency Directive (ED) 19-01 requires
