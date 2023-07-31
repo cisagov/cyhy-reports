@@ -179,6 +179,21 @@ RISKY_SERVICES_MAP = {
     "kpasswd": "kerberos",
 }
 
+# For BOD 23-02, we define a list of services that may indicate potential
+# publicly-accessible network management interfaces that should be protected.
+# This list may change in the future.
+POTENTIAL_NMI_SERVICES = [
+    "bftp",           # FTP
+    "ftp",            # FTP
+    "microsoft-ds",   # SMB
+    "ms-wbt-server",  # RDP
+    "ni-ftp",         # FTP
+    "rsftp",          # FTP
+    "rtelnet",        # Telnet
+    "smbdirect",      # SMB
+    "telnet",         # Telnet
+    "tftp",           # TFTP
+]
 
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
@@ -568,6 +583,9 @@ class ReportGenerator(object):
             t.pop("details")
 
             t["category"] = RISKY_SERVICES_MAP.get(t["service"])
+            # Check if this service is in the list of potential
+            # network management interface services
+            t["possible_nmi"] = t["service"] in POTENTIAL_NMI_SERVICES
             if not self.__no_history:
                 previous_snapshot_timestamp = self.__snapshots[1]["end_time"]
             t["newly_opened_since_last_report"] = False
@@ -1136,6 +1154,7 @@ class ReportGenerator(object):
         self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
+        self.__figure_potential_nmi_service_counts()
         self.__figure_top_five_high_risk_hosts()
         self.__figure_top_five_risk_based_vulnerabilities()
         self.__figure_top_five_vulnerabilities_count()
@@ -1258,6 +1277,30 @@ class ReportGenerator(object):
         gauge = graphs.MyColorGauge("Days", max_age_highs, 30, RC_ORANGE, RC_DARK_BLUE)
         gauge.plot("max-age-active-highs", size=0.75)
 
+    def __figure_potential_nmi_service_counts(self):
+        nmi_categories = set()
+        for service in POTENTIAL_NMI_SERVICES:
+            nmi_categories.add(RISKY_SERVICES_MAP[service])
+
+        df = DataFrame(self.__results["risky_services_metrics"])
+        # All we care about here is the count data, so grab that and sort it
+        # by index (i.e. the service category)
+        counts = df.loc["count"].sort_index()
+
+        # Get rid of counts from non-NMI categories
+        for k in counts.keys():
+            if k not in nmi_categories:
+                counts.pop(k)
+        
+        if counts.sum() > 0:
+            # 2 = medium severity = yellow color for our graph bars
+            severity_colors = [2] * len(counts)
+            bar = graphs.MyBar(counts, barSeverities=severity_colors)
+            bar.plot("potential-nmi-service-counts", size=0.5)
+        else:
+            message = graphs.MyMessage(OMITTED_MESSAGE_NO_SERVICES)
+            message.plot("potential-nmi-service-counts", size=0.5)
+    
     def __figure_top_five_high_risk_hosts(self):
         if self.__results["tickets_0"]:
             df = self.__top_risky_hosts(self.__results["tickets_0"])
@@ -2721,6 +2764,7 @@ class ReportGenerator(object):
                 "port",
                 "service",
                 "category",
+                "possible_nmi",
                 "newly_opened_since_last_report",
             )
         else:
@@ -2732,6 +2776,7 @@ class ReportGenerator(object):
                     "port",
                     "service",
                     "category",
+                    "possible_nmi",
                     "newly_opened_since_last_report",
                 )
             else:
@@ -2741,6 +2786,7 @@ class ReportGenerator(object):
                     "port",
                     "service",
                     "category",
+                    "possible_nmi",
                     "newly_opened_since_last_report",
                 )
         data = self.__results["risky_services_tickets"]
