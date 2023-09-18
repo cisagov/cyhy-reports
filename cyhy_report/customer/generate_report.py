@@ -2947,7 +2947,14 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_sub_org_summary_attachment(self):
-        if self.__snapshots[0].get("descendants_included"):
+        # If _all_ the descendants of an org have start dates in the
+        # future (i.e., are not yet scanning) then
+        # self.__snapshots[0].get("descendants_included") will be true
+        # but "ss0_descendant_data" will not be a key of
+        # self.__results.  We need to avoid this corner case.
+        #
+        # See issue #92 for more details.
+        if self.__snapshots[0].get("descendants_included") and "ss0_descendant_data" in self.__results:
             header_fields = (
                 "org_name",
                 "addresses_owned",
