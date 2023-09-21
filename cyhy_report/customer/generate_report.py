@@ -2954,7 +2954,7 @@ class ReportGenerator(object):
         # self.__results.  We need to avoid this corner case.
         #
         # See issue #92 for more details.
-        if self.__snapshots[0].get("descendants_included") and "ss0_descendant_data" in self.__results:
+        if "ss0_descendant_data" in self.__results:
             header_fields = (
                 "org_name",
                 "addresses_owned",
