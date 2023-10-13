@@ -376,6 +376,7 @@
 \newglossaryentry{active vulnerability}{name={active vulnerability}, plural={active vulnerabilities}, description={A vulnerability that was detected in the most recent scan of a host used for this report}}
 \newglossaryentry{false positive}{name={false positive}, description={Any normal or expected behavior that is identified in this report as a potentially exploitable vulnerability}}
 \newglossaryentry{host}{name={host}, description={A device that has a least one open port/listening service}}
+\newglossaryentry{host scan}{name={host scan}, description={A scan of all assets to identify hosts}}
 \newglossaryentry{initial detection}{name={initial detection}, description={The initial point in time when Cyber Hygiene scans identified a vulnerability. This date is used to calculate the vulnerability's age}}
 \newglossaryentry{IP address}{name={IP address}, description={A numerical label that identifies each device using the Internet Protocol to communicate over a network}}
 \newglossaryentry{known exploited vulnerability}{name={known exploited vulnerability}, description={A vulnerability listed in \href{https://www.cisa.gov/known-exploited-vulnerabilities-catalog}{CISA's catalog of known exploited vulnerabilities}. For more information, please refer to \autoref{sec:known-exploited-vulnerabilities}: \nameref{sec:known-exploited-vulnerabilities}}, plural={known exploited vulnerabilities}}
@@ -386,6 +387,7 @@
 \newglossaryentry{vulnerability}{name={vulnerability}, plural={vulnerabilities}, description={A weakness in an information system, system security procedures, internal controls, or implementation that could be exploited by a threat source}}
 \newglossaryentry{vulnerability age}{name={vulnerability age}, description={The time between a vulnerability's initial detection date and its latest detection date}}
 \newglossaryentry{vulnerable host}{name={vulnerable host}, description={A host with at least one vulnerability detected on the most recent scan used for this report}}
+\newglossaryentry{vulnerability scan}{name={vulnerability scan}, description={A vulnerability scan on all hosts identified during host scan}}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -570,16 +572,16 @@ As you review the report, you may have additional questions. Check out the answe
       \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
 
       \vspace*{1mm}  % blank line needed on previous line for vertical spacing
-      {\RCSourceSansProSemiBoldSixteen <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No addresses scanned yet<</calc.address_scan_start_date_tex>>}\\
-      {\RCSourceSansProTwelve Host Scans on All Addresses}
+      {\RCSourceSansProSemiBoldSixteen <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No assets scanned yet<</calc.address_scan_start_date_tex>>}\\
+      {\RCSourceSansProTwelve Completed \gls{host scan} on all assets}
 
       \vspace*{3mm}  % blank line needed on previous line for vertical spacing
       {\RCSourceSansProSemiBoldSixteen <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
-      {\RCSourceSansProTwelve Vulnerability Scans on All Hosts}
+      {\RCSourceSansProTwelve Last \gls{vulnerability scan} on all hosts}
 
       \vspace*{4mm}  % blank line needed on previous line for vertical spacing
       \begin{minipage}[t]{0.45\textwidth}
-        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ADDRESSES OWNED}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ASSETS OWNED}
 
         \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
         \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
@@ -590,12 +592,12 @@ As you review the report, you may have additional questions. Check out the answe
         {\RCSourceSansProTwelve <<#calc.address_count_up_flag>>Increase of \textbf{\numprint{<<&calc.address_count_up>>}}<</calc.address_count_up_flag>>
         <<#calc.address_count_down_flag>>Decrease of \textbf{\numprint{<<&calc.address_count_down>>}}<</calc.address_count_down_flag>>
         <<#calc.address_count_flat_flag>>No Change<</calc.address_count_flat_flag>>}
-      \end{minipage}  % END: ADDRESSES OWNED
+      \end{minipage}  % END: ASSETS OWNED
       \begin{minipage}[t]{0.1\textwidth}
          \  % Spacer column
       \end{minipage}
       \begin{minipage}[t]{0.45\textwidth}
-        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ADDRESSES SCANNED}
+        \textcolor{rc-dark-green}{\RCSourceSansProBoldFourteen ASSETS SCANNED}
 
         \vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
         \textcolor{rc-dark-green}{\rule{\textwidth}{0.4mm}}
@@ -608,8 +610,8 @@ As you review the report, you may have additional questions. Check out the answe
         <<#calc.addresses_scanned_flat_flag>>No Change<</calc.addresses_scanned_flat_flag>>
 
         % blank line needed on previous line for vertical spacing
-        \numprint{<<&calc.addresses_scanned_percent>>}\% of addresses scanned}
-      \end{minipage}  % END: ADDRESSES SCANNED
+        \numprint{<<&calc.addresses_scanned_percent>>}\% of assets scanned}
+      \end{minipage}  % END: ASSETS SCANNED
 
       \vspace*{4mm}  % blank line needed on previous line for vertical spacing
       \begin{minipage}[t]{0.45\textwidth}
@@ -847,7 +849,7 @@ You can find a list of potentially risky services detected as available on your 
 	\scalegraphics{potential-nmi-service-counts}{Potential Network Management Interface (NMI) Service Counts}
 \end{figure}
 
-The details for these findings can be found within the ``potentially-risky-services.csv" file located in \autoref{app:attachments}: \nameref{app:attachments}. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paperclip icon to the left of the CSV file in order to open it.
+The details for these findings can be found within the ``potentially-risky-services.csv" file located in \autoref{app:attachments}: \nameref{app:attachments}. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paper clip icon to the left of the CSV file in order to open it.
 
 \newpage
 <<#owner_is_federal_executive>>
@@ -1710,7 +1712,7 @@ This section seeks to answer the most frequently asked questions about Cyber Hyg
 \newpage
 \section{Attachments}
 \label{app:attachments}
-If your PDF viewer supports embedded attachments you will see paperclip icons below for each attached file.
+If your PDF viewer supports embedded attachments you will see paper clip icons below for each attached file which includes additional report details. To access the attachments embedded within the report, open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paper clip icon to the left of the attachment name.
 \begin{itemize}
 <<#owner_is_federal_executive>><<^is_suborg>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=certificates.csv]{certificates.csv} certificates.csv : Data collected about each certificate found that was issued for a domain known to belong to you.<</is_suborg>><</owner_is_federal_executive>>
 \item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-data-sharing-form.pdf]{assets/cyber-hygiene-data-sharing-form.pdf} cyber-hygiene-data-sharing-form.pdf: Form to request your weekly findings be shared with a trusted third party (e.g. MSP, ISAC, Consultant, etc.); send the completed form to \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
