@@ -2233,6 +2233,7 @@ class ReportGenerator(object):
         # Convert Series to dictionary and severity keys to text
         d_active_kev_counts = self.__level_keys_to_text(active_kev_counts.to_dict(), lowercase=True)
         self.__results["active_kev_counts"] = d_active_kev_counts
+        self.__results["active_kev_count_total"] = active_kev_counts.sum()
         self.__results["active_kev_max_age"] = kev_max_age
 
         # New KEV counts
@@ -3286,6 +3287,7 @@ class ReportGenerator(object):
         for k, v in ss0["vulnerabilities"].items():
             avpvh[k] = safe_divide(v, ss0["vulnerable_host_count"], 2)
 
+        calc["active_kev_count_total"] = self.__results["active_kev_count_total"]
         result["calc"] = calc
 
         # Calculate count of "hosts with unsupported software"
