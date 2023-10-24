@@ -833,6 +833,22 @@ Details on the below findings can be found in ``findings.csv" in
 	  \scalegraphicsnofig{max-age-active-kevs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE KEVS}
 \end{minipage}}  % END: KEV RESPONSE TIME
 
+Signed into law in March 2022, the
+\href{https://www.cisa.gov/topics/cyber-threats-and-advisories/information-sharing/cyber-incident-reporting-critical-infrastructure-act-2022-circia}{\gls{CIRCIA}}
+required \gls{CISA} to establish the
+\href{https://www.cisa.gov/stopransomware/Ransomware-Vulnerability-Warning-Pilot}{\gls{RVWP}}.
+The goal of the \gls{RVWP} is to warn organizations about exposed vulnerabilities
+that may be exploited by ransomware threat actors.
+
+Of the \textbf{<<&calc.active_kev_count_total>>} \gls{KEV} findings detected on
+<<&owner.agency.acronym>>'s internet-facing assets,
+\textbf{<<&calc.active_kev_ransomware_count_total>>} are known by \gls{CISA}
+to have been used in ransomware campaigns.
+<<#calc.active_kev_ransomware_count_total>>We recommend remediating these as
+soon as possible:<</calc.active_kev_ransomware_count_total>>
+
+\centering\scalegraphicsnofig[0.35]{kev-ransomware-severity-by-prominence}
+
 \newpage
 <<#owner_is_federal_executive>>
 \section{Binding Operational Directive 23-02 --- Mitigating the Risk from Internet-Exposed Management Interfaces}<</owner_is_federal_executive>><<^owner_is_federal_executive>>\section{Mitigating the Risk from Internet-Exposed Management Interfaces}<</owner_is_federal_executive>>
