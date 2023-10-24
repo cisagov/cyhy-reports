@@ -1150,6 +1150,7 @@ class ReportGenerator(object):
     def __generate_figures(self):
         graphs.setup()
         self.__figure_kev_severity_by_prominence()
+        self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
         self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
@@ -1224,6 +1225,26 @@ class ReportGenerator(object):
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("kev-severity-by-prominence", size=1.0)
+
+    def __figure_kev_ransomware_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        kev_ransomware_counts = list()
+        for severity in severities:
+            kev_ransomware_counts.append(
+                self.__results["active_kev_ransomware_counts"][severity]
+            )
+
+        bubbles = graphs.MyHorizontalBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # chart that looks aesthetically pleasing.
+            [10, 25, 40, 55],  # Bubble x coordinates
+            [6, 6, 6, 6],      # Bubble y coordinates
+            [5, 5, 5, 5],      # Make all bubbles the same size
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            kev_ransomware_counts,
+        )
+        bubbles.plot("kev-ransomware-severity-by-prominence", size=1.0)
 
     def __figure_vuln_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
