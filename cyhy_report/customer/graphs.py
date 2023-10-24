@@ -1295,6 +1295,19 @@ class MyHorizontalBubbleChart(object):
 if __name__ == "__main__":
     setup()
 
+    # Code below used to test graphic creation:
+
+    hbc = MyHorizontalBubbleChart(
+        # CRIT,HIGH,MED,LOW
+        [10, 25, 40, 55],  # horizontal location
+        [6, 6, 6, 6],  # vertical location
+        [5, 5, 5, 5],  # Make all bubbles the same size
+        BUBBLE_COLORS,
+        ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        [7, 89, 305, 12345],
+    )
+    hbc.plot("horizontal-bubbles")
+
     # bc = MyBubbleChart(
     #     # CRIT,HIGH,MED,LOW
     #     [50, 20, 65, 35],  # horizontal location
@@ -1307,8 +1320,8 @@ if __name__ == "__main__":
     # )
     # bc.plot("bubbles")
     #
-    gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
-    gauge.plot("max-age-of-active-criticals")
+    # gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+    # gauge.plot("max-age-of-active-criticals")
     #
     # gauge = MyColorGauge("Days", 475, 30, RC_ORANGE, RC_DARK_BLUE)
     # gauge.plot("max-age-of-active-highs")
