@@ -47,7 +47,7 @@ def build_notifications_org_list(db):
     """Return notifications organization list.
 
     This is the list of organization IDs that should
-    get a notification PDF for CYHY report types.
+    get a notification PDF for CyHy report types.
     """
     notifications_to_generate = set()
     cyhy_parent_ids = set()
@@ -60,14 +60,14 @@ def build_notifications_org_list(db):
     return notifications_to_generate
           
 def find_cyhy_parents(db, org_id):
-    """Find CYHY parents.
+    """Return CyHy parents of an organization.
 
-    Find weekly report types for CYHY parents
-    recursively using the parent IDs.
+    Recursively find all CyHy parents of
+    of an organization using parent IDs.
     """
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id, "report_types": "CYHY"}, {"_id": 1}):
-        print("Found CYHY Parent of OrgID %s is %s" % (org_id, request["_id"]))
+        print("Found CyHy Parent of OrgID %s is %s" % (org_id, request["_id"]))
         cyhy_parents.add(request["_id"])
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
         print("Output of cyhy_parents is: %s " % cyhy_parents)
