@@ -46,28 +46,33 @@ def build_notifications_org_list(db):
     """Return notifications organization list.
 
     This is the list of organization IDs that should
-    get a notification PDF for CyHy report types.
+    have a notification generated and sent.
     """
     notifications_to_generate = set()
     cyhy_parent_ids = set()
     ticket_owner_ids = db.notifications.distinct("ticket_owner")
     for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
+        # If the notification document's ticket owner has "CYHY" in their list of report_types,
+        # then a notification is should be generated for that owner:
         notifications_to_generate.add(request["_id"])
+        # Recursively check for any parents of the ticket owner that have "CYHY" in
+        # their list of report_types.  If found, add them to the list of owners that
+        # should get a notification.
         cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
-        print("cyhy_parent_ids: %s" % cyhy_parent_ids)
     notifications_to_generate.update(cyhy_parent_ids)
     return notifications_to_generate
           
 def find_cyhy_parents(db, org_id):
-    """Return CyHy parents of an organization.
-
-    Recursively find all CyHy parents of
-    of an organization using parent IDs.
+    """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
     """
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id, "report_types": "CYHY"}, {"_id": 1}):
         print("Found CyHy Parent of OrgID %s is %s" % (org_id, request["_id"]))
+        # Found a parent of org_id with "CYHY" in their list of report_types,
+        # so add it to our set
         cyhy_parents.add(request["_id"])
+        # Recursively call find_cyhy_parents() to check if this org has any parents
+        # with "CYHY" in their list of report_types
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
         print("Output of cyhy_parents is: %s " % cyhy_parents)
     return cyhy_parents
