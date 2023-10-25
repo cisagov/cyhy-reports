@@ -2348,6 +2348,7 @@ class ReportGenerator(object):
                 "owner",
                 "name",
                 "cve",
+                "kev",
                 "severity",
                 "ip",
                 "port",
