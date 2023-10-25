@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# comment parts that generate and mail a report
 
 """Create CyHy notifications and email them out to CyHy points of contact.
 
