@@ -67,14 +67,12 @@ def find_cyhy_parents(db, org_id):
     """
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id, "report_types": "CYHY"}, {"_id": 1}):
-        print("Found CyHy Parent of OrgID %s is %s" % (org_id, request["_id"]))
         # Found a parent of org_id with "CYHY" in their list of report_types,
         # so add it to our set
         cyhy_parents.add(request["_id"])
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
-        print("Output of cyhy_parents is: %s " % cyhy_parents)
     return cyhy_parents
 
 
