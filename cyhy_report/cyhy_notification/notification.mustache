@@ -153,11 +153,12 @@ Cyber Hygiene scans of your host(s) conducted in the past day have detected new 
 As part of \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-19-02/}{\underline{BOD 19-02}}, critical-severity findings need to be remediated within <<&days_until_criticals_overdue>> days and high-severity findings remediated within <<&days_until_highs_overdue>> days.<</is_federal>><<^is_federal>>CISA recommends remediating known exploited vulnerabilities within two weeks, and otherwise remediating critical findings within <<&days_until_criticals_overdue>> days and high findings within <<&days_until_highs_overdue>> days.<</is_federal>>
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.75in}rrrrrr}
 	\toprule
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Known Exploited? & Severity & Host & Port & Initial Detection (UTC)\\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Known & Ransomware & Severity & Host & Port & Initial\\
+	<<#display_owner>> & <</display_owner>> & Exploited? & Exploited? & & & & Detection (UTC)\\
 	\midrule \endhead
-	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<#kev>>\color{cisa-red}\textbf{<</kev>><<&name>><<#kev>>}<</kev>> & <<#kev>>\color{cisa-red}\textbf{Yes}<</kev>><<^kev>>No<</kev>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
+	<<#tickets>><<#based_on_vulnscan>><<#display_owner>><<&owner>> & <</display_owner>><<#kev>>\color{cisa-red}\textbf{<</kev>><<&name>><<#kev>>}<</kev>> & <<#kev>>\color{cisa-red}\textbf{Yes}<</kev>><<^kev>>No<</kev>> & <<#kev_ransomware>>\color{cisa-red}\textbf{Yes}<</kev_ransomware>><<^kev_ransomware>>No<</kev_ransomware>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> \\
 	<</based_on_vulnscan>><</tickets>>
 	\bottomrule
 \end{longtable}
