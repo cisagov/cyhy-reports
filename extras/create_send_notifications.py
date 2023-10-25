@@ -44,7 +44,7 @@ def create_output_directories():
     )
 
 def build_notifications_org_list(db):
-    """Build notifications organization list.
+    """Return notifications organization list.
 
     This is the list of organization IDs that should
     get a notification PDF for CYHY report types.
@@ -86,7 +86,7 @@ def generate_notification_pdfs(db, org_ids, master_report_key):
         if was_encrypted:
             num_pdfs_created += 1
             logging.info("{} - Created encrypted notification PDF".format(org_id))
-        elif results is not None and len(results["notifications"]) == 0: 
+        elif results is not None and len(results["notifications"]) == 0:
             logging.info("{} - No notifications found, no PDF created".format(org_id))
         else:
             logging.error("{} - Unknown error occurred".format(org_id))
