@@ -75,7 +75,6 @@ def find_cyhy_parents(db, org_id):
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
-
 def generate_notification_pdfs(db, org_ids, master_report_key): 
     """Generate all notification PDFs for a list of organizations."""
     num_pdfs_created = 0
@@ -121,9 +120,13 @@ def main():
     # Change to the correct output directory
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
+    # Build list of CyHy orgs
+    notification_org_ids = build_notifications_org_list(db)
+    logging.debug("Found {} CYHY orgs: {}".format(len(notification_org_ids), notification_org_ids))
+
     # Create notification PDFs for CyHy orgs
     master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
-    num_pdfs_created = generate_notification_pdfs(db, cyhy_org_ids, master_report_key)
+    num_pdfs_created = generate_notification_pdfs(db, notification_org_ids, master_report_key)
     logging.info("{} notification PDFs created".format(num_pdfs_created))
 
     # Create a symlink to the latest notifications.  This is for the
