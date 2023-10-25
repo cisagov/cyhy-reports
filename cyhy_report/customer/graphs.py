@@ -1224,8 +1224,89 @@ class MyBubbleChart(object):
         plt.close()
 
 
+class MyHorizontalBubbleChart(object):
+    def __init__(
+        self, x_values, y_values, size_values, colors, categories, data
+    ):
+        self.x_values = x_values
+        self.y_values = y_values
+        self.size_values = size_values
+        self.colors = colors
+        self.categories = categories
+        self.data = data
+
+    def plot(self, filename, size=1.0):
+        fig = plt.figure()
+
+        # Ratio of width to height
+        fig.set_size_inches(20 * size, 4 * size)
+        ax = fig.add_subplot(1, 1, 1, frameon=False)
+        # Use equal aspect ratio to make circles circular, otherwise they are
+        # ellipses
+        ax.set_aspect("equal")
+
+        # Set axis limits to mimimize white space
+        plt.xlim(4, 61)
+        plt.ylim(0, 12)
+
+        # Remove axis ticks
+        ax.axes.set_xticks([])
+        ax.axes.set_yticks([])
+
+        # Minimize margins
+        plt.margins(0, 0)
+
+        for i in range(len(self.x_values)):
+            ax.add_patch(
+                Circle(
+                    xy=(self.x_values[i], self.y_values[i]),
+                    radius=self.size_values[i],
+                    facecolor=self.colors[i],
+                    edgecolor=self.colors[i],
+                )
+            )
+
+        # Bubble labels
+        # Font sizes and xy offsets are the result of trial and error to get
+        # the best-looking results
+        for i in range(len(self.x_values)):
+            ax.annotate(
+                "{:,d}".format(self.data[i]),
+                xy=(self.x_values[i], self.y_values[i] - 0.5),
+                color="white",
+                family="sans-serif",
+                size=50,
+                weight="bold",
+                ha="center",
+            )
+            ax.annotate(
+                "{}".format(self.categories[i]),
+                xy=(self.x_values[i], self.y_values[i] - 2.25),
+                color="white",
+                family="sans-serif",
+                size=22,
+                weight="bold",
+                ha="center",
+            )
+
+        plt.savefig(filename + ".pdf", bbox_inches="tight", pad_inches=0)
+        plt.close()
+
 if __name__ == "__main__":
     setup()
+
+    # Code below used to test graphic creation:
+
+    hbc = MyHorizontalBubbleChart(
+        # CRIT,HIGH,MED,LOW
+        [10, 25, 40, 55],  # horizontal location
+        [6, 6, 6, 6],  # vertical location
+        [5, 5, 5, 5],  # Make all bubbles the same size
+        BUBBLE_COLORS,
+        ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        [7, 89, 305, 12345],
+    )
+    hbc.plot("horizontal-bubbles")
 
     # bc = MyBubbleChart(
     #     # CRIT,HIGH,MED,LOW
@@ -1239,8 +1320,8 @@ if __name__ == "__main__":
     # )
     # bc.plot("bubbles")
     #
-    gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
-    gauge.plot("max-age-of-active-criticals")
+    # gauge = MyColorGauge("Days", 14, 15, RC_LIGHT_RED, RC_DARK_BLUE)
+    # gauge.plot("max-age-of-active-criticals")
     #
     # gauge = MyColorGauge("Days", 475, 30, RC_ORANGE, RC_DARK_BLUE)
     # gauge.plot("max-age-of-active-highs")

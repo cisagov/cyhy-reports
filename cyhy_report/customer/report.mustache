@@ -350,6 +350,7 @@
 \makeglossaries
 \newacronym{AGENCY}{<<&owner.agency.acronym>>}{<<&owner.agency.name>>}
 \newacronym{AWS}{AWS}{Amazon Web Services}
+\newacronym{CIRCIA}{CIRCIA}{Cyber Incident Reporting for Critical Infrastructure Act of 2022}
 \newacronym[description={Cybersecurity and Infrastructure Security Agency [\href{https://www.cisa.gov}{https://www.cisa.gov}]}]{CISA}{CISA}{Cybersecurity and Infrastructure Security Agency}
 \newacronym{CSV}{CSV}{Comma-Separated Values}
 \newacronym{CT}{CT}{Certificate transparency}
@@ -369,6 +370,7 @@
 \newacronym{OS}{OS}{Operating System}
 \newacronym{POAM}{POA\&M}{Plan Of Action and Milestones}
 \newacronym{RRS}{RRS}{Risk Rating System}
+\newacronym{RVWP}{RVWP}{Ransomware Vulnerability Warning Pilot}
 \newacronym{SMTP}{SMTP}{Simple Mail Transfer Protocol}
 \newacronym{SSH}{SSH}{Secure Shell}
 \newacronym{TCP}{TCP}{Transmission Control Protocol}
@@ -797,7 +799,10 @@ same.}<</owner_is_federal_executive>>
 
 CISA updates this catalog with new vulnerabilities when the following conditions
 are met:
+\vspace{-\topsep}  % Minimize vertical spacing
 \begin{itemize}
+  	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+  	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
 	\item The vulnerability has an assigned \gls{CVE} ID.
 	\item There is reliable evidence that the vulnerability has been actively
 	exploited in the wild.
@@ -816,7 +821,7 @@ Details on the below findings can be found in ``findings.csv" in
 
 	\vspace*{-1.5mm}  % blank line needed on previous line for vertical spacing
 	\textcolor{rc-dark-blue}{\rule{\textwidth}{0.4mm}}
-	\scalegraphicsnofig[1.5]{kev-severity-by-prominence}
+	\scalegraphicsnofig[1.25]{kev-severity-by-prominence}
 \end{minipage}  % END: KEV SEVERITY BY PROMINENCE
 \begin{minipage}[t]{0.01\textwidth}
 	 \  % Spacer column
@@ -830,6 +835,25 @@ Details on the below findings can be found in ``findings.csv" in
 	\centering % blank line needed on previous line for vertical spacing
 	  \scalegraphicsnofig{max-age-active-kevs} \RCSourceSansProSemiBoldTen{MAX AGE OF ACTIVE KEVS}
 \end{minipage}}  % END: KEV RESPONSE TIME
+
+Signed into law in March 2022, the
+\href{https://www.cisa.gov/topics/cyber-threats-and-advisories/information-sharing/cyber-incident-reporting-critical-infrastructure-act-2022-circia}{\gls{CIRCIA}}
+required \gls{CISA} to establish the
+\href{https://www.cisa.gov/stopransomware/Ransomware-Vulnerability-Warning-Pilot}{\gls{RVWP}}.
+The goal of the \gls{RVWP} is to warn organizations about exposed vulnerabilities
+that may be exploited by ransomware threat actors.
+
+Of the \textbf{<<&calc.active_kev_count_total>>} \gls{KEV} findings detected on
+<<&owner.agency.acronym>>'s internet-facing assets,
+\textbf{<<&calc.active_kev_ransomware_count_total>>} are known by \gls{CISA}
+to have been used in ransomware campaigns.
+<<#calc.active_kev_ransomware_count_total>>We recommend remediating these as
+soon as possible:<</calc.active_kev_ransomware_count_total>>
+
+% Blank line needed on previous line for vertical spacing
+{\centering
+\scalegraphicsnofig[0.35]{kev-ransomware-severity-by-prominence}\par
+}
 
 \newpage
 <<#owner_is_federal_executive>>

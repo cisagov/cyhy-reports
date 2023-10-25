@@ -1150,6 +1150,7 @@ class ReportGenerator(object):
     def __generate_figures(self):
         graphs.setup()
         self.__figure_kev_severity_by_prominence()
+        self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
         self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
@@ -1224,6 +1225,26 @@ class ReportGenerator(object):
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("kev-severity-by-prominence", size=1.0)
+
+    def __figure_kev_ransomware_severity_by_prominence(self):
+        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
+        kev_ransomware_counts = list()
+        for severity in severities:
+            kev_ransomware_counts.append(
+                self.__results["active_kev_ransomware_counts"][severity]
+            )
+
+        bubbles = graphs.MyHorizontalBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # chart that looks aesthetically pleasing.
+            [10, 25, 40, 55],  # Bubble x coordinates
+            [6, 6, 6, 6],      # Bubble y coordinates
+            [5, 5, 5, 5],      # Make all bubbles the same size
+            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i.upper() for i in severities],
+            kev_ransomware_counts,
+        )
+        bubbles.plot("kev-ransomware-severity-by-prominence", size=1.0)
 
     def __figure_vuln_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
@@ -2006,6 +2027,7 @@ class ReportGenerator(object):
                 "name",
                 "port",
                 "kev",
+                "kev_ransomware",
                 "severity",
                 "time_opened",
                 "time_closed",
@@ -2025,6 +2047,7 @@ class ReportGenerator(object):
                     "name",
                     "port",
                     "kev",
+                    "kev_ransomware",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2042,6 +2065,7 @@ class ReportGenerator(object):
                     "name",
                     "port",
                     "kev",
+                    "kev_ransomware",
                     "severity",
                     "time_opened",
                     "time_closed",
@@ -2064,8 +2088,9 @@ class ReportGenerator(object):
         NULL_TIMESTAMP = pd.Timestamp("1970-01-01 00:00:00.000+0000")
         for df in (df0, df1):
             # Without the fillna steps below, groupby will drop rows where
-            # kev is None (NaN) and time_closed is None (NaT)
+            # kev/kev_ransomware is None (NaN) and time_closed is None (NaT)
             df["kev"].fillna("", inplace=True)
+            df["kev_ransomware"].fillna("", inplace=True)
             # This changes 'time_closed' dtype to object
             df["time_closed"].fillna(NULL_TIMESTAMP, inplace=True)  
             for col in ("time_opened", "time_closed", "last_detected"):
@@ -2233,6 +2258,7 @@ class ReportGenerator(object):
         # Convert Series to dictionary and severity keys to text
         d_active_kev_counts = self.__level_keys_to_text(active_kev_counts.to_dict(), lowercase=True)
         self.__results["active_kev_counts"] = d_active_kev_counts
+        self.__results["active_kev_count_total"] = active_kev_counts.sum()
         self.__results["active_kev_max_age"] = kev_max_age
 
         # New KEV counts
@@ -2273,6 +2299,28 @@ class ReportGenerator(object):
         d_resolved_kev_counts = self.__level_keys_to_text(resolved_kev_counts.to_dict(), lowercase=True)
         self.__results["resolved_kev_counts"] = d_resolved_kev_counts
 
+        # Calculate KEV ransomware counts
+        active_kev_ransomware_counts = Series([0, 0, 0, 0])
+        if len(df0):
+            # Filter for KEV ransomware tickets in df0 (open tickets)
+            df_active_kev_ransomware = df0[df0["kev_ransomware"] == True]
+
+            if len(df_active_kev_ransomware):
+                # Get count of tickets with each severity
+                active_kev_ransomware_counts = df_active_kev_ransomware.groupby(
+                    "severity"
+                ).size()
+        # Reorder counts Series to match our preferred order of
+        # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
+        # and fill in any missing levels with 0
+        active_kev_ransomware_counts = active_kev_ransomware_counts.reindex([4, 3, 2, 1]).fillna(0)
+        # Convert counts to integers
+        active_kev_ransomware_counts = active_kev_ransomware_counts.apply(np.int)
+        # Convert Series to dictionary and severity keys to text
+        d_active_kev_ransomware_counts = self.__level_keys_to_text(active_kev_ransomware_counts.to_dict(), lowercase=True)
+        self.__results["active_kev_ransomware_counts"] = d_active_kev_ransomware_counts
+        self.__results["active_kev_ransomware_count_total"] = active_kev_ransomware_counts.sum()
+
     def __table_new_and_redetected_vulns(self):
         """Split up 'new_vulnerabilities' (tickets in current snapshot that weren't in previous snapshot) into
            'brand_new_vulnerabilities' (first detected after previous snapshot end_time) and
@@ -2300,6 +2348,8 @@ class ReportGenerator(object):
                 "owner",
                 "name",
                 "cve",
+                "kev",
+                "kev_ransomware",
                 "severity",
                 "ip",
                 "port",
@@ -2503,6 +2553,7 @@ class ReportGenerator(object):
                 "port",
                 "protocol",
                 "known_exploited",
+                "ransomware_exploited",
                 "severity",
                 "initial_detection",
                 "latest_detection",
@@ -2522,6 +2573,7 @@ class ReportGenerator(object):
                 "port",
                 "protocol",
                 "kev",
+                "kev_ransomware",
                 "severity",
                 "time_opened",
                 "last_detected",
@@ -2545,6 +2597,7 @@ class ReportGenerator(object):
                     "port",
                     "protocol",
                     "known_exploited",
+                    "ransomware_exploited",
                     "severity",
                     "initial_detection",
                     "latest_detection",
@@ -2566,6 +2619,7 @@ class ReportGenerator(object):
                     "port",
                     "protocol",
                     "kev",
+                    "kev_ransomware",
                     "severity",
                     "time_opened",
                     "last_detected",
@@ -2587,6 +2641,7 @@ class ReportGenerator(object):
                     "port",
                     "protocol",
                     "known_exploited",
+                    "ransomware_exploited",
                     "severity",
                     "initial_detection",
                     "latest_detection",
@@ -2607,6 +2662,7 @@ class ReportGenerator(object):
                     "port",
                     "protocol",
                     "kev",
+                    "kev_ransomware",
                     "severity",
                     "time_opened",
                     "last_detected",
@@ -2696,6 +2752,7 @@ class ReportGenerator(object):
                 "name",
                 "cve",
                 "known_exploited",
+                "ransomware_exploited",
                 "severity",
                 "ip",
                 "port",
@@ -2708,6 +2765,7 @@ class ReportGenerator(object):
                 "name",
                 "cve",
                 "kev",
+                "kev_ransomware",
                 "severity",
                 "ip",
                 "port",
@@ -2720,6 +2778,7 @@ class ReportGenerator(object):
                 "name",
                 "cve",
                 "known_exploited",
+                "ransomware_exploited",
                 "severity",
                 "ip",
                 "port",
@@ -2731,6 +2790,7 @@ class ReportGenerator(object):
                 "name",
                 "cve",
                 "kev",
+                "kev_ransomware",
                 "severity",
                 "ip",
                 "port",
@@ -3285,6 +3345,9 @@ class ReportGenerator(object):
         avpvh = calc["average_vulnerabilities_per_vulnerable_host"] = dict()
         for k, v in ss0["vulnerabilities"].items():
             avpvh[k] = safe_divide(v, ss0["vulnerable_host_count"], 2)
+
+        calc["active_kev_count_total"] = self.__results["active_kev_count_total"]
+        calc["active_kev_ransomware_count_total"] = self.__results["active_kev_ransomware_count_total"]
 
         result["calc"] = calc
 
