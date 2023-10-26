@@ -120,9 +120,9 @@ def main():
     # Change to the correct output directory
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
-    # Build list of CyHy orgs
+    # Build list of orgs that should receive notifications
     notification_org_ids = build_notifications_org_list(db)
-    logging.debug("Found {} CYHY orgs: {}".format(len(notification_org_ids), notification_org_ids))
+    logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notification_org_ids), notification_org_ids))
 
     # Create notification PDFs for CyHy orgs
     master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
