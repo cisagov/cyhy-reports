@@ -49,6 +49,7 @@ def build_notifications_org_list(db):
     have a notification generated and sent.
     """
     notifications_to_generate = set()
+    notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
     cyhy_parent_ids = set()
     ticket_owner_ids = db.notifications.distinct("ticket_owner")
     for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
@@ -60,7 +61,7 @@ def build_notifications_org_list(db):
         # should get a notification.
         cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
     notifications_to_generate.update(cyhy_parent_ids)
-    return list(notifications_to_generate)
+    return list(notifications_to_generate, notifications_to_delete)
           
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
@@ -179,15 +180,15 @@ def main():
     else:
         logging.info("Nothing to email - skipping this step")
 
-    # Delete all NotificationDocs where ticket_owner is not a CyHy org, since
-    # we are not currently sending out notifications for non-CyHy orgs
+    # Delete NotificationDocs belonging to organizations that we didn't
+    # generate notifications for
     result = db.NotificationDoc.collection.delete_many(
-        {"ticket_owner": {"$nin": cyhy_org_ids}}
+        {"ticket_owner": {"$in": notifications_to_delete}}
     )
     logging.info(
-        "Deleted {} notifications from DB (owned by "
-        "non-CyHy organizations, which do not currently receive "
-        "notification emails)".format(result.deleted_count)
+        "Deleted {} notifications from DB owned by the following "
+        "organizations which do not currently receive notification "
+        "emails: {})".format(result.deleted_count, notifications_to_delete)
     )
 
     # Stop logging and clean up
