@@ -61,7 +61,7 @@ def build_notifications_org_list(db):
         cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
     notifications_to_generate.update(cyhy_parent_ids)
     ticket_owner_ids = db.notifications.distinct("ticket_owner")
-    return list(notifications_to_generate, notifications_to_delete)
+    return list(notifications_to_generate), list(notifications_to_delete)
           
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
