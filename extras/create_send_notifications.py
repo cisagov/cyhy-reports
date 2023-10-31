@@ -51,6 +51,7 @@ def build_notifications_org_list(db):
     notifications_to_generate = set()
     notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
     cyhy_parent_ids = set()
+    ticket_owner_ids = db.notifications.distinct("ticket_owner")
     for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
         # If the notification document's ticket owner has "CYHY" in their list of report_types,
         # then a notification should be generated for that owner:
@@ -60,8 +61,7 @@ def build_notifications_org_list(db):
         # should get a notification.
         cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
     notifications_to_generate.update(cyhy_parent_ids)
-    ticket_owner_ids = db.notifications.distinct("ticket_owner")
-    return list(notifications_to_generate), list(notifications_to_delete)
+    return list(notifications_to_generate, notifications_to_delete)
           
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
