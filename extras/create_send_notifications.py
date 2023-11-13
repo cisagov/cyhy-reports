@@ -50,7 +50,7 @@ def build_notifications_org_list(db):
     """
     notifications_to_generate = set()
     cyhy_parent_ids = set()
-    ticket_owner_ids = db.notifications.distinct("ticket_owner")
+    ticket_owner_ids = db.NotificationDoc.collection.distinct("ticket_owner")
     for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
         # If the notification document's ticket owner has "CYHY" in their list of report_types,
         # then a notification should be generated for that owner:
@@ -122,12 +122,12 @@ def main():
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
     # Build list of orgs that should receive notifications
-    notification_org_ids, notifications_to_delete = build_notifications_org_list(db)
-    logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notification_org_ids), notification_org_ids))
+    notifications_org_ids, notifications_to_delete = build_notifications_org_list(db)
+    logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notifications_org_ids), notifications_org_ids))
 
     # Create notification PDFs for CyHy orgs
     master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
-    num_pdfs_created = generate_notification_pdfs(db, notification_org_ids, master_report_key)
+    num_pdfs_created = generate_notification_pdfs(db, notifications_org_ids, master_report_key)
     logging.info("{} notification PDFs created".format(num_pdfs_created))
 
     # Create a symlink to the latest notifications.  This is for the
