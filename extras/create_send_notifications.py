@@ -73,8 +73,8 @@ def find_cyhy_parents(db, org_id):
             # There is an undocumented constraint where organizations are set up
             # with only one level of children (i.e. no grandchildren orgs). Given 
             # the fact that it is undocumented, following the hierarchy to the top
-            # is the best solution. So we do not exepct to go up more than one level.
-            # However, the implementation above is just a safety measure.
+            # is the best solution. We do not expect to go up more than one level,
+            # but we check all ancestors just to be sure.
             cyhy_parents.add(request["_id"])
             # Found a parent of org_id with "CYHY" in their list of report_types,
             # so add it to our set
