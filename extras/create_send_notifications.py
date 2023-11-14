@@ -55,10 +55,11 @@ def build_notifications_org_list(db):
         # If the notification document's ticket owner has "CYHY" in their list of report_types,
         # then a notification should be generated for that owner:
         notifications_to_generate.add(request["_id"])
+        logging.debug("{} - Log request id".format(request["_id"]))
         # Recursively check for any parents of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
-        cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
+        cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
     notifications_to_generate.update(cyhy_parent_ids)
     notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
     return list(notifications_to_generate), list(notifications_to_delete)
@@ -67,13 +68,20 @@ def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
     """
     cyhy_parents = set()
-    for request in db.RequestDoc.collection.find({"children": org_id, "report_types": "CYHY"}, {"_id": 1}):
-        # Found a parent of org_id with "CYHY" in their list of report_types,
-        # so add it to our set
-        cyhy_parents.add(request["_id"])
+    for request in db.RequestDoc.collection.find({"children": org_id}, {"_id": 1, "report_types": 1}):
+        if "CYHY" in request["report_types"]:
+            # There is an undocumented constraint where organizations are set up
+            # with only one level of children (i.e. no grandchildren orgs). Given 
+            # the fact that it is undocumented, following the hierarchy to the top
+            # is the best solution. So we do not exepct to go up more than one level.
+            # However, the implementation above is just a safety measure.
+            cyhy_parents.add(request["_id"])
+            # Found a parent of org_id with "CYHY" in their list of report_types,
+            # so add it to our set
+            logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
-        cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
+        cyhy_parent_ids = cyhy_parent_ids | find_cyhy_parents(db, request["_id"])
     return cyhy_parents
 
 def generate_notification_pdfs(db, org_ids, master_report_key): 
