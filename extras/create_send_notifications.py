@@ -55,7 +55,7 @@ def build_notifications_org_list(db):
         # If the notification document's ticket owner has "CYHY" in their list of report_types,
         # then a notification should be generated for that owner:
         notifications_to_generate.add(request["_id"])
-        logging.debug("{} - Log request id".format(request["_id"]))
+        logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
         # Recursively check for any ancestors of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
