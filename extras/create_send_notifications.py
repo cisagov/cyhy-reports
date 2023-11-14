@@ -56,7 +56,7 @@ def build_notifications_org_list(db):
         # then a notification should be generated for that owner:
         notifications_to_generate.add(request["_id"])
         logging.debug("{} - Log request id".format(request["_id"]))
-        # Recursively check for any parents of the ticket owner that have "CYHY" in
+        # Recursively check for any ancestors of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
         cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
