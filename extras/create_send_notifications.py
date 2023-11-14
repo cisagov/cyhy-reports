@@ -70,11 +70,11 @@ def find_cyhy_parents(db, org_id):
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id}, {"_id": 1, "report_types": 1}):
         if "CYHY" in request["report_types"]:
-            # There is an undocumented constraint where organizations are set up
-            # with only one level of children (i.e. no grandchildren orgs). Given 
-            # the fact that it is undocumented, following the hierarchy to the top
-            # is the best solution. We do not expect to go up more than one level,
-            # but we check all ancestors just to be sure.
+            # There is an undocumented convention at CISA to set up CyHy
+            # organizations with only one level of children (i.e. no
+            # grandchildren orgs). Since it is only a convention and not an
+            # enforced rule, we decided that following the hierarchy to the top
+            # is the safest solution.
             cyhy_parents.add(request["_id"])
             # Found a parent of org_id with "CYHY" in their list of report_types,
             # so add it to our set
