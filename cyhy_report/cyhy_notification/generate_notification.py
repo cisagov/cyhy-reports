@@ -125,16 +125,11 @@ RISKY_SERVICES_MAP = {
 # For BOD 23-02, we define a list of services that may indicate potential
 # publicly-accessible networked management interfaces that should be protected.
 POTENTIAL_NMI_SERVICES = [
-    "bftp",           # FTP
-    "ftp",            # FTP
     "microsoft-ds",   # SMB
     "ms-wbt-server",  # RDP
-    "ni-ftp",         # FTP
-    "rsftp",          # FTP
     "rtelnet",        # Telnet
     "smbdirect",      # SMB
     "telnet",         # Telnet
-    "tftp",           # TFTP
 ]
 
 class NotificationGenerator(object):
