@@ -42,26 +42,49 @@ def create_output_directories():
         os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR)
     )
 
+def build_notifications_org_list(db):
+    """Return notifications organization list.
 
-def build_cyhy_org_list(db):
-    """Build list of CyHy organization IDs.
-
-    This is the list of CyHy organization IDs (and their descendants) that
-    receive CyHy reports.
+    This is the list of organization IDs that should
+    have a notification generated and sent.
     """
-    cyhy_org_ids = set()  # Use a set here to avoid duplicates
-    for cyhy_request in list(
-        db.RequestDoc.collection.find(
-            {"report_types": "CYHY"}, {"_id": 1, "children": 1}
-        ).sort([("_id", 1)])
-    ):
-        cyhy_org_ids.add(cyhy_request["_id"])
-        if cyhy_request.get("children"):
-            cyhy_org_ids.update(db.RequestDoc.get_all_descendants(cyhy_request["_id"]))
-    return list(cyhy_org_ids)
+    notifications_to_generate = set()
+    cyhy_parent_ids = set()
+    ticket_owner_ids = db.NotificationDoc.collection.distinct("ticket_owner")
+    for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
+        # If the notification document's ticket owner has "CYHY" in their list of report_types,
+        # then a notification should be generated for that owner:
+        notifications_to_generate.add(request["_id"])
+        logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
+        # Recursively check for any ancestors of the ticket owner that have "CYHY" in
+        # their list of report_types.  If found, add them to the list of owners that
+        # should get a notification.
+        cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
+    notifications_to_generate.update(cyhy_parent_ids)
+    notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
+    return list(notifications_to_generate), list(notifications_to_delete)
+          
+def find_cyhy_parents(db, org_id):
+    """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
+    """
+    cyhy_parents = set()
+    for request in db.RequestDoc.collection.find({"children": org_id}, {"_id": 1, "report_types": 1}):
+        if "CYHY" in request["report_types"]:
+            # There is an undocumented convention at CISA to set up CyHy
+            # organizations with only one level of children (i.e. no
+            # grandchildren orgs). Since it is only a convention and not an
+            # enforced rule, we decided that following the hierarchy to the top
+            # is the safest solution.
+            cyhy_parents.add(request["_id"])
+            # Found a parent of org_id with "CYHY" in their list of report_types,
+            # so add it to our set
+            logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
+        # Recursively call find_cyhy_parents() to check if this org has any parents
+        # with "CYHY" in their list of report_types
+        cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
+    return cyhy_parents
 
-
-def generate_notification_pdfs(db, org_ids, master_report_key):
+def generate_notification_pdfs(db, org_ids, master_report_key): 
     """Generate all notification PDFs for a list of organizations."""
     num_pdfs_created = 0
     for org_id in org_ids:
@@ -106,13 +129,13 @@ def main():
     # Change to the correct output directory
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
-    # Build list of CyHy orgs
-    cyhy_org_ids = build_cyhy_org_list(db)
-    logging.debug("Found {} CYHY orgs: {}".format(len(cyhy_org_ids), cyhy_org_ids))
+    # Build list of orgs that should receive notifications
+    notifications_org_ids, notifications_to_delete = build_notifications_org_list(db)
+    logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notifications_org_ids), notifications_org_ids))
 
     # Create notification PDFs for CyHy orgs
     master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
-    num_pdfs_created = generate_notification_pdfs(db, cyhy_org_ids, master_report_key)
+    num_pdfs_created = generate_notification_pdfs(db, notifications_org_ids, master_report_key)
     logging.info("{} notification PDFs created".format(num_pdfs_created))
 
     # Create a symlink to the latest notifications.  This is for the
@@ -165,15 +188,15 @@ def main():
     else:
         logging.info("Nothing to email - skipping this step")
 
-    # Delete all NotificationDocs where ticket_owner is not a CyHy org, since
-    # we are not currently sending out notifications for non-CyHy orgs
+    # Delete NotificationDocs belonging to organizations that we didn't
+    # generate notifications for
     result = db.NotificationDoc.collection.delete_many(
-        {"ticket_owner": {"$nin": cyhy_org_ids}}
+        {"ticket_owner": {"$in": notifications_to_delete}}
     )
     logging.info(
-        "Deleted {} notifications from DB (owned by "
-        "non-CyHy organizations, which do not currently receive "
-        "notification emails)".format(result.deleted_count)
+        "Deleted {} notifications from DB owned by the following "
+        "organizations which do not currently receive notification "
+        "emails: {})".format(result.deleted_count, notifications_to_delete)
     )
 
     # Stop logging and clean up
