@@ -81,7 +81,7 @@ def find_cyhy_parents(db, org_id):
             logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
-        cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
+        cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
 def generate_notification_pdfs(db, org_ids, master_report_key): 
