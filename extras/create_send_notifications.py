@@ -53,7 +53,7 @@ def build_notifications_org_list(db):
     ticket_owner_ids = db.NotificationDoc.collection.distinct("ticket_owner")
     for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}}, {"_id": 1, "report_types": 1}):
         if "CYHY" in request["report_types"]:
-            # If the notification document's ticket owner has "CYHY" in their list of report_types,
+            # If the notification document's ticket owner has "CYHY" in its list of report_types,
             # then a notification should be generated for that owner:
             notifications_to_generate.add(request["_id"])
             logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
