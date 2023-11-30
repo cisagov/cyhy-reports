@@ -51,14 +51,16 @@ def build_notifications_org_list(db):
     notifications_to_generate = set()
     cyhy_parent_ids = set()
     ticket_owner_ids = db.NotificationDoc.collection.distinct("ticket_owner")
-    for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
-        # If the notification document's ticket owner has "CYHY" in their list of report_types,
-        # then a notification should be generated for that owner:
-        notifications_to_generate.add(request["_id"])
-        logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
+    for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}}, {"_id": 1, "report_types": 1}):
+        if "CYHY" in request["report_types"]:
+            # If the notification document's ticket owner has "CYHY" in their list of report_types,
+            # then a notification should be generated for that owner:
+            notifications_to_generate.add(request["_id"])
+            logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
         # Recursively check for any ancestors of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
+        logging.debug("{} doesn't have CYHY in report_types; checking parents, grandparents, etc.".format(request["_id"]))
         cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
     notifications_to_generate.update(cyhy_parent_ids)
     notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
@@ -81,6 +83,7 @@ def find_cyhy_parents(db, org_id):
             logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
+        logging.debug("{} doesn't have CYHY in report_types; checking parents, grandparents, etc.".format(request["_id"]))
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
