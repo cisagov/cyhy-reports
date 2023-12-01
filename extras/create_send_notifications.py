@@ -180,6 +180,11 @@ def main():
             logging.error("Failed to email notifications")
             logging.error("Stderr report detail: %s%s", data, err)
 
+        # Determine true list of orgs that just had notifications generated,
+        # either directly or via an ancestor org
+        orgs_notified = db.NotificationDoc.collection.distinct(
+            "ticket_owner", {"generated_for": {"$ne": []}})
+
         # Delete all NotificationDocs where generated_for is not []
         result = db.NotificationDoc.collection.delete_many(
             {"generated_for": {"$ne": []}}
@@ -190,6 +195,11 @@ def main():
         )
     else:
         logging.info("Nothing to email - skipping this step")
+
+    # Remove orgs from notifications_to_delete if they are in the list of orgs
+    # that we just generated notifications for (most likely because the
+    # notification was included in an ancestor org's notification)
+    notifications_to_delete = sorted(set(notifications_to_delete) - set(orgs_notified))
 
     # Delete NotificationDocs belonging to organizations that we didn't
     # generate notifications for
