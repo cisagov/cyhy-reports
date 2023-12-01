@@ -60,7 +60,7 @@ def build_notifications_org_list(db):
         # Recursively check for any ancestors of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
-        logging.debug("{} doesn't have CYHY in report_types; checking parents, grandparents, etc.".format(request["_id"]))
+        logging.debug("Checking for ancestors of {} with CYHY in their list of report_types".format(request["_id"]))
         cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
     notifications_to_generate.update(cyhy_parent_ids)
     notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
@@ -83,7 +83,7 @@ def find_cyhy_parents(db, org_id):
             logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
-        logging.debug("{} doesn't have CYHY in report_types; checking parents, grandparents, etc.".format(request["_id"]))
+        logging.debug("Checking for ancestors of {} with CYHY in their list of report_types".format(request["_id"]))
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
