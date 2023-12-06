@@ -69,6 +69,11 @@ def build_notifications_org_list(db):
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
     """
+
+    # WARNING: Even though cyhy-suborg explicitly checks for and blocks stakeholder
+    # cycles, if that guardrail is ever subverted, this function will recursively
+    # overflow and fail.
+ 
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id}, {"_id": 1, "report_types": 1}):
         if "CYHY" in request["report_types"]:
