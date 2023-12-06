@@ -139,7 +139,7 @@ def main():
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
     # Build list of orgs that should receive notifications
-    notifications_org_ids, notifications_to_delete = build_notifications_org_list(db)
+    notifications_org_ids, notifications_not_generated = build_notifications_org_list(db)
     logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notifications_org_ids), notifications_org_ids))
 
     # Create notification PDFs for CyHy orgs
