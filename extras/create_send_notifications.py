@@ -63,8 +63,8 @@ def build_notifications_org_list(db):
         logging.debug("Checking for ancestors of {} with CYHY in their list of report_types".format(request["_id"]))
         cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
     notifications_to_generate.update(cyhy_parent_ids)
-    notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
-    return sorted(notifications_to_generate), list(notifications_to_delete)
+    notifications_not_generated = set(ticket_owner_ids) - notifications_to_generate
+    return sorted(notifications_to_generate), list(notifications_not_generated)
           
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
@@ -204,7 +204,7 @@ def main():
     # Remove orgs from notifications_to_delete if they are in the list of orgs
     # that we just generated notifications for (most likely because the
     # notification was included in an ancestor org's notification)
-    notifications_to_delete = sorted(set(notifications_to_delete) - set(orgs_notified))
+    notifications_not_generated = sorted(set(notifications_to_delete) - set(orgs_notified))
 
     # Delete NotificationDocs belonging to organizations that we didn't
     # generate notifications for
