@@ -204,7 +204,7 @@ def main():
     # Remove orgs from notifications_to_delete if they are in the list of orgs
     # that we just generated notifications for (most likely because the
     # notification was included in an ancestor org's notification)
-    notifications_not_generated = sorted(set(notifications_to_delete) - set(orgs_notified))
+    notifications_to_delete = sorted(set(notifications_not_generated) - set(orgs_notified))
 
     # Delete NotificationDocs belonging to organizations that we didn't
     # generate notifications for
