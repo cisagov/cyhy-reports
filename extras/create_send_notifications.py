@@ -46,9 +46,6 @@ def build_notifications_org_list(db):
     """Return a list of org IDs for which notifications should be
     generated as well as a list of org IDs for which notifications
     should not be generated.
-
-    This is the list of organization IDs that should
-    have a notification generated and sent.
     """
     notifications_to_generate = set()
     cyhy_parent_ids = set()
