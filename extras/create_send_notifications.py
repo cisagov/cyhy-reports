@@ -43,8 +43,9 @@ def create_output_directories():
     )
 
 def build_notifications_org_list(db):
-    """Return list of notifications to generate and 
-       notifications not generated.
+    """Return a list of org IDs for which notifications should be
+    generated as well as a list of org IDs for which notifications
+    should not be generated.
 
     This is the list of organization IDs that should
     have a notification generated and sent.
