@@ -43,30 +43,36 @@ def create_output_directories():
     )
 
 def build_notifications_org_list(db):
-    """Return notifications organization list.
-
-    This is the list of organization IDs that should
-    have a notification generated and sent.
+    """Return a list of org IDs for which notifications should be
+    generated as well as a list of org IDs for which notifications
+    should not be generated.
     """
     notifications_to_generate = set()
     cyhy_parent_ids = set()
     ticket_owner_ids = db.NotificationDoc.collection.distinct("ticket_owner")
-    for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}, "report_types": "CYHY"}, {"_id":1}):
-        # If the notification document's ticket owner has "CYHY" in their list of report_types,
-        # then a notification should be generated for that owner:
-        notifications_to_generate.add(request["_id"])
-        logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
+    for request in db.RequestDoc.collection.find({"_id": {"$in": ticket_owner_ids}}, {"_id": 1, "report_types": 1}):
+        if "CYHY" in request["report_types"]:
+            # If the notification document's ticket owner has "CYHY" in its list of report_types,
+            # then a notification should be generated for that owner:
+            notifications_to_generate.add(request["_id"])
+            logging.debug("Added {} to notifications_to_generate".format(request["_id"]))
         # Recursively check for any ancestors of the ticket owner that have "CYHY" in
         # their list of report_types.  If found, add them to the list of owners that
         # should get a notification.
+        logging.debug("Checking for ancestors of {} with CYHY in their list of report_types".format(request["_id"]))
         cyhy_parent_ids.update(find_cyhy_parents(db, request["_id"]))
     notifications_to_generate.update(cyhy_parent_ids)
-    notifications_to_delete = set(ticket_owner_ids) - notifications_to_generate
-    return list(notifications_to_generate), list(notifications_to_delete)
+    notifications_not_generated = set(ticket_owner_ids) - notifications_to_generate
+    return sorted(notifications_to_generate), list(notifications_not_generated)
           
 def find_cyhy_parents(db, org_id):
     """Return parents/grandparents/etc. of an organization that have "CYHY" in their list of report_types.
     """
+
+    # WARNING: Even though cyhy-suborg explicitly checks for and blocks
+    # stakeholder cycles (e.g. org A is a descendant of org B, which is a
+    # descendant of org A), if that guardrail is ever subverted, this function
+    # will recursively overflow and fail.
     cyhy_parents = set()
     for request in db.RequestDoc.collection.find({"children": org_id}, {"_id": 1, "report_types": 1}):
         if "CYHY" in request["report_types"]:
@@ -81,6 +87,7 @@ def find_cyhy_parents(db, org_id):
             logging.debug("{} - Adding to set of CYHY parents".format(request["_id"]))
         # Recursively call find_cyhy_parents() to check if this org has any parents
         # with "CYHY" in their list of report_types
+        logging.debug("Checking for ancestors of {} with CYHY in their list of report_types".format(request["_id"]))
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
@@ -130,7 +137,7 @@ def main():
     os.chdir(os.path.join(NOTIFICATIONS_BASE_DIR, NOTIFICATION_ARCHIVE_DIR))
 
     # Build list of orgs that should receive notifications
-    notifications_org_ids, notifications_to_delete = build_notifications_org_list(db)
+    notifications_org_ids, notifications_not_generated = build_notifications_org_list(db)
     logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notifications_org_ids), notifications_org_ids))
 
     # Create notification PDFs for CyHy orgs
@@ -177,6 +184,11 @@ def main():
             logging.error("Failed to email notifications")
             logging.error("Stderr report detail: %s%s", data, err)
 
+        # Determine true list of orgs that just had notifications generated,
+        # either directly or via an ancestor org
+        orgs_notified = db.NotificationDoc.collection.distinct(
+            "ticket_owner", {"generated_for": {"$ne": []}})
+
         # Delete all NotificationDocs where generated_for is not []
         result = db.NotificationDoc.collection.delete_many(
             {"generated_for": {"$ne": []}}
@@ -187,6 +199,11 @@ def main():
         )
     else:
         logging.info("Nothing to email - skipping this step")
+
+    # Remove orgs from notifications_to_delete if they are in the list of orgs
+    # that we just generated notifications for (most likely because the
+    # notification was included in an ancestor org's notification)
+    notifications_to_delete = sorted(set(notifications_not_generated) - set(orgs_notified))
 
     # Delete NotificationDocs belonging to organizations that we didn't
     # generate notifications for
