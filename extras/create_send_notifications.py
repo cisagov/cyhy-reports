@@ -186,8 +186,8 @@ def main():
 
         # Determine true list of orgs that just had notifications generated,
         # either directly or via an ancestor org
-        orgs_notified = db.NotificationDoc.collection.distinct(
-            "ticket_owner", {"generated_for": {"$ne": []}})
+        orgs_notified = db.NotificationDoc.collection.find(
+            {"generated_for": {"$ne": []}}).distinct("ticket_owner")
 
         # Delete all NotificationDocs where generated_for is not []
         result = db.NotificationDoc.collection.delete_many(
