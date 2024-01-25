@@ -911,6 +911,7 @@ def main():
                 "No previous CybEx Scorecard JSON file found - continuing without creating CybEx Scorecard"
             )
 
+        global reports_to_generate
         if args["--no-snapshots"]:
             # Skip creation of snapshots
             logging.info("Skipping snapshot creation due to --no-snapshots parameter")
