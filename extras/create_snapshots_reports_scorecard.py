@@ -343,6 +343,7 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     reports_to_generate = create_list_of_reports_to_generate(db)
 
     logging.info("Building list of snapshots to generate...")
+    global snapshots_to_generate
     snapshots_to_generate = create_list_of_snapshots_to_generate(
         db, reports_to_generate
     )
