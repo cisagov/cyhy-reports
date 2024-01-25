@@ -315,9 +315,20 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
     return snapshot_process.returncode
 
 
-def create_snapshots_from_list(org_list, db, cyhy_db_section):
+def create_all_snapshots(db, cyhy_db_section):
     """Create a snapshot for each organization in a list."""
-    for org_id in org_list:
+    while True:
+        with stg_lock:
+            global snapshots_to_generate
+            logging.debug(
+                "[%s] %d snapshot(s) left to generate", threading.current_thread().name, len(snapshots_to_generate))
+            if snapshots_to_generate:
+                org_id = snapshots_to_generate.pop(0)
+            else:
+                logging.info(
+                "[%s] No snapshots left to generate - thread exiting", threading.current_thread().name)
+                break
+
         logging.info(
             "[%s] Starting snapshot for: %s", threading.current_thread().name, org_id
         )
