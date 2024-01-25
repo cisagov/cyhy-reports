@@ -380,127 +380,135 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     return sorted(list(reports_to_generate))
 
 
-# Create a function called "chunks" with two arguments, l and n:
-def chunks(l, n):
-    # For item i in a range that is a length of l,
-    for i in range(0, len(l), n):
-        # Create an index range for l of n items:
-        yield l[i : i + n]
+def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
+    """Create a report for a single organization."""
+    report_time = time.time()
+    logging.info("[%s] Starting report for: %s", threading.current_thread().name, org_id)
+    if use_docker == 1:
+        if nolog:
+            p = subprocess.Popen(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--volume",
+                    "/etc/cyhy:/etc/cyhy",
+                    "--volume",
+                    "{}:/home/cyhy".format(CYHY_REPORT_DIR),
+                    "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
+                    "cyhy-report",
+                    "--nolog",
+                    "--cyhy-section",
+                    cyhy_db_section,
+                    "--scan-section",
+                    scan_db_section,
+                    "--final",
+                    "--encrypt",
+                    org_id,
+                ],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        else:
+            p = subprocess.Popen(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--volume",
+                    "/etc/cyhy:/etc/cyhy",
+                    "--volume",
+                    "{}:/home/cyhy".format(CYHY_REPORT_DIR),
+                    "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
+                    "cyhy-report",
+                    "--cyhy-section",
+                    cyhy_db_section,
+                    "--scan-section",
+                    scan_db_section,
+                    "--final",
+                    "--encrypt",
+                    org_id,
+                ],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+    else:
+        if nolog:
+            p = subprocess.Popen(
+                [
+                    "cyhy-report",
+                    "--nolog",
+                    "--cyhy-section",
+                    cyhy_db_section,
+                    "--scan-section",
+                    scan_db_section,
+                    "--final",
+                    "--encrypt",
+                    org_id,
+                ],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        else:
+            p = subprocess.Popen(
+                [
+                    "cyhy-report",
+                    "--cyhy-section",
+                    cyhy_db_section,
+                    "--scan-section",
+                    scan_db_section,
+                    "--final",
+                    "--encrypt",
+                    org_id,
+                ],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+    data, err = p.communicate()
+    report_time = time.time() - report_time
+    report_durations.append((org_id, report_time))
+    return_code = p.returncode
+    if return_code == 0:
+        logging.info(
+            "[%s] Successful report generated: %s (%.2f s)",
+            threading.current_thread().name,
+            org_id,
+            round(report_time, 2),
+        )
+        successful_reports.append(org_id)
+    else:
+        logging.info(
+            "[%s] Failure to generate report: %s",
+            threading.current_thread().name,
+            org_id,
+        )
+        logging.info(
+            "[%s] Stderr report detail: %s%s",
+            threading.current_thread().name,
+            data,
+            err,
+        )
+        failed_reports.append(org_id)
 
 
-def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, nolog):
-    for i in customer_list:
-        report_time = time.time()
-        logging.info("[%s] Starting report for: %s", threading.current_thread().name, i)
-        if use_docker == 1:
-            if nolog:
-                p = subprocess.Popen(
-                    [
-                        "docker",
-                        "run",
-                        "--rm",
-                        "--volume",
-                        "/etc/cyhy:/etc/cyhy",
-                        "--volume",
-                        "{}:/home/cyhy".format(CYHY_REPORT_DIR),
-                        "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
-                        "cyhy-report",
-                        "--nolog",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
+def create_all_reports(cyhy_db_section, scan_db_section, use_docker, nolog):
+    """Create reports for all orgs in a list."""
+    while True:
+        with rtg_lock:
+            global reports_to_generate
+            logging.debug(
+                "[%s] %d reports left to generate", threading.current_thread().name, len(reports_to_generate))
+            if reports_to_generate:
+                org_id = reports_to_generate.pop(0)
             else:
-                p = subprocess.Popen(
-                    [
-                        "docker",
-                        "run",
-                        "--rm",
-                        "--volume",
-                        "/etc/cyhy:/etc/cyhy",
-                        "--volume",
-                        "{}:/home/cyhy".format(CYHY_REPORT_DIR),
-                        "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
-                        "cyhy-report",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-        else:
-            if nolog:
-                p = subprocess.Popen(
-                    [
-                        "cyhy-report",
-                        "--nolog",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-            else:
-                p = subprocess.Popen(
-                    [
-                        "cyhy-report",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-        data, err = p.communicate()
-        report_time = time.time() - report_time
-        report_durations.append((i, report_time))
-        return_code = p.returncode
-        if return_code == 0:
-            logging.info(
-                "[%s] Successful report generated: %s (%.2f s)",
-                threading.current_thread().name,
-                i,
-                round(report_time, 2),
-            )
-            successful_reports.append(i)
-        else:
-            logging.info(
-                "[%s] Failure to generate report: %s",
-                threading.current_thread().name,
-                i,
-            )
-            logging.info(
-                "[%s] Stderr report detail: %s%s",
-                threading.current_thread().name,
-                data,
-                err,
-            )
-            failed_reports.append(i)
+                logging.info(
+                "[%s] No reports left to generate - exiting", threading.current_thread().name)
+                break
+        create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog)
 
 
 def gen_weekly_reports(
@@ -510,27 +518,31 @@ def gen_weekly_reports(
     # See https://github.com/cisagov/cyhy-reports/issues/59
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start_time = time.time()
-    # Create a list from the results of the function chunks
-    threads = []
-    thread_list = list(
-        chunks(
-            successful_snaps,
-            int(math.ceil(float(len(successful_snaps)) / float(REPORT_THREADS))),
-        )
-    )
-    for i in thread_list:
+
+    logging.debug("%d reports to generate: %s", len(successful_snaps), successful_snaps)
+
+    # List to keep track of our report creation threads
+    report_threads = list()
+
+    # Start up the threads to create reports
+    for t in range(REPORT_THREADS):
         try:
-            t = threading.Thread(
-                target=create_reports,
-                args=(i, cyhy_db_section, scan_db_section, use_docker, nolog),
+            report_thread = threading.Thread(
+                target=create_all_reports, args=(cyhy_db_section, scan_db_section, use_docker, nolog)
             )
-            threads.append(t)
-            t.start()
+            report_threads.append(report_thread)
+            report_thread.start()
             time.sleep(0.5)
-        except:
-            print("Error: Unable to start thread")
-    for t in threads:
-        t.join()
+        except Exception:
+            logging.error("Unable to start report thread #%s", t)
+
+    # Wait until each thread terminates
+    for report_thread in report_threads:
+        report_thread.join()
+    logging.info(
+        "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
+    )
+
     report_durations.sort(key=lambda tup: tup[1], reverse=True)
     logging.info("Longest Reports:")
     for i in report_durations[:10]:
