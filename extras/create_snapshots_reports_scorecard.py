@@ -348,24 +348,21 @@ def generate_weekly_snapshots(db, cyhy_db_section):
         db, reports_to_generate
     )
 
+    logging.debug("%d snapshots to generate: %s", len(snapshots_to_generate), snapshots_to_generate)
+
     # List to keep track of our snapshot creation threads
     snapshot_threads = list()
 
-    # Lists of orgs for each snapshot thread to process
-    snapshots_to_generate = list(
-        make_list_chunks(snapshots_to_generate, SNAPSHOT_THREADS)
-    )
-
     # Start up the threads to create snapshots
-    for orgs in snapshots_to_generate:
+    for t in range(SNAPSHOT_THREADS):
         try:
             snapshot_thread = threading.Thread(
-                target=create_snapshots_from_list, args=(orgs, db, cyhy_db_section),
+                target=create_all_snapshots, args=(db, cyhy_db_section)
             )
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
         except Exception:
-            logging.error("Unable to start snapshot thread for %s", orgs)
+            logging.error("Unable to start snapshot thread #%s", t)
 
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
