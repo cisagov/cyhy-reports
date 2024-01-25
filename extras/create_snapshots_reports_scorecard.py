@@ -52,6 +52,9 @@ CYHY_REPORT_DIR = os.path.join(
 )
 
 # Global variables and their associated thread locks
+snapshots_to_generate = list()
+stg_lock = threading.Lock()
+
 successful_snapshots = list()
 ss_lock = threading.Lock()
 
@@ -60,6 +63,9 @@ fs_lock = threading.Lock()
 
 snapshot_durations = list()
 sd_lock = threading.Lock()
+
+reports_to_generate = list()
+rtg_lock = threading.Lock()
 
 successful_reports = list()
 sr_lock = threading.Lock()
