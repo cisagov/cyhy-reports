@@ -250,12 +250,6 @@ def create_list_of_snapshots_to_generate(db, reports_to_generate):
     return sorted(list(set(reports_to_generate) - report_org_descendants))
 
 
-def make_list_chunks(my_list, num_chunks):
-    """Split a list into a specified number of smaller lists."""
-    for i in range(0, num_chunks):
-        yield my_list[i::num_chunks]
-
-
 def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
     """Create a snapshot for a specified organization."""
     snapshot_start_time = time.time()
