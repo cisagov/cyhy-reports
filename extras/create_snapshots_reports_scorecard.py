@@ -294,24 +294,24 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             org_descendants = db.RequestDoc.get_all_descendants(org_id)
 
     if snapshot_process.returncode == 0:
-        logging.info("Successful snapshot: %s (%.2f s)", org_id, snapshot_duration)
+        logging.info("[%s] Successful snapshot: %s (%.2f s)", threading.current_thread().name, org_id, snapshot_duration)
         with ss_lock:
             successful_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.info(
-                    " - Includes successful descendant snapshot(s): %s", org_descendants
+                    "[%s] - Includes successful descendant snapshot(s): %s", threading.current_thread().name, org_descendants
                 )
                 successful_snapshots.extend(org_descendants)
     else:
-        logging.error("Unsuccessful snapshot: %s", org_id)
+        logging.error("[%s] Unsuccessful snapshot: %s", threading.current_thread().name, org_id)
         with fs_lock:
             failed_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.error(
-                    " - Unsuccessful descendant snapshot(s): %s", org_descendants,
+                    "[%s] - Unsuccessful descendant snapshot(s): %s", threading.current_thread().name, org_descendants,
                 )
                 failed_snapshots.extend(org_descendants)
-        logging.error("Stderr failure detail: %s %s", data, err)
+        logging.error("[%s] Stderr failure detail: %s %s", threading.current_thread().name, data, err)
     return snapshot_process.returncode
 
 
