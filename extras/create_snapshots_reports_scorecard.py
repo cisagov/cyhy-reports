@@ -338,6 +338,8 @@ def generate_weekly_snapshots(db, cyhy_db_section):
 
     logging.info("Building list of snapshots to generate...")
     global snapshots_to_generate
+    # No thread locking is needed here for snapshots_to_generate because we are
+    # still single-threaded at this point
     snapshots_to_generate = create_list_of_snapshots_to_generate(
         db, reports_to_generate
     )
@@ -912,6 +914,8 @@ def main():
             )
 
         global reports_to_generate
+        # No thread locking is needed here for reports_to_generate because we
+        # are still single-threaded at this point
         if args["--no-snapshots"]:
             # Skip creation of snapshots
             logging.info("Skipping snapshot creation due to --no-snapshots parameter")
