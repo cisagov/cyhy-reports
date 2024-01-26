@@ -293,7 +293,7 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             successful_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.info(
-                    "[%s] - Includes successful descendant snapshot(s): %s", threading.current_thread().name, org_descendants
+                    "[%s]  - Includes successful descendant snapshot(s): %s", threading.current_thread().name, org_descendants
                 )
                 successful_snapshots.extend(org_descendants)
     else:
@@ -302,7 +302,7 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             failed_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.error(
-                    "[%s] - Unsuccessful descendant snapshot(s): %s", threading.current_thread().name, org_descendants,
+                    "[%s]  - Unsuccessful descendant snapshot(s): %s", threading.current_thread().name, org_descendants,
                 )
                 failed_snapshots.extend(org_descendants)
         logging.error("[%s] Stderr failure detail: %s %s", threading.current_thread().name, data, err)
