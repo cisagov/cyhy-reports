@@ -250,8 +250,8 @@ def create_list_of_snapshots_to_generate(db, reports_to_generate):
     return sorted(list(set(reports_to_generate) - report_org_descendants))
 
 
-def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
-    """Create a snapshot for a specified organization."""
+def generate_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
+    """Generate a snapshot for a specified organization."""
     snapshot_start_time = time.time()
 
     snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
@@ -325,8 +325,10 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
     return snapshot_process.returncode
 
 
-def create_all_snapshots(db, cyhy_db_section):
-    """Create a snapshot for each organization in a list."""
+def generate_snapshots_from_list(db, cyhy_db_section):
+    """Attempt to generate a snapshot for each organization in a global list.
+    Each thread pulls an organization ID from the global list
+    (snapshots_to_generate) and attempts to generate a snapshot for it."""
     global snapshots_to_generate
     while True:
         with stg_lock:
@@ -347,11 +349,12 @@ def create_all_snapshots(db, cyhy_db_section):
         logging.info(
             "[%s] Starting snapshot for: %s", threading.current_thread().name, org_id
         )
-        create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots=False)
+        generate_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots=False)
 
 
-def generate_weekly_snapshots(db, cyhy_db_section):
-    """Generate all snapshots needed in order to generate the CyHy reports."""
+def manage_snapshot_threads(db, cyhy_db_section):
+    """Build the lists of reports and snapshots to be generated, then spawn the
+    threads that generate the snapshots."""
     start_time = time.time()
 
     logging.info("Building list of reports to generate...")
@@ -378,7 +381,7 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     for t in range(SNAPSHOT_THREADS):
         try:
             snapshot_thread = threading.Thread(
-                target=create_all_snapshots, args=(db, cyhy_db_section)
+                target=generate_snapshots_from_list, args=(db, cyhy_db_section)
             )
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
@@ -687,7 +690,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
             "Creating grouping node snapshots needed for third-party reports..."
         )
         for grouping_node_id in grouping_node_ids:
-            snapshot_rc = create_snapshot(
+            snapshot_rc = generate_snapshot(
                 db, cyhy_db_section, grouping_node_id, use_only_existing_snapshots=True
             )
 
@@ -713,7 +716,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     # See https://github.com/cisagov/cyhy-reports/issues/60
     logging.info("Creating third-party snapshots...")
     for third_party_id in third_party_report_ids:
-        snapshot_rc = create_snapshot(
+        snapshot_rc = generate_snapshot(
             db, cyhy_db_section, third_party_id, use_only_existing_snapshots=True
         )
 
@@ -954,7 +957,9 @@ def main():
             logging.info("Skipping snapshot creation due to --no-snapshots parameter")
             reports_to_generate = create_list_of_reports_to_generate(db)
         else:
-            reports_to_generate = generate_weekly_snapshots(db, cyhy_db_section)
+            # Generate all necessary snapshots and return the updated list of
+            # reports to be generated
+            reports_to_generate = manage_snapshot_threads(db, cyhy_db_section)
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
