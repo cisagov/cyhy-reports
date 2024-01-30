@@ -33,3 +33,15 @@ To generate a Cyber Exposure (CybEx) scorecard:
 ```console
 docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy cisagov/cyhy-reports cyhy-cybex-scorecard [OPTIONS]
 ```
+
+To generate a list of all CyHy contacts in the database in CSV format:
+
+```console
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy cisagov/cyhy-reports cyhy-contacts [OPTIONS]
+```
+
+To generate a list of all CyHy stakeholders in the database in CSV format:
+
+```console
+docker run --rm --volume /private/etc/cyhy:/etc/cyhy --volume /private/tmp/cyhy:/home/cyhy cisagov/cyhy-reports cyhy-stakeholders [OPTIONS]
+```
