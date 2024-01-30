@@ -288,24 +288,40 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             org_descendants = db.RequestDoc.get_all_descendants(org_id)
 
     if snapshot_process.returncode == 0:
-        logging.info("[%s] Successful snapshot: %s (%.2f s)", threading.current_thread().name, org_id, snapshot_duration)
+        logging.info(
+            "[%s] Successful snapshot: %s (%.2f s)",
+            threading.current_thread().name,
+            org_id,
+            snapshot_duration,
+        )
         with ss_lock:
             successful_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.info(
-                    "[%s]  - Includes successful descendant snapshot(s): %s", threading.current_thread().name, org_descendants
+                    "[%s]  - Includes successful descendant snapshot(s): %s",
+                    threading.current_thread().name,
+                    org_descendants,
                 )
                 successful_snapshots.extend(org_descendants)
     else:
-        logging.error("[%s] Unsuccessful snapshot: %s", threading.current_thread().name, org_id)
+        logging.error(
+            "[%s] Unsuccessful snapshot: %s", threading.current_thread().name, org_id
+        )
         with fs_lock:
             failed_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.error(
-                    "[%s]  - Unsuccessful descendant snapshot(s): %s", threading.current_thread().name, org_descendants,
+                    "[%s]  - Unsuccessful descendant snapshot(s): %s",
+                    threading.current_thread().name,
+                    org_descendants,
                 )
                 failed_snapshots.extend(org_descendants)
-        logging.error("[%s] Stderr failure detail: %s %s", threading.current_thread().name, data, err)
+        logging.error(
+            "[%s] Stderr failure detail: %s %s",
+            threading.current_thread().name,
+            data,
+            err,
+        )
     return snapshot_process.returncode
 
 
@@ -315,12 +331,17 @@ def create_all_snapshots(db, cyhy_db_section):
         with stg_lock:
             global snapshots_to_generate
             logging.debug(
-                "[%s] %d snapshot(s) left to generate", threading.current_thread().name, len(snapshots_to_generate))
+                "[%s] %d snapshot(s) left to generate",
+                threading.current_thread().name,
+                len(snapshots_to_generate),
+            )
             if snapshots_to_generate:
                 org_id = snapshots_to_generate.pop(0)
             else:
                 logging.info(
-                "[%s] No snapshots left to generate - thread exiting", threading.current_thread().name)
+                    "[%s] No snapshots left to generate - thread exiting",
+                    threading.current_thread().name,
+                )
                 break
 
         logging.info(
@@ -344,7 +365,11 @@ def generate_weekly_snapshots(db, cyhy_db_section):
         db, reports_to_generate
     )
 
-    logging.debug("%d snapshots to generate: %s", len(snapshots_to_generate), snapshots_to_generate)
+    logging.debug(
+        "%d snapshots to generate: %s",
+        len(snapshots_to_generate),
+        snapshots_to_generate,
+    )
 
     # List to keep track of our snapshot creation threads
     snapshot_threads = list()
@@ -379,7 +404,9 @@ def generate_weekly_snapshots(db, cyhy_db_section):
 def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
     """Create a report for a single organization."""
     report_time = time.time()
-    logging.info("[%s] Starting report for: %s", threading.current_thread().name, org_id)
+    logging.info(
+        "[%s] Starting report for: %s", threading.current_thread().name, org_id
+    )
     if use_docker == 1:
         if nolog:
             p = subprocess.Popen(
@@ -497,12 +524,17 @@ def create_all_reports(cyhy_db_section, scan_db_section, use_docker, nolog):
         with rtg_lock:
             global reports_to_generate
             logging.debug(
-                "[%s] %d reports left to generate", threading.current_thread().name, len(reports_to_generate))
+                "[%s] %d reports left to generate",
+                threading.current_thread().name,
+                len(reports_to_generate),
+            )
             if reports_to_generate:
                 org_id = reports_to_generate.pop(0)
             else:
                 logging.info(
-                "[%s] No reports left to generate - exiting", threading.current_thread().name)
+                    "[%s] No reports left to generate - exiting",
+                    threading.current_thread().name,
+                )
                 break
         create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog)
 
@@ -524,7 +556,8 @@ def gen_weekly_reports(
     for t in range(REPORT_THREADS):
         try:
             report_thread = threading.Thread(
-                target=create_all_reports, args=(cyhy_db_section, scan_db_section, use_docker, nolog)
+                target=create_all_reports,
+                args=(cyhy_db_section, scan_db_section, use_docker, nolog),
             )
             report_threads.append(report_thread)
             report_thread.start()
