@@ -327,9 +327,9 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
 
 def create_all_snapshots(db, cyhy_db_section):
     """Create a snapshot for each organization in a list."""
+    global snapshots_to_generate
     while True:
         with stg_lock:
-            global snapshots_to_generate
             logging.debug(
                 "[%s] %d snapshot(s) left to generate",
                 threading.current_thread().name,
@@ -520,9 +520,9 @@ def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
 
 def create_all_reports(cyhy_db_section, scan_db_section, use_docker, nolog):
     """Create reports for all orgs in a list."""
+    global reports_to_generate
     while True:
         with rtg_lock:
-            global reports_to_generate
             logging.debug(
                 "[%s] %d reports left to generate",
                 threading.current_thread().name,
