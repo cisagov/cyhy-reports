@@ -496,7 +496,8 @@ def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
             )
     data, err = p.communicate()
     report_time = time.time() - report_time
-    report_durations.append((org_id, report_time))
+    with rd_lock:
+        report_durations.append((org_id, report_time))
     return_code = p.returncode
     if return_code == 0:
         logging.info(
@@ -505,7 +506,8 @@ def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
             org_id,
             round(report_time, 2),
         )
-        successful_reports.append(org_id)
+        with sr_lock:
+            successful_reports.append(org_id)
     else:
         logging.info(
             "[%s] Failure to generate report: %s",
@@ -518,7 +520,8 @@ def create_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
             data,
             err,
         )
-        failed_reports.append(org_id)
+        with fr_lock:
+            failed_reports.append(org_id)
 
 
 def create_all_reports(cyhy_db_section, scan_db_section, use_docker, nolog):
