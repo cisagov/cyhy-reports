@@ -15,7 +15,6 @@ Options:
 import distutils.dir_util
 import glob
 import logging
-import math
 import os
 import shutil
 import subprocess
