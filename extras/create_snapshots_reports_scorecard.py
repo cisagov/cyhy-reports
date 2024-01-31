@@ -326,6 +326,7 @@ def generate_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
 
 def generate_snapshots_from_list(db, cyhy_db_section):
     """Attempt to generate a snapshot for each organization in a global list.
+
     Each thread pulls an organization ID from the global list
     (snapshots_to_generate) and attempts to generate a snapshot for it."""
     global snapshots_to_generate
