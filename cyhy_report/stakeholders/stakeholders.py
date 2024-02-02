@@ -96,19 +96,19 @@ def generate_stakeholders_csv(db):
 
         wr.writerow(
             (
-                "{}".format(org["_id"]),
-                "{}".format(org["agency"]["name"]),
-                "{}".format(org["agency"]["location"]["name"].encode("utf-8")),
-                "{}".format(org["agency"]["location"]["county"]),
-                "{}".format(org["agency"]["location"]["state"]),
-                "{}".format(org["agency"]["location"]["gnis_id"]),
-                "{}".format(org_types[org["_id"]]),
-                "{}".format(org_CI),
-                "{}".format(org_CI_sector),
-                "{}".format(org["scheduler"]),
-                "{}".format(org["report_period"]),
-                "{}".format(org_ELECTION),
-                "{}".format(first_scan),
+                org["_id"],
+                org["agency"]["name"],
+                org["agency"]["location"]["name"].encode("utf-8"),
+                org["agency"]["location"]["county"],
+                org["agency"]["location"]["state"],
+                org["agency"]["location"]["gnis_id"],
+                org_types[org["_id"]],
+                org_CI,
+                org_CI_sector,
+                org["scheduler"],
+                org["report_period"],
+                org_ELECTION,
+                first_scan,
             )
         )
 
