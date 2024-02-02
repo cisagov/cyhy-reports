@@ -15,7 +15,6 @@ Options:
 import distutils.dir_util
 import glob
 import logging
-import math
 import os
 import shutil
 import subprocess
@@ -52,6 +51,9 @@ CYHY_REPORT_DIR = os.path.join(
 )
 
 # Global variables and their associated thread locks
+snapshots_to_generate = list()
+stg_lock = threading.Lock()
+
 successful_snapshots = list()
 ss_lock = threading.Lock()
 
@@ -60,6 +62,9 @@ fs_lock = threading.Lock()
 
 snapshot_durations = list()
 sd_lock = threading.Lock()
+
+reports_to_generate = list()
+rtg_lock = threading.Lock()
 
 successful_reports = list()
 sr_lock = threading.Lock()
@@ -244,14 +249,8 @@ def create_list_of_snapshots_to_generate(db, reports_to_generate):
     return sorted(list(set(reports_to_generate) - report_org_descendants))
 
 
-def make_list_chunks(my_list, num_chunks):
-    """Split a list into a specified number of smaller lists."""
-    for i in range(0, num_chunks):
-        yield my_list[i::num_chunks]
-
-
-def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
-    """Create a snapshot for a specified organization."""
+def generate_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
+    """Generate a snapshot for a specified organization."""
     snapshot_start_time = time.time()
 
     snapshot_command = ["cyhy-snapshot", "--section", cyhy_db_section, "create"]
@@ -288,66 +287,108 @@ def create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots):
             org_descendants = db.RequestDoc.get_all_descendants(org_id)
 
     if snapshot_process.returncode == 0:
-        logging.info("Successful snapshot: %s (%.2f s)", org_id, snapshot_duration)
+        logging.info(
+            "[%s] Successful snapshot: %s (%.2f s)",
+            threading.current_thread().name,
+            org_id,
+            snapshot_duration,
+        )
         with ss_lock:
             successful_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.info(
-                    " - Includes successful descendant snapshot(s): %s", org_descendants
+                    "[%s]  - Includes successful descendant snapshot(s): %s",
+                    threading.current_thread().name,
+                    org_descendants,
                 )
                 successful_snapshots.extend(org_descendants)
     else:
-        logging.error("Unsuccessful snapshot: %s", org_id)
+        logging.error(
+            "[%s] Unsuccessful snapshot: %s", threading.current_thread().name, org_id
+        )
         with fs_lock:
             failed_snapshots.append(org_id)
             if org_descendants and not use_only_existing_snapshots:
                 logging.error(
-                    " - Unsuccessful descendant snapshot(s): %s", org_descendants,
+                    "[%s]  - Unsuccessful descendant snapshot(s): %s",
+                    threading.current_thread().name,
+                    org_descendants,
                 )
                 failed_snapshots.extend(org_descendants)
-        logging.error("Stderr failure detail: %s %s", data, err)
+        logging.error(
+            "[%s] Stderr failure detail: %s %s",
+            threading.current_thread().name,
+            data,
+            err,
+        )
     return snapshot_process.returncode
 
 
-def create_snapshots_from_list(org_list, db, cyhy_db_section):
-    """Create a snapshot for each organization in a list."""
-    for org_id in org_list:
+def generate_snapshots_from_list(db, cyhy_db_section):
+    """Attempt to generate a snapshot for each organization in a global list.
+
+    Each thread pulls an organization ID from the global list
+    (snapshots_to_generate) and attempts to generate a snapshot for it."""
+    global snapshots_to_generate
+    while True:
+        with stg_lock:
+            logging.debug(
+                "[%s] %d snapshot(s) left to generate",
+                threading.current_thread().name,
+                len(snapshots_to_generate),
+            )
+            if snapshots_to_generate:
+                org_id = snapshots_to_generate.pop(0)
+            else:
+                logging.info(
+                    "[%s] No snapshots left to generate - thread exiting",
+                    threading.current_thread().name,
+                )
+                break
+
         logging.info(
             "[%s] Starting snapshot for: %s", threading.current_thread().name, org_id
         )
-        create_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots=False)
+        generate_snapshot(db, cyhy_db_section, org_id, use_only_existing_snapshots=False)
 
 
-def generate_weekly_snapshots(db, cyhy_db_section):
-    """Generate all snapshots needed in order to generate the CyHy reports."""
+def manage_snapshot_threads(db, cyhy_db_section):
+    """Spawn threads to generate snapshots
+    
+    Build the lists of reports and snapshots to be generated, then spawn the
+    threads that generate the snapshots."""
     start_time = time.time()
 
     logging.info("Building list of reports to generate...")
     reports_to_generate = create_list_of_reports_to_generate(db)
 
     logging.info("Building list of snapshots to generate...")
+    global snapshots_to_generate
+    # No thread locking is needed here for snapshots_to_generate because we are
+    # still single-threaded at this point
     snapshots_to_generate = create_list_of_snapshots_to_generate(
         db, reports_to_generate
+    )
+
+    logging.debug(
+        "%d snapshots to generate: %s",
+        len(snapshots_to_generate),
+        snapshots_to_generate,
     )
 
     # List to keep track of our snapshot creation threads
     snapshot_threads = list()
 
-    # Lists of orgs for each snapshot thread to process
-    snapshots_to_generate = list(
-        make_list_chunks(snapshots_to_generate, SNAPSHOT_THREADS)
-    )
-
     # Start up the threads to create snapshots
-    for orgs in snapshots_to_generate:
+    for t in range(SNAPSHOT_THREADS):
         try:
             snapshot_thread = threading.Thread(
-                target=create_snapshots_from_list, args=(orgs, db, cyhy_db_section),
+                target=generate_snapshots_from_list, args=(db, cyhy_db_section)
             )
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
         except Exception:
-            logging.error("Unable to start snapshot thread for %s", orgs)
+            logging.error("Unable to start snapshot thread #%s", t)
 
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
@@ -365,157 +406,143 @@ def generate_weekly_snapshots(db, cyhy_db_section):
     return sorted(list(reports_to_generate))
 
 
-# Create a function called "chunks" with two arguments, l and n:
-def chunks(l, n):
-    # For item i in a range that is a length of l,
-    for i in range(0, len(l), n):
-        # Create an index range for l of n items:
-        yield l[i : i + n]
+def generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
+    """Generate a report for a specified organization."""
+    report_start_time = time.time()
+    logging.info(
+        "[%s] Starting report for: %s", threading.current_thread().name, org_id
+    )
+
+    # Base command for generating a report (we will append the org_id below)
+    report_command = [
+        "cyhy-report",
+        "--cyhy-section",
+        cyhy_db_section,
+        "--scan-section",
+        scan_db_section,
+        "--final",
+        "--encrypt",
+    ]
+
+    if use_docker == 1:
+        report_command = [
+            "docker",
+            "run",
+            "--rm",
+            "--volume",
+            "/etc/cyhy:/etc/cyhy",
+            "--volume",
+            "{}:/home/cyhy".format(CYHY_REPORT_DIR),
+            "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
+        ] + report_command        
+
+    # Skip logging if requested
+    if nolog:
+        report_command.append("--nolog")
+
+    report_command.append(org_id)
+
+    report_process = subprocess.Popen(
+        report_command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    data, err = report_process.communicate()
+
+    report_duration = time.time() - report_start_time
+    with rd_lock:
+        report_durations.append((org_id, report_duration))
+
+    if report_process.returncode == 0:
+        logging.info(
+            "[%s] Successful report generated: %s (%.2f s)",
+            threading.current_thread().name,
+            org_id,
+            round(report_duration, 2),
+        )
+        with sr_lock:
+            successful_reports.append(org_id)
+    else:
+        logging.info(
+            "[%s] Failure to generate report: %s",
+            threading.current_thread().name,
+            org_id,
+        )
+        logging.info(
+            "[%s] Stderr report detail: %s%s",
+            threading.current_thread().name,
+            data,
+            err,
+        )
+        with fr_lock:
+            failed_reports.append(org_id)
 
 
-def create_reports(customer_list, cyhy_db_section, scan_db_section, use_docker, nolog):
-    for i in customer_list:
-        report_time = time.time()
-        logging.info("[%s] Starting report for: %s", threading.current_thread().name, i)
-        if use_docker == 1:
-            if nolog:
-                p = subprocess.Popen(
-                    [
-                        "docker",
-                        "run",
-                        "--rm",
-                        "--volume",
-                        "/etc/cyhy:/etc/cyhy",
-                        "--volume",
-                        "{}:/home/cyhy".format(CYHY_REPORT_DIR),
-                        "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
-                        "cyhy-report",
-                        "--nolog",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
+def generate_reports_from_list(cyhy_db_section, scan_db_section, use_docker, nolog):
+    """Attempt to generate a report for each organization in a global list.
+
+    Each thread pulls an organization ID from the global list
+    (reports_to_generate) and attempts to generate a report for it."""
+    global reports_to_generate
+    while True:
+        with rtg_lock:
+            logging.debug(
+                "[%s] %d reports left to generate",
+                threading.current_thread().name,
+                len(reports_to_generate),
+            )
+            if reports_to_generate:
+                org_id = reports_to_generate.pop(0)
             else:
-                p = subprocess.Popen(
-                    [
-                        "docker",
-                        "run",
-                        "--rm",
-                        "--volume",
-                        "/etc/cyhy:/etc/cyhy",
-                        "--volume",
-                        "{}:/home/cyhy".format(CYHY_REPORT_DIR),
-                        "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
-                        "cyhy-report",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                logging.info(
+                    "[%s] No reports left to generate - exiting",
+                    threading.current_thread().name,
                 )
-        else:
-            if nolog:
-                p = subprocess.Popen(
-                    [
-                        "cyhy-report",
-                        "--nolog",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-            else:
-                p = subprocess.Popen(
-                    [
-                        "cyhy-report",
-                        "--cyhy-section",
-                        cyhy_db_section,
-                        "--scan-section",
-                        scan_db_section,
-                        "--final",
-                        "--encrypt",
-                        i,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-        data, err = p.communicate()
-        report_time = time.time() - report_time
-        report_durations.append((i, report_time))
-        return_code = p.returncode
-        if return_code == 0:
-            logging.info(
-                "[%s] Successful report generated: %s (%.2f s)",
-                threading.current_thread().name,
-                i,
-                round(report_time, 2),
-            )
-            successful_reports.append(i)
-        else:
-            logging.info(
-                "[%s] Failure to generate report: %s",
-                threading.current_thread().name,
-                i,
-            )
-            logging.info(
-                "[%s] Stderr report detail: %s%s",
-                threading.current_thread().name,
-                data,
-                err,
-            )
-            failed_reports.append(i)
+                break
+        generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog)
 
 
-def gen_weekly_reports(
-    db, successful_snaps, cyhy_db_section, scan_db_section, use_docker, nolog
-):
-    # TODO Clean this function up and make it similar to generate_weekly_snapshots()
-    # See https://github.com/cisagov/cyhy-reports/issues/59
+def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
+    """Spawn the threads that generate the reports."""
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start_time = time.time()
-    # Create a list from the results of the function chunks
-    threads = []
-    thread_list = list(
-        chunks(
-            successful_snaps,
-            int(math.ceil(float(len(successful_snaps)) / float(REPORT_THREADS))),
-        )
+
+    global reports_to_generate
+    # No thread locking is needed here for reports_to_generate because we are
+    # still single-threaded at this point
+    logging.debug(
+        "%d reports to generate: %s",
+        len(reports_to_generate),
+        reports_to_generate,
     )
-    for i in thread_list:
+
+    # List to keep track of our report creation threads
+    report_threads = list()
+
+    # Start up the threads to create reports
+    for t in range(REPORT_THREADS):
         try:
-            t = threading.Thread(
-                target=create_reports,
-                args=(i, cyhy_db_section, scan_db_section, use_docker, nolog),
+            report_thread = threading.Thread(
+                target=generate_reports_from_list,
+                args=(cyhy_db_section, scan_db_section, use_docker, nolog),
             )
-            threads.append(t)
-            t.start()
+            report_threads.append(report_thread)
+            report_thread.start()
+            # Add a short pause between starting threads to avoid overloading
+            # the system
             time.sleep(0.5)
-        except:
-            print("Error: Unable to start thread")
-    for t in threads:
-        t.join()
+        except Exception:
+            logging.error("Unable to start report thread #%s", t)
+
+    # Wait until each thread terminates
+    for report_thread in report_threads:
+        report_thread.join()
+    logging.info(
+        "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
+    )
+
     report_durations.sort(key=lambda tup: tup[1], reverse=True)
     logging.info("Longest Reports:")
     for i in report_durations[:10]:
@@ -631,7 +658,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
             "Creating grouping node snapshots needed for third-party reports..."
         )
         for grouping_node_id in grouping_node_ids:
-            snapshot_rc = create_snapshot(
+            snapshot_rc = generate_snapshot(
                 db, cyhy_db_section, grouping_node_id, use_only_existing_snapshots=True
             )
 
@@ -657,7 +684,7 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
     # See https://github.com/cisagov/cyhy-reports/issues/60
     logging.info("Creating third-party snapshots...")
     for third_party_id in third_party_report_ids:
-        snapshot_rc = create_snapshot(
+        snapshot_rc = generate_snapshot(
             db, cyhy_db_section, third_party_id, use_only_existing_snapshots=True
         )
 
@@ -890,18 +917,25 @@ def main():
                 "No previous CybEx Scorecard JSON file found - continuing without creating CybEx Scorecard"
             )
 
+        global reports_to_generate
+        # No thread locking is needed here for reports_to_generate because we
+        # are still single-threaded at this point
         if args["--no-snapshots"]:
             # Skip creation of snapshots
             logging.info("Skipping snapshot creation due to --no-snapshots parameter")
             reports_to_generate = create_list_of_reports_to_generate(db)
         else:
-            reports_to_generate = generate_weekly_snapshots(db, cyhy_db_section)
+            # Generate all necessary snapshots and return the updated list of
+            # reports to be generated
+            reports_to_generate = manage_snapshot_threads(db, cyhy_db_section)
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
         )  # Create the sample (anonymized) report
-        gen_weekly_reports(
-            db, reports_to_generate, cyhy_db_section, scan_db_section, use_docker, nolog
+        
+        # Generate all necessary reports
+        manage_report_threads(
+            cyhy_db_section, scan_db_section, use_docker, nolog
         )
 
         # Fetch list of third-party report IDs with children; if a third-party
