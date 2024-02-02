@@ -22,7 +22,6 @@ from docopt import docopt
 from cyhy.db import database
 
 def generate_contacts_csv(db):
-    all_request_docs = db.RequestDoc.find().sort("_id", 1)
     output = StringIO.StringIO()
 
     fields = (
@@ -38,7 +37,8 @@ def generate_contacts_csv(db):
     writer = DictWriter(output, fields)
     writer.writeheader()
 
-    for doc in all_request_docs:
+    # Iterate through all request documents
+    for doc in db.RequestDoc.find().sort("_id", 1):
         for contact in doc["agency"].get("contacts", []):
             row = {
                 "Org ID": doc["_id"],

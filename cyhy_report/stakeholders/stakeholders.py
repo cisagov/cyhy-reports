@@ -78,10 +78,7 @@ def generate_stakeholders_csv(db):
             "First Scan",
         )
     )
-    stakeholders = db.RequestDoc.find({"_id": {"$in": stakeholder_ids}}).sort(
-        [("_id", 1)]
-    )
-    for org in stakeholders:
+    for org in db.RequestDoc.find({"_id": {"$in": stakeholder_ids}}).sort([("_id", 1)]):
         org_ELECTION = "No"
         if org["_id"] in all_ELECTION_orgs:
             org_ELECTION = "Yes"
