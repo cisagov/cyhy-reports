@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Output all stakeholder information in the CyHy database in CSV format.
 
 Usage:
@@ -123,7 +122,3 @@ def main():
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
     print(generate_stakeholders_csv(db).getvalue())
-
-
-if __name__ == "__main__":
-    main()

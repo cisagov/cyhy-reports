@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Output all points of contact in the CyHy database in CSV format.
 
 Usage:
@@ -59,7 +58,3 @@ def main():
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
     print(generate_contacts_csv(db).getvalue())
-
-
-if __name__ == "__main__":
-    main()
