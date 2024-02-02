@@ -353,7 +353,9 @@ def generate_snapshots_from_list(db, cyhy_db_section):
 
 
 def manage_snapshot_threads(db, cyhy_db_section):
-    """Build the lists of reports and snapshots to be generated, then spawn the
+    """Spawn threads to generate snapshots
+    
+    Build the lists of reports and snapshots to be generated, then spawn the
     threads that generate the snapshots."""
     start_time = time.time()
 
