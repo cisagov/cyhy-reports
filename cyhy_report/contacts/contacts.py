@@ -39,16 +39,20 @@ def generate_contacts_csv(db):
 
     # Iterate through all request documents
     for doc in db.RequestDoc.find().sort("_id", 1):
+        row = {
+            "Org ID": doc["_id"],
+            "Org Name": doc["agency"]["name"],
+            "Org Type": doc["agency"].get("type", "N/A"),
+            "Org Retired": doc.get("retired", False),
+        }
         for contact in doc["agency"].get("contacts", []):
-            row = {
-                "Org ID": doc["_id"],
-                "Org Name": doc["agency"]["name"],
-                "Org Type": doc["agency"].get("type", "N/A"),
-                "Org Retired": doc.get("retired", False),
-                "Contact Name": contact.get("name", "N/A"),
-                "Contact Email": contact.get("email", "N/A"),
-                "Contact Type": contact.get("type", "N/A"),
-            }
+            row.update(
+                {
+                    "Contact Name": contact.get("name", "N/A"),
+                    "Contact Email": contact.get("email", "N/A"),
+                    "Contact Type": contact.get("type", "N/A"),
+                }
+            )
             writer.writerow(row)
 
     return output
