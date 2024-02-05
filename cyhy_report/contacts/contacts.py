@@ -22,6 +22,7 @@ from docopt import docopt
 from cyhy.db import database
 
 def generate_contacts_csv(db):
+    """Generate a CSV file containing all points of contact in the CyHy database."""
     output = StringIO.StringIO()
 
     fields = (
@@ -59,6 +60,7 @@ def generate_contacts_csv(db):
 
 
 def main():
+    """Output all points of contact in the CyHy database in CSV format."""
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
     print(generate_contacts_csv(db).getvalue())

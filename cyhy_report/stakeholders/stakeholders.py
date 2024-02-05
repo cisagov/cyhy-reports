@@ -22,6 +22,10 @@ from docopt import docopt
 from cyhy.db import database
 
 def get_first_snapshot_times(db, owners):
+    """Return a dictionary with first snapshot times for a list of CyHy owner IDs
+    
+    The dictionary key is the owner (entity) ID and the value is the start time
+    of the first snapshot for that entity."""
     first_snapshot_time_by_owner = list(
         db.SnapshotDoc.collection.aggregate(
             [
@@ -48,6 +52,7 @@ def get_first_snapshot_times(db, owners):
 
 
 def generate_stakeholders_csv(db):
+    """Generate a CSV file containing all CyHy stakeholder information."""
     org_types = db.RequestDoc.get_owner_to_type_dict(stakeholders_only=True)
     stakeholder_ids = org_types.keys()
     first_snapshot_time_dict = get_first_snapshot_times(db, stakeholder_ids)
@@ -116,6 +121,7 @@ def generate_stakeholders_csv(db):
 
 
 def main():
+    """Output all CyHy stakeholder information in CSV format."""
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
     print(generate_stakeholders_csv(db).getvalue())
