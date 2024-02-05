@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import cyhy_report.contacts.contacts as contacts
+contacts.main()
+

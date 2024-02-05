@@ -19,11 +19,13 @@ setup(
     author_email="mark.feldhousen@hq.dhs.gov",
     packages=[
         "cyhy_report.bod_scorecard",
+        "cyhy_report.contacts",
         "cyhy_report.customer",
         "cyhy_report.cybex_scorecard",
         "cyhy_report.cyhy_notification",
         "cyhy_report.m1513_scorecard",
         "cyhy_report.scorecard",
+        "cyhy_report.stakeholders",
         "cyhy_report",
     ],
     package_data={
@@ -37,11 +39,13 @@ setup(
     },
     scripts=[
         "bin/cyhy-bod-scorecard",
+        "bin/cyhy-contacts",
         "bin/cyhy-cybex-scorecard",
         "bin/cyhy-m1513-scorecard",
         "bin/cyhy-notification",
         "bin/cyhy-report",
         "bin/cyhy-scorecard",
+        "bin/cyhy-stakeholders",
     ],
     # url='http://pypi.python.org/pypi/CyHy/',
     license="LICENSE.txt",
