@@ -22,7 +22,7 @@ from docopt import docopt
 from cyhy.db import database
 
 def get_first_snapshot_times(db, owners):
-    """Return a dictionary with first snapshot times for a list of CyHy owner IDs
+    """Return a dictionary with first snapshot times for a list of CyHy owner IDs.
     
     The dictionary key is the owner (entity) ID and the value is the start time
     of the first snapshot for that entity."""
