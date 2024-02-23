@@ -576,7 +576,7 @@ def sync_all_tallies(db):
 
 def pause_commander(db):
     # number of iterations to wait before giving up
-    PAUSE_ITERATION_LIMIT = 30
+    PAUSE_ITERATION_LIMIT = 90
 
     # number of seconds to wait between each check to see
     # if the commander has paused
