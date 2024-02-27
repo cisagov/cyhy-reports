@@ -44,7 +44,6 @@ REPORT_THREADS = 22
 SNAPSHOT_THREADS = 32
 
 NCATS_DHUB_URL = "dhub.ncats.cyber.dhs.gov:5001"
-NCATS_WEB_URL = "web.data.ncats.cyber.dhs.gov"
 
 WEEKLY_REPORT_BASE_DIR = "/var/cyhy/reports/output"
 SCORECARD_OUTPUT_DIR = "scorecards"
