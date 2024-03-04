@@ -547,9 +547,6 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
     logging.info("Longest Reports:")
     for i in report_durations[:10]:
         logging.info("%s: %.1f seconds", i[0], i[1])
-    logging.info(
-        "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
-    )
 
     # Create a symlink to the latest reports.  This is for the
     # automated sending of reports.
