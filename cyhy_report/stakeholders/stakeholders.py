@@ -59,6 +59,7 @@ def generate_stakeholders_csv(db):
 
     all_CI_orgs = db.RequestDoc.get_all_descendants("CRITICAL_INFRASTRUCTURE")
     all_ELECTION_orgs = db.RequestDoc.get_all_descendants("ELECTION")
+    all_FCEB_orgs = db.RequestDoc.get_all_descendants("FED_GOLD")
 
     CI_sectors = dict()
     for sector in db.RequestDoc.get_by_owner("CRITICAL_INFRASTRUCTURE")["children"]:
@@ -80,6 +81,8 @@ def generate_stakeholders_csv(db):
             "Scheduler",
             "Reporting Period",
             "Election",
+            "FCEB",
+            "Enrolled",
             "First Scan",
         )
     )
@@ -87,6 +90,10 @@ def generate_stakeholders_csv(db):
         org_ELECTION = "No"
         if org["_id"] in all_ELECTION_orgs:
             org_ELECTION = "Yes"
+        
+        org_FCEB = "No"
+        if org["_id"] in all_FCEB_orgs:
+            org_FCEB = "Yes"
 
         first_scan = first_snapshot_time_dict.get(org["_id"], "No Scans")
 
@@ -113,6 +120,8 @@ def generate_stakeholders_csv(db):
                 org["scheduler"],
                 org["report_period"],
                 org_ELECTION,
+                org_FCEB,
+                org.get("enrolled"),
                 first_scan,
             )
         )
