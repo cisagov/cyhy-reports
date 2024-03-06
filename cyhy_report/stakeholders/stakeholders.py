@@ -22,16 +22,13 @@ from docopt import docopt
 from cyhy.db import database
 
 REGION_MAPPING = {
-    "Region 1": ["CT", "MA", "ME", "NH", "RI", "VT"],
-    "Region 2": ["NJ", "NY", "PR", "VI"],
-    "Region 3": ["DE", "DC", "MD", "PA", "VA", "WV"],
-    "Region 4": ["AL", "FL", "GA", "KY", "MS", "NC", "SC", "TN"],
-    "Region 5": ["IL", "IN", "MI", "MN", "OH", "WI"],
-    "Region 6": ["AR", "LA", "NM", "OK", "TX"],
-    "Region 7": ["IA", "KS", "MO", "NE"],
-    "Region 8": ["CO", "MT", "ND", "SD", "UT", "WY"],
-    "Region 9": ["AZ", "CA", "HI", "NV", "AS", "GU", "MP"],
-    "Region 10": ["AK", "ID", "OR", "WA"],
+    "AK": 10, "AL": 4, "AR": 6, "AS": 9, "AZ": 9, "CA": 9, "CO": 8, "CT": 1, "DC": 3,
+    "DE": 3, "FL": 4, "GA": 4, "GU": 9, "HI": 9, "IA": 7, "ID": 10, "IL": 5, "IN": 5,
+    "KS": 7, "KY": 4, "LA": 6, "MA": 1, "MD": 3, "ME": 1, "MI": 5, "MN": 5, "MO": 7,
+    "MP": 9, "MS": 4, "MT": 8, "NC": 4, "ND": 8, "NE": 7, "NH": 1, "NJ": 2, "NM": 6,
+    "NV": 9, "NY": 2, "OH": 5, "OK": 6, "OR": 10, "PA": 3, "PR": 2, "RI": 1, "SC": 4,
+    "SD": 8, "TN": 4, "TX": 6, "UT": 8, "VA": 3, "VI": 2, "VT": 1, "WA": 10, "WI": 5,
+    "WV": 3, "WY": 8,
 }
 
 def get_first_snapshot_times(db, owners):
@@ -121,12 +118,8 @@ def generate_stakeholders_csv(db):
                     break
         
         org_state = org["agency"]["location"].get("state", "N/A")
-        # Check the state against the REGION_MAPPING
-        for region_name, states in REGION_MAPPING.items():
-            if org_state in states:
-                org_region = region_name
-                break
-
+        org_region = "Region {}".format(REGION_MAPPING.get(org_state, "N/A"))
+        
         wr.writerow(
             (
                 org["_id"],
