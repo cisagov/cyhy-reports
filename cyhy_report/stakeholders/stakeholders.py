@@ -21,6 +21,19 @@ from docopt import docopt
 # cisagov Libraries
 from cyhy.db import database
 
+REGION_MAPPING = {
+    "Region 1": ["CT", "MA", "ME", "NH", "RI", "VT"],
+    "Region 2": ["NJ", "NY", "PR", "VI"],
+    "Region 3": ["DE", "DC", "MD", "PA", "VA", "WV"],
+    "Region 4": ["AL", "FL", "GA", "KY", "MS", "NC", "SC", "TN"],
+    "Region 5": ["IL", "IN", "MI", "MN", "OH", "WI"],
+    "Region 6": ["AR", "LA", "NM", "OK", "TX"],
+    "Region 7": ["IA", "KS", "MO", "NE"],
+    "Region 8": ["CO", "MT", "ND", "SD", "UT", "WY"],
+    "Region 9": ["AZ", "CA", "HI", "NV", "AS", "GU", "MP"],
+    "Region 10": ["AK", "ID", "OR", "WA"],
+}
+
 def get_first_snapshot_times(db, owners):
     """Return a dictionary with first snapshot times for a list of CyHy owner IDs.
     
@@ -74,6 +87,7 @@ def generate_stakeholders_csv(db):
             "City",
             "County",
             "State",
+            "Region",
             "GNIS ID",
             "Organization Type",
             "Critical Infrastructure",
@@ -105,6 +119,13 @@ def generate_stakeholders_csv(db):
                 if org["_id"] in CI_sectors[sector]:
                     org_CI_sector = sector
                     break
+        
+        org_state = org["agency"]["location"].get("state", "N/A")
+        # Check the state against the REGION_MAPPING
+        for region_name, states in REGION_MAPPING.items():
+            if org_state in states:
+                org_region = region_name
+                break
 
         wr.writerow(
             (
@@ -113,6 +134,7 @@ def generate_stakeholders_csv(db):
                 org["agency"]["location"]["name"].encode("utf-8"),
                 org["agency"]["location"]["county"],
                 org["agency"]["location"]["state"],
+                org_region,
                 org["agency"]["location"]["gnis_id"],
                 org_types[org["_id"]],
                 org_CI,
