@@ -126,7 +126,7 @@ def generate_stakeholders_csv(db):
                 org["agency"]["name"],
                 org["agency"]["location"]["name"].encode("utf-8"),
                 org["agency"]["location"]["county"],
-                org["agency"]["location"]["state"],
+                org_state,
                 org_region,
                 org["agency"]["location"]["gnis_id"],
                 org_types[org["_id"]],
