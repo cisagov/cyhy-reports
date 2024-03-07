@@ -21,6 +21,16 @@ from docopt import docopt
 # cisagov Libraries
 from cyhy.db import database
 
+REGION_MAPPING = {
+    "AK": 10, "AL": 4, "AR": 6, "AS": 9, "AZ": 9, "CA": 9, "CO": 8, "CT": 1, "DC": 3,
+    "DE": 3, "FL": 4, "GA": 4, "GU": 9, "HI": 9, "IA": 7, "ID": 10, "IL": 5, "IN": 5,
+    "KS": 7, "KY": 4, "LA": 6, "MA": 1, "MD": 3, "ME": 1, "MI": 5, "MN": 5, "MO": 7,
+    "MP": 9, "MS": 4, "MT": 8, "NC": 4, "ND": 8, "NE": 7, "NH": 1, "NJ": 2, "NM": 6,
+    "NV": 9, "NY": 2, "OH": 5, "OK": 6, "OR": 10, "PA": 3, "PR": 2, "RI": 1, "SC": 4,
+    "SD": 8, "TN": 4, "TX": 6, "UT": 8, "VA": 3, "VI": 2, "VT": 1, "WA": 10, "WI": 5,
+    "WV": 3, "WY": 8,
+}
+
 def get_first_snapshot_times(db, owners):
     """Return a dictionary with first snapshot times for a list of CyHy owner IDs.
     
@@ -74,6 +84,7 @@ def generate_stakeholders_csv(db):
             "City",
             "County",
             "State",
+            "Region",
             "GNIS ID",
             "Organization Type",
             "Critical Infrastructure",
@@ -105,14 +116,18 @@ def generate_stakeholders_csv(db):
                 if org["_id"] in CI_sectors[sector]:
                     org_CI_sector = sector
                     break
-
+        
+        org_state = org["agency"]["location"].get("state", "N/A")
+        org_region = "Region {}".format(REGION_MAPPING.get(org_state, "N/A"))
+        
         wr.writerow(
             (
                 org["_id"],
                 org["agency"]["name"],
                 org["agency"]["location"]["name"].encode("utf-8"),
                 org["agency"]["location"]["county"],
-                org["agency"]["location"]["state"],
+                org_state,
+                org_region,
                 org["agency"]["location"]["gnis_id"],
                 org_types[org["_id"]],
                 org_CI,
