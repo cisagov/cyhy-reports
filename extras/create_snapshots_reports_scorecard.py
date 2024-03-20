@@ -398,11 +398,6 @@ def manage_snapshot_threads(db, cyhy_db_section):
         "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
     )
 
-    snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
-    logging.info("Longest Snapshots:")
-    for i in snapshot_durations[:10]:
-        logging.info("%s: %.1f seconds", i[0], i[1])
-
     reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
     return sorted(list(reports_to_generate))
 
@@ -543,11 +538,6 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
     logging.info(
         "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
     )
-
-    report_durations.sort(key=lambda tup: tup[1], reverse=True)
-    logging.info("Longest Reports:")
-    for i in report_durations[:10]:
-        logging.info("%s: %.1f seconds", i[0], i[1])
 
     # Create a symlink to the latest reports.  This is for the
     # automated sending of reports.
@@ -1034,6 +1024,11 @@ def main():
             min = numpy.min(durations)
             logging.info("  Minimum snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
 
+            snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
+            logging.info("Longest snapshots:")
+            for i in snapshot_durations[:10]:
+                logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
+
         logging.info("Report performance:")
         durations = [x[1] for x in report_durations]
         max = numpy.max(durations)
@@ -1044,6 +1039,11 @@ def main():
         logging.info("  Mean report: %.1f seconds (%.1f minutes)", mean, mean / 60)
         min = numpy.min(durations)
         logging.info("  Minimum report: %.1f seconds (%.1f minutes)", min, min / 60)
+
+        report_durations.sort(key=lambda tup: tup[1], reverse=True)
+        logging.info("Longest reports:")
+        for i in report_durations[:10]:
+            logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
 
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
