@@ -15,6 +15,7 @@ Options:
 import distutils.dir_util
 import glob
 import logging
+import numpy
 import os
 import shutil
 import subprocess
@@ -1020,6 +1021,29 @@ def main():
                     logging.error("%s (third-party)", i)
                 else:
                     logging.error(i)
+
+        if not args["--no-snapshots"]:
+            logging.info("Snapshot performance:")
+            durations = [x[1] for x in snapshot_durations]
+            max = numpy.max(durations)
+            logging.info("  Maximum snapshot: %.1f seconds (%.1f minutes)", max, max / 60)
+            median = numpy.median(durations)
+            logging.info("  Median snapshot: %.1f seconds (%.1f minutes)", median, median / 60)
+            mean = numpy.mean(durations)
+            logging.info("  Mean snapshot: %.1f seconds (%.1f minutes)", mean, mean / 60)
+            min = numpy.min(durations)
+            logging.info("  Minimum snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
+
+        logging.info("Report performance:")
+        durations = [x[1] for x in report_durations]
+        max = numpy.max(durations)
+        logging.info("  Maximum report: %.1f seconds (%.1f minutes)", max, max / 60)
+        median = numpy.median(durations)
+        logging.info("  Median report: %.1f seconds (%.1f minutes)", median, median / 60)
+        mean = numpy.mean(durations)
+        logging.info("  Mean report: %.1f seconds (%.1f minutes)", mean, mean / 60)
+        min = numpy.min(durations)
+        logging.info("  Minimum report: %.1f seconds (%.1f minutes)", min, min / 60)
 
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
