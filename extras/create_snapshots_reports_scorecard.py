@@ -12,6 +12,7 @@ Options:
   --no-pause            do not pause the commander when generating reports
 """
 
+# Standard Python Libraries
 import distutils.dir_util
 import glob
 import logging
@@ -22,11 +23,13 @@ import sys
 import threading
 import time
 
+# Third-Party Libraries
 from bson import ObjectId
 from collections import defaultdict
 from docopt import docopt
 import numpy
 
+# cisagov Libraries
 from cyhy.core import SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from cyhy.db import database, CHDatabase
