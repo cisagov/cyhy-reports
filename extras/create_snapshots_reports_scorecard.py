@@ -1016,13 +1016,13 @@ def main():
             logging.info("Snapshot performance:")
             durations = [x[1] for x in snapshot_durations]
             max = numpy.max(durations)
-            logging.info("  Maximum snapshot: %.1f seconds (%.1f minutes)", max, max / 60)
+            logging.info("  Longest snapshot: %.1f seconds (%.1f minutes)", max, max / 60)
             median = numpy.median(durations)
             logging.info("  Median snapshot: %.1f seconds (%.1f minutes)", median, median / 60)
             mean = numpy.mean(durations)
             logging.info("  Mean snapshot: %.1f seconds (%.1f minutes)", mean, mean / 60)
             min = numpy.min(durations)
-            logging.info("  Minimum snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
+            logging.info("  Shortest snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
 
             snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
             logging.info("Longest snapshots:")
@@ -1032,13 +1032,13 @@ def main():
         logging.info("Report performance:")
         durations = [x[1] for x in report_durations]
         max = numpy.max(durations)
-        logging.info("  Maximum report: %.1f seconds (%.1f minutes)", max, max / 60)
+        logging.info("  Longest report: %.1f seconds (%.1f minutes)", max, max / 60)
         median = numpy.median(durations)
         logging.info("  Median report: %.1f seconds (%.1f minutes)", median, median / 60)
         mean = numpy.mean(durations)
         logging.info("  Mean report: %.1f seconds (%.1f minutes)", mean, mean / 60)
         min = numpy.min(durations)
-        logging.info("  Minimum report: %.1f seconds (%.1f minutes)", min, min / 60)
+        logging.info("  Shortest report: %.1f seconds (%.1f minutes)", min, min / 60)
 
         report_durations.sort(key=lambda tup: tup[1], reverse=True)
         logging.info("Longest reports:")
