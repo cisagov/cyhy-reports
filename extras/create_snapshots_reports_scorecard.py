@@ -15,7 +15,6 @@ Options:
 import distutils.dir_util
 import glob
 import logging
-import numpy
 import os
 import shutil
 import subprocess
@@ -26,6 +25,7 @@ import time
 from bson import ObjectId
 from collections import defaultdict
 from docopt import docopt
+import numpy
 
 from cyhy.core import SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
