@@ -12,6 +12,7 @@ Options:
   --no-pause            do not pause the commander when generating reports
 """
 
+# Standard Python Libraries
 import distutils.dir_util
 import glob
 import logging
@@ -22,10 +23,13 @@ import sys
 import threading
 import time
 
+# Third-Party Libraries
 from bson import ObjectId
 from collections import defaultdict
 from docopt import docopt
+import numpy
 
+# cisagov Libraries
 from cyhy.core import SCAN_TYPE
 from cyhy.core.common import REPORT_TYPE, REPORT_PERIOD
 from cyhy.db import database, CHDatabase
@@ -397,11 +401,6 @@ def manage_snapshot_threads(db, cyhy_db_section):
         "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
     )
 
-    snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
-    logging.info("Longest Snapshots:")
-    for i in snapshot_durations[:10]:
-        logging.info("%s: %.1f seconds", i[0], i[1])
-
     reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
     return sorted(list(reports_to_generate))
 
@@ -542,11 +541,6 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
     logging.info(
         "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
     )
-
-    report_durations.sort(key=lambda tup: tup[1], reverse=True)
-    logging.info("Longest Reports:")
-    for i in report_durations[:10]:
-        logging.info("%s: %.1f seconds", i[0], i[1])
 
     # Create a symlink to the latest reports.  This is for the
     # automated sending of reports.
@@ -1020,6 +1014,39 @@ def main():
                     logging.error("%s (third-party)", i)
                 else:
                     logging.error(i)
+
+        if not args["--no-snapshots"]:
+            logging.info("Snapshot performance:")
+            durations = [x[1] for x in snapshot_durations]
+            max = numpy.max(durations)
+            logging.info("  Longest snapshot: %.1f seconds (%.1f minutes)", max, max / 60)
+            median = numpy.median(durations)
+            logging.info("  Median snapshot: %.1f seconds (%.1f minutes)", median, median / 60)
+            mean = numpy.mean(durations)
+            logging.info("  Mean snapshot: %.1f seconds (%.1f minutes)", mean, mean / 60)
+            min = numpy.min(durations)
+            logging.info("  Shortest snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
+
+            snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
+            logging.info("Longest snapshots:")
+            for i in snapshot_durations[:10]:
+                logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
+
+        logging.info("Report performance:")
+        durations = [x[1] for x in report_durations]
+        max = numpy.max(durations)
+        logging.info("  Longest report: %.1f seconds (%.1f minutes)", max, max / 60)
+        median = numpy.median(durations)
+        logging.info("  Median report: %.1f seconds (%.1f minutes)", median, median / 60)
+        mean = numpy.mean(durations)
+        logging.info("  Mean report: %.1f seconds (%.1f minutes)", mean, mean / 60)
+        min = numpy.min(durations)
+        logging.info("  Shortest report: %.1f seconds (%.1f minutes)", min, min / 60)
+
+        report_durations.sort(key=lambda tup: tup[1], reverse=True)
+        logging.info("Longest reports:")
+        for i in report_durations[:10]:
+            logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
 
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
