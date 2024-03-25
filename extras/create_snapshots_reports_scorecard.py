@@ -1063,6 +1063,10 @@ def main():
         for i in report_durations[:10]:
             logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
 
+        logging.info("Time to generate snapshots: %.2f minutes", time_to_generate_snapshots / 60)
+        logging.info("Time to generate reports: %.2f minutes", time_to_generate_reports / 60)
+        logging.info("Time to generate third-party snapshots: %.2f minutes", time_to_generate_tp_snaps / 60)
+        logging.info("Time to generate third-party reports: %.2f minutes", time_to_generate_tp_reports / 60)
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
 
