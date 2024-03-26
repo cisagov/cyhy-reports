@@ -40,11 +40,10 @@ current_time = util.utcnow()
 
 LOGGING_LEVEL = logging.INFO
 LOG_FILE = "snapshots_reports_scorecard_automation.log"
-REPORT_THREADS = 18
+REPORT_THREADS = 32
 SNAPSHOT_THREADS = 32
 
 NCATS_DHUB_URL = "dhub.ncats.cyber.dhs.gov:5001"
-NCATS_WEB_URL = "web.data.ncats.cyber.dhs.gov"
 
 WEEKLY_REPORT_BASE_DIR = "/var/cyhy/reports/output"
 SCORECARD_OUTPUT_DIR = "scorecards"
