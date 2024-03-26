@@ -692,8 +692,8 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
 
     time_to_generate_tp_snaps = time.time() - all_tps_start_time
     logging.info(
-        "Time to create all grouping node and third-party snapshots:"
-        " %.2f minutes", time_to_generate_tp_snaps / 60
+        "Time to create all grouping node and third-party snapshots: %.2f minutes",
+        time_to_generate_tp_snaps / 60
     )
     return successful_tp_snaps, failed_tp_snaps, time_to_generate_tp_snaps
 
@@ -761,8 +761,8 @@ def generate_third_party_reports(
 
     time_to_generate_tp_reports = time.time() - all_tpr_start_time
     logging.info(
-        "Time to create all third-party reports:"
-        " %.2f minutes", time_to_generate_tp_reports / 60
+        "Time to create all third-party reports: %.2f minutes",
+        time_to_generate_tp_reports / 60
     )
     return successful_tp_reports, failed_tp_reports, time_to_generate_tp_reports
 
