@@ -397,12 +397,14 @@ def manage_snapshot_threads(db, cyhy_db_section):
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
         snapshot_thread.join()
+    
+    time_to_generate_snapshots = time.time() - start_time
     logging.info(
-        "Time to complete snapshots: %.2f minutes", (time.time() - start_time) / 60
+        "Time to complete snapshots: %.2f minutes", time_to_generate_snapshots / 60
     )
 
     reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
-    return sorted(list(reports_to_generate))
+    return sorted(list(reports_to_generate)), time_to_generate_snapshots
 
 
 def generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog):
@@ -538,8 +540,10 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
     # Wait until each thread terminates
     for report_thread in report_threads:
         report_thread.join()
+    
+    time_to_generate_reports = time.time() - start_time
     logging.info(
-        "Time to complete reports: %.2f minutes", (time.time() - start_time) / 60
+        "Time to complete reports: %.2f minutes", time_to_generate_reports / 60
     )
 
     # Create a symlink to the latest reports.  This is for the
@@ -550,6 +554,8 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog):
     os.symlink(
         os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR), latest_cyhy_reports
     )
+
+    return time_to_generate_reports
 
 
 def sync_all_tallies(db):
@@ -684,11 +690,12 @@ def create_third_party_snapshots(db, cyhy_db_section, third_party_report_ids):
         else:
             failed_tp_snaps.append(third_party_id)
 
+    time_to_generate_tp_snaps = time.time() - all_tps_start_time
     logging.info(
-        "Time to create all grouping node and third-party snapshots:"
-        " {:.2f} minutes".format(round(time.time() - all_tps_start_time, 1) / 60)
+        "Time to create all grouping node and third-party snapshots: %.2f minutes",
+        time_to_generate_tp_snaps / 60
     )
-    return successful_tp_snaps, failed_tp_snaps
+    return successful_tp_snaps, failed_tp_snaps, time_to_generate_tp_snaps
 
 
 def generate_third_party_reports(
@@ -752,11 +759,12 @@ def generate_third_party_reports(
             logging.error("Stderr failure detail: {} {}".format(data, err))
             failed_tp_reports.append(third_party_id)
 
+    time_to_generate_tp_reports = time.time() - all_tpr_start_time
     logging.info(
-        "Time to create all third-party reports:"
-        " {:.2f} minutes".format(round(time.time() - all_tpr_start_time, 1) / 60)
+        "Time to create all third-party reports: %.2f minutes",
+        time_to_generate_tp_reports / 60
     )
-    return successful_tp_reports, failed_tp_reports
+    return successful_tp_reports, failed_tp_reports, time_to_generate_tp_reports
 
 
 def pull_cybex_ticket_csvs(db):
@@ -812,6 +820,11 @@ def main():
     failed_tp_snaps = list()
     successful_tp_reports = list()
     failed_tp_reports = list()
+
+    time_to_generate_snapshots = 0
+    time_to_generate_reports = 0
+    time_to_generate_tp_snaps = 0
+    time_to_generate_tp_reports = 0
 
     create_subdirectories()
     if args["--no-dock"]:
@@ -918,14 +931,16 @@ def main():
         else:
             # Generate all necessary snapshots and return the updated list of
             # reports to be generated
-            reports_to_generate = manage_snapshot_threads(db, cyhy_db_section)
+            reports_to_generate, time_to_generate_snapshots = manage_snapshot_threads(
+                db, cyhy_db_section
+            )
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
         )  # Create the sample (anonymized) report
         
         # Generate all necessary reports
-        manage_report_threads(
+        time_to_generate_reports = manage_report_threads(
             cyhy_db_section, scan_db_section, use_docker, nolog
         )
 
@@ -953,12 +968,12 @@ def main():
                 successful_tp_snaps = third_party_report_ids
             else:
                 # Create snapshots needed for third-party reports
-                successful_tp_snaps, failed_tp_snaps = create_third_party_snapshots(
+                successful_tp_snaps, failed_tp_snaps, time_to_generate_tp_snaps = create_third_party_snapshots(
                     db, cyhy_db_section, third_party_report_ids
                 )
 
             # Generate third-party reports
-            successful_tp_reports, failed_tp_reports = generate_third_party_reports(
+            successful_tp_reports, failed_tp_reports, time_to_generate_tp_reports = generate_third_party_reports(
                 db, cyhy_db_section, scan_db_section, nolog, successful_tp_snaps
             )
         else:
@@ -1048,6 +1063,10 @@ def main():
         for i in report_durations[:10]:
             logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
 
+        logging.info("Time to generate snapshots: %.2f minutes", time_to_generate_snapshots / 60)
+        logging.info("Time to generate reports: %.2f minutes", time_to_generate_reports / 60)
+        logging.info("Time to generate third-party snapshots: %.2f minutes", time_to_generate_tp_snaps / 60)
+        logging.info("Time to generate third-party reports: %.2f minutes", time_to_generate_tp_reports / 60)
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
 
