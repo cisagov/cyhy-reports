@@ -380,6 +380,11 @@ class NotificationGenerator(object):
         ticket_ids = [n["ticket_id"] for n in self.__results["notifications"]]
         self.__results["tickets"] = self.__load_tickets(ticket_ids)
 
+        # Set has_hostnames flag if any ticket has a hostname set
+        self.__results["has_hostnames"] = any(
+            t.get("hostname") for t in self.__results["tickets"]
+        )
+
         # Determine if owner is a Federal org
         federal_orgs = self.__cyhy_db.RequestDoc.get_all_descendants("FEDERAL")
         self.__results["is_federal"] = self.__owner in federal_orgs
@@ -448,6 +453,7 @@ class NotificationGenerator(object):
         header_fields = [
             "owner",
             "ip_int",
+            "hostname",
             "ip",
             "port",
             "known_exploited",
@@ -469,6 +475,7 @@ class NotificationGenerator(object):
         data_fields = [
             "owner",
             "ip_int",
+            "hostname",
             "ip",
             "port",
             "kev",
@@ -493,6 +500,11 @@ class NotificationGenerator(object):
             header_fields.remove("ip_int")
             data_fields.remove("ip_int")
 
+        if not self.__results["has_hostnames"]:
+            # Remove hostname column if there are no hostnames in the tickets
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         with open(VULNERABILITY_FINDINGS_CSV_FILE, "wb") as out_file:
             header_writer = csv.DictWriter(
                 out_file, header_fields, extrasaction="ignore"
@@ -508,6 +520,7 @@ class NotificationGenerator(object):
         header_fields = [
             "owner",
             "ip_int",
+            "hostname",
             "ip",
             "port",
             "service",
@@ -520,6 +533,7 @@ class NotificationGenerator(object):
         data_fields = [
             "owner",
             "ip_int",
+            "hostname",
             "ip",
             "port",
             "service",
@@ -534,6 +548,11 @@ class NotificationGenerator(object):
             # Remove ip_int column if we are trying to be anonymous
             header_fields.remove("ip_int")
             data_fields.remove("ip_int")
+
+        if not self.__results["has_hostnames"]:
+            # Remove hostname column if there are no hostnames in the tickets
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
 
         with open(RISKY_SERVICES_CSV_FILE, "wb") as out_file:
             header_writer = csv.DictWriter(
