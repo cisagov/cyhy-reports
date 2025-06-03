@@ -195,6 +195,8 @@ class NotificationGenerator(object):
                     "Output details from the vulnerability "
                     "scan plugin would be shown here."
                 )
+                if t.get("hostname"):
+                    t["hostname"] = "host.sample.gov"
             self.__owner = "SAMPLE"
             self.__results["owner_request_doc"]["agency"]["acronym"] = "SAMPLE"
             self.__results = self.__anonymize_structure(self.__results)
