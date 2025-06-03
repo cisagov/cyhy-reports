@@ -577,6 +577,7 @@ class NotificationGenerator(object):
         result["owner_acronym"] = self.__results["owner_request_doc"]["agency"][
             "acronym"
         ]
+        result["has_hostnames"] = self.__results["has_hostnames"]
         result["is_federal"] = self.__results["is_federal"]
         result["notification_date_tex"] = self.__generated_time.strftime("{%d}{%m}{%Y}")
         result["days_until_criticals_overdue"] = DAYS_UNTIL_OVERDUE_CRITICAL
