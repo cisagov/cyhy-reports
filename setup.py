@@ -61,7 +61,7 @@ setup(
         # at this time.
         "basemap @ https://github.com/matplotlib/basemap/archive/refs/tags/v1.2.2rel.zip",
         "chevron >= 0.14.0",
-        "cyhy-core >= 0.0.2",
+        "cyhy-core >= 1.0.0",
         "docopt >= 0.6.2",
         "matplotlib == 1.5.3",
         "netaddr >= 0.7.10",
