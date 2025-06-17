@@ -2681,58 +2681,44 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_recently_detected_vulns_attachment(self):
+        header_fields = [
+            "name",
+            "cve",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+        ]
+
+        data_fields = [
+            "name",
+            "cve",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "time_opened",
+            "last_detected",
+            "age",
+        ]
+
+        # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
-            header_fields = (
-                "owner",
-                "name",
-                "cve",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-            )
-            data_fields = (
-                "owner",
-                "name",
-                "cve",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "last_detected",
-                "age",
-            )
-        else:
-            header_fields = (
-                "name",
-                "cve",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-            )
-            data_fields = (
-                "name",
-                "cve",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "last_detected",
-                "age",
-            )
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["recently_detected_closed_tickets"]
         with open("recently-detected.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
