@@ -27,7 +27,7 @@ Options:
 
 # Standard Python Libraries
 import codecs
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 import datetime
 import json
 import os
@@ -743,6 +743,33 @@ class ReportGenerator(object):
         results = database.run_pipeline_cursor(
             queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
+        # Get HostDocs for the services found in the results
+        hosts_with_services = self.__cyhy_db.HostDoc.collection.find(
+            {"_id": {"$in": [r["ip_int"] for r in results]}},
+            {"_id": True, "hostnames": True}
+        )
+
+        # Create a mapping of ip_ints to hostnames for each host in the results
+        # Only include hostnames owned by the same owner(s) as the snapshot
+        ip_int_to_hostnames_map = defaultdict(list)
+        for h in hosts_with_services:
+            for hostname in h.get("hostnames", ""):
+                if hostname.get("owner") in ss0_owners:
+                    if self.__anonymize:
+                        hostname_str = "host.sample.gov"
+                    elif self.__snapshots[0].get("descendants_included"):
+                        hostname_str = "{} ({})".format(
+                            hostname["hostname"], hostname["owner"]
+                        )
+                    else:
+                        hostname_str = hostname["hostname"]
+                    ip_int_to_hostnames_map[h["_id"]] += [hostname_str]
+
+        # Add hostnames to each service result
+        for r in results:
+            r["hostnames"] = ", ".join(
+                ip_int_to_hostnames_map.get(r["ip_int"], [])
+            )
         self.__results["services_attachment"] = results
 
         ss0_host_scans = list(
