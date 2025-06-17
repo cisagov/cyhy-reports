@@ -2629,46 +2629,38 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_mitigated_vulns_attachment(self):
+        header_fields = [
+            "vulnerability",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "initial_detection",
+            "mitigation_detected",
+            "days_to_mitigate",
+        ]
+
+        data_fields = [
+            "plugin_name",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "time_opened",
+            "time_closed",
+            "days_to_close",
+        ]
+
+        # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
-            header_fields = (
-                "owner",
-                "vulnerability",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "mitigation_detected",
-                "days_to_mitigate",
-            )
-            data_fields = (
-                "owner",
-                "plugin_name",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "time_closed",
-                "days_to_close",
-            )
-        else:
-            header_fields = (
-                "vulnerability",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "mitigation_detected",
-                "days_to_mitigate",
-            )
-            data_fields = (
-                "plugin_name",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "time_closed",
-                "days_to_close",
-            )
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["resolved_vulnerabilities"]
         with open("mitigated-vulnerabilities.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
