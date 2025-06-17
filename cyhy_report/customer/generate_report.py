@@ -2881,77 +2881,47 @@ class ReportGenerator(object):
                 writer.writerow(row)
 
     def __generate_false_positives_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "severity",
+            "initial_detection",
+            "latest_detection",
+            "name",
+            "false_positive_effective",
+            "false_positive_expiration",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "severity",
+            "time_opened",
+            "last_detected",
+            "name",
+            "fp_effective_date",
+            "fp_expiration_date",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            header_fields = (
-                "ip",
-                "port",
-                "severity",
-                "initial_detection",
-                "latest_detection",
-                "name",
-                "false_positive_effective",
-                "false_positive_expiration",
-            )
-            data_fields = (
-                "ip",
-                "port",
-                "severity",
-                "time_opened",
-                "last_detected",
-                "name",
-                "fp_effective_date",
-                "fp_expiration_date",
-            )
-        else:  # if there are any descendants in current snapshot, output 'owner' field also
-            if self.__snapshots[0].get("descendants_included"):
-                header_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "name",
-                    "false_positive_effective",
-                    "false_positive_expiration",
-                )
-                data_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "name",
-                    "fp_effective_date",
-                    "fp_expiration_date",
-                )
-            else:
-                header_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "name",
-                    "false_positive_effective",
-                    "false_positive_expiration",
-                )
-                data_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "name",
-                    "fp_effective_date",
-                    "fp_expiration_date",
-                )
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+    
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["false_positive_tickets"]
         with open("false-positive-findings.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
