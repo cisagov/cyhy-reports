@@ -714,8 +714,8 @@ class ReportGenerator(object):
             self.__results["risky_services_tickets"]
         )
 
-        # Set has_hostnames flag based on whether any tickets have a hostname set
-        self.__results["has_hostnames"] = any(
+        # Set flag based on whether any tickets have a hostname set
+        self.__results["has_hostnames_in_tix"] = any(
             t.get("hostname") for t in (
                 self.__results["tickets_0"]
                 + self.__results["tickets_1"]
@@ -749,12 +749,14 @@ class ReportGenerator(object):
             {"_id": True, "hostnames": True}
         )
 
+        self.__results["has_hostnames_in_hosts"] = False
         # Create a mapping of ip_ints to hostnames for each host in the results
         # Only include hostnames owned by the same owner(s) as the snapshot
         ip_int_to_hostnames_map = defaultdict(list)
         for h in hosts_with_services:
             for hostname in h.get("hostnames", ""):
                 if hostname.get("owner") in ss0_owners:
+                    self.__results["has_hostnames_in_hosts"] = True
                     if self.__anonymize:
                         hostname_str = "host.sample.gov"
                     elif self.__snapshots[0].get("descendants_included"):
@@ -2643,7 +2645,7 @@ class ReportGenerator(object):
             data_fields.insert(0, "owner")
 
         # Remove hostname column if there are no hostnames in the tickets
-        if not self.__results["has_hostnames"]:
+        if not self.__results["has_hostnames_in_tix"]:
             header_fields.remove("hostname")
             data_fields.remove("hostname")
 
@@ -2684,7 +2686,7 @@ class ReportGenerator(object):
             data_fields.insert(0, "owner")
 
         # Remove hostname column if there are no hostnames in the tickets
-        if not self.__results["has_hostnames"]:
+        if not self.__results["has_hostnames_in_tix"]:
             header_fields.remove("hostname")
             data_fields.remove("hostname")
 
@@ -2742,7 +2744,7 @@ class ReportGenerator(object):
             data_fields.insert(0, "owner")
 
         # Remove hostname column if there are no hostnames in the tickets
-        if not self.__results["has_hostnames"]:
+        if not self.__results["has_hostnames_in_tix"]:
             header_fields.remove("hostname")
             data_fields.remove("hostname")
 
@@ -3342,7 +3344,8 @@ class ReportGenerator(object):
         result["owner_is_federal_executive"] = self.__results[
             "owner_is_federal_executive"
         ]
-        result["has_hostnames"] = self.__results["has_hostnames"]
+        result["has_hostnames_in_tix"] = self.__results["has_hostnames_in_tix"]
+        result["has_hostnames_in_hosts"] = self.__results["has_hostnames_in_hosts"]
 
         if ss0.get(
             "descendants_included"
