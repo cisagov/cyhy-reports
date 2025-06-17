@@ -303,6 +303,8 @@ class ReportGenerator(object):
                     t["owner"] = "SAMPLE"
                 else:
                     t["owner"] = "SUB_ORG"
+                if t.get("hostname"):
+                    t["hostname"] = "host.sample.gov"
             self.__owner = "SAMPLE"
             self.__snapshots[0]["owner"] = "SAMPLE"
             self.__results = self.__anonymize_structure(self.__results)
