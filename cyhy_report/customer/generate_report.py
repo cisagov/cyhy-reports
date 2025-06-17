@@ -2757,14 +2757,26 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_services_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        fields = [
+            "hostnames",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            fields = ("ip", "port", "service")
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                fields = ("owner", "ip_int", "ip", "port", "service")
-            else:
-                fields = ("ip_int", "ip", "port", "service")
+            fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            fields.insert(0, "owner")
+
+        # Remove hostnames column if there are no hostnames in the hosts
+        if not self.__results["has_hostnames_in_hosts"]:
+            fields.remove("hostnames")
+
         data = self.__results["services_attachment"]
         with open("services.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
