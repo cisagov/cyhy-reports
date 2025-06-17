@@ -2557,143 +2557,69 @@ class ReportGenerator(object):
                     writer.writerow([d])
 
     def __generate_findings_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+            "cvss_base_score",
+            "cvss_version",
+            "cvss_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "plugin_id",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "time_opened",
+            "last_detected",
+            "age",
+            "cvss_base_score",
+            "cvss_version",
+            "score_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "source_id",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            header_fields = (
-                "ip",
-                "port",
-                "protocol",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-                "cvss_base_score",
-                "cvss_version",
-                "cvss_source",
-                "vpr_score",
-                "cve",
-                "name",
-                "description",
-                "solution",
-                "source",
-                "plugin_id",
-            )
-            data_fields = (
-                "ip",
-                "port",
-                "protocol",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "time_opened",
-                "last_detected",
-                "age",
-                "cvss_base_score",
-                "cvss_version",
-                "score_source",
-                "vpr_score",
-                "cve",
-                "name",
-                "description",
-                "solution",
-                "source",
-                "source_id",
-            )
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                header_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "known_exploited",
-                    "ransomware_exploited",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "age_days",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "cvss_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "plugin_id",
-                )
-                data_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "kev",
-                    "kev_ransomware",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "age",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "score_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "source_id",
-                )
-            else:
-                header_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "known_exploited",
-                    "ransomware_exploited",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "age_days",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "cvss_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "plugin_id",
-                )
-                data_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "kev",
-                    "kev_ransomware",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "age",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "score_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "source_id",
-                )
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+    
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
