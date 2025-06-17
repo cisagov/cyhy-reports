@@ -567,6 +567,7 @@ class ReportGenerator(object):
                 },
                 {
                     "details.service": True,
+                    "hostname": True,
                     "ip": True,
                     "ip_int": True,
                     "owner": True,
@@ -2785,38 +2786,29 @@ class ReportGenerator(object):
                 writer.writerow(row)
 
     def __generate_risky_services_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "category",
+            "possible_nmi",
+            "newly_opened_since_last_report",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            fields = (
-                "ip",
-                "port",
-                "service",
-                "category",
-                "possible_nmi",
-                "newly_opened_since_last_report",
-            )
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "service",
-                    "category",
-                    "possible_nmi",
-                    "newly_opened_since_last_report",
-                )
-            else:
-                fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "service",
-                    "category",
-                    "possible_nmi",
-                    "newly_opened_since_last_report",
-                )
+            fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            fields.remove("hostname")
+
         data = self.__results["risky_services_tickets"]
         with open("potentially-risky-services.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
