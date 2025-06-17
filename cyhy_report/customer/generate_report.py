@@ -714,6 +714,17 @@ class ReportGenerator(object):
             self.__results["risky_services_tickets"]
         )
 
+        # Set has_hostnames flag based on whether any tickets have a hostname set
+        self.__results["has_hostnames"] = any(
+            t.get("hostname") for t in (
+                self.__results["tickets_0"]
+                + self.__results["tickets_1"]
+                + self.__results["recently_detected_closed_tickets"]
+                + self.__results["false_positive_tickets"]
+                + self.__results["risky_services_tickets"]
+            )
+        )
+
         results = database.run_pipeline_cursor(
             queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
@@ -3400,6 +3411,7 @@ class ReportGenerator(object):
         result["owner_is_federal_executive"] = self.__results[
             "owner_is_federal_executive"
         ]
+        result["has_hostnames"] = self.__results["has_hostnames"]
 
         if ss0.get(
             "descendants_included"
