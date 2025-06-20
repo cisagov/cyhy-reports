@@ -636,7 +636,10 @@ class ReportGenerator(object):
         df["high"] = (df["severity"] == 3).astype(int)
         df["critical"] = (df["severity"] == 4).astype(int)
         df["weighted"] = np.power(df["cvss_base_score"], 7) / np.power(10, 6)
-        grouper = df.groupby(["ip"], as_index=False)
+        # Without the fillna below, groupby will drop rows where hostname is
+        # null; we want to keep those rows.
+        df["hostname"].fillna("", inplace=True)
+        grouper = df.groupby(["ip", "hostname"], as_index=False)
         df2 = grouper.agg(
             {
                 "total": np.sum,
