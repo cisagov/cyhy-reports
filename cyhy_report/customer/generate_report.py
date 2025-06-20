@@ -27,7 +27,7 @@ Options:
 
 # Standard Python Libraries
 import codecs
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 import datetime
 import json
 import os
@@ -629,7 +629,7 @@ class ReportGenerator(object):
         return df
 
     def __top_risky_hosts(self, tickets):
-        df = SafeDataFrame(tickets, columns=["ip", "severity", "cvss_base_score"])
+        df = SafeDataFrame(tickets, columns=["hostname", "ip", "severity", "cvss_base_score"])
         df["total"] = 1
         df["low"] = (df["severity"] == 1).astype(int)
         df["medium"] = (df["severity"] == 2).astype(int)
