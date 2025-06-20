@@ -1472,12 +1472,12 @@ This section presents counts of all distinct \glspl{vulnerability} that were det
 \label{app:mitigated-vulnerabilities}
 This section lists the \glspl{vulnerability} that were included on the previous report, but were not detected by the latest scans.  The table provides the \gls{initial detection} and \gls{mitigation detection} dates, plus the number of days it took to mitigate each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.2in}rrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.5in}r<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:resolved-vulnerabilities}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial & Mitigation & Days To \\
-	<<#display_owner>> & <</display_owner>>&  &  &  & Detection & Detected (UTC) & Mitigate \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial & Mitigation & Days To \\
+	<<#display_owner>> & <</display_owner>>& <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address & & Detection & Detected (UTC) & Mitigate \\
 	\midrule \endhead
-	<<#resolved_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> & <<#time_closed_date_tex>>\isodate\formatdate<<&time_closed_date_tex>><</time_closed_date_tex>> \  <<#time_closed_time_tex>>\formattime<<&time_closed_time_tex>><</time_closed_time_tex>><<^time_closed_time_tex>>NA<</time_closed_time_tex>> & <<#days_to_close>><<&days_to_close>><</days_to_close>><<^days_to_close>>NA<</days_to_close>>\\
+	<<#resolved_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> & <<#time_closed_date_tex>>\isodate\formatdate<<&time_closed_date_tex>><</time_closed_date_tex>> \  <<#time_closed_time_tex>>\formattime<<&time_closed_time_tex>><</time_closed_time_tex>><<^time_closed_time_tex>>NA<</time_closed_time_tex>> & <<#days_to_close>><<&days_to_close>><</days_to_close>><<^days_to_close>>NA<</days_to_close>>\\
 	<</resolved_vulnerabilities>>
 	\bottomrule
 \end{longtable}
