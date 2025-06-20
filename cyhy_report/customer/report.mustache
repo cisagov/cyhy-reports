@@ -1344,11 +1344,11 @@ The top high-risk hosts are identified in \autoref{tab:top-hosts} by combining t
 \begin{table*}[h!]
   \centering
   \rowcolors{2}{white}{row-gray}
-  \begin{tabular}{lrrrrr}
+  \begin{tabular}{<<#has_hostnames_in_tix>>p{2.0in}r<</has_hostnames_in_tix>>lrrrrr}
 	  \toprule
-	  IP Address & Critical & High & Medium & Low & Total \\
+	  <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP Address & Critical & High & Medium & Low & Total \\
 	  \midrule
-	  <<#top_10_risky_hosts>><<&ip>> & <<&critical>> & <<&high>> & <<&medium>> & <<&low>> & <<&total>> \\
+	  <<#top_10_risky_hosts>><<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&critical>> & <<&high>> & <<&medium>> & <<&low>> & <<&total>> \\
 	  <</top_10_risky_hosts>>
 	  \bottomrule
   \end{tabular}
