@@ -2056,6 +2056,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "cvss_base_score",
+                "hostname",
                 "ip",
                 "name",
                 "port",
@@ -2076,6 +2077,7 @@ class ReportGenerator(object):
                 columns=[
                     "owner",
                     "cvss_base_score",
+                    "hostname",
                     "ip",
                     "name",
                     "port",
@@ -2094,6 +2096,7 @@ class ReportGenerator(object):
                 columns=[
                     "owner",
                     "cvss_base_score",
+                    "hostname",
                     "ip",
                     "name",
                     "port",
@@ -2121,7 +2124,9 @@ class ReportGenerator(object):
         NULL_TIMESTAMP = pd.Timestamp("1970-01-01 00:00:00.000+0000")
         for df in (df0, df1):
             # Without the fillna steps below, groupby will drop rows where
-            # kev/kev_ransomware is None (NaN) and time_closed is None (NaT)
+            # hostname/kev/kev_ransomware is None (NaN) and time_closed is None
+            # (NaT)
+            df["hostname"].fillna("", inplace=True)
             df["kev"].fillna("", inplace=True)
             df["kev_ransomware"].fillna("", inplace=True)
             # This changes 'time_closed' dtype to object
@@ -2143,6 +2148,7 @@ class ReportGenerator(object):
                 [
                     "owner",
                     "plugin_name",
+                    "hostname",
                     "ip",
                     "port",
                     "kev",
@@ -2160,6 +2166,7 @@ class ReportGenerator(object):
                 [
                     "owner",
                     "plugin_name",
+                    "hostname",
                     "ip",
                     "port",
                     "kev",
@@ -2183,6 +2190,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "plugin_name",
+                "hostname",
                 "ip",
                 "port",
                 "kev",
@@ -2214,6 +2222,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "plugin_name",
+                "hostname",
                 "ip",
                 "port",
                 "kev",
