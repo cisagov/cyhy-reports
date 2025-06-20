@@ -106,13 +106,14 @@ def services_attachment_pl(snapshot_oids):
                 "$project": {
                     "_id": False,
                     "owner": True,
+                    "hostname": True,
                     "ip_int": True,
                     "ip": True,
                     "port": True,
                     "service": "$service.name",
                 }
             },
-            {"$sort": SON([("ip_int", 1), ("port", 1)])},
+            {"$sort": SON([("hostname", 1), ("ip_int", 1), ("port", 1)])},
         ],
         database.PORT_SCAN_COLLECTION,
     )

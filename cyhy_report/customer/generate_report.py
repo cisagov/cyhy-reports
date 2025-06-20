@@ -747,35 +747,11 @@ class ReportGenerator(object):
         results = database.run_pipeline_cursor(
             queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
-        # Get HostDocs for the services found in the results
-        hosts_with_services = self.__cyhy_db.HostDoc.collection.find(
-            {"_id": {"$in": [r["ip_int"] for r in results]}},
-            {"_id": True, "hostnames": True}
-        )
-
-        self.__results["has_hostnames_in_hosts"] = False
-        # Create a mapping of ip_ints to hostnames for each host in the results
-        # Only include hostnames owned by the same owner(s) as the snapshot
-        ip_int_to_hostnames_map = defaultdict(list)
-        for h in hosts_with_services:
-            for hostname in h.get("hostnames", ""):
-                if hostname.get("owner") in ss0_owners:
-                    self.__results["has_hostnames_in_hosts"] = True
-                    if self.__anonymize:
-                        hostname_str = "host.sample.gov"
-                    elif self.__snapshots[0].get("descendants_included"):
-                        hostname_str = "{} ({})".format(
-                            hostname["hostname"], hostname["owner"]
-                        )
-                    else:
-                        hostname_str = hostname["hostname"]
-                    ip_int_to_hostnames_map[h["_id"]] += [hostname_str]
-
-        # Add hostnames to each service result
-        for r in results:
-            r["hostnames"] = ", ".join(
-                ip_int_to_hostnames_map.get(r["ip_int"], [])
-            )
+        # Anonymize hostname if requested
+        if self.__anonymize:
+            for r in results:
+                if r.get("hostname"):
+                    r["hostname"] = "host.sample.gov"
         self.__results["services_attachment"] = results
 
         ss0_host_scans = list(
@@ -2762,7 +2738,7 @@ class ReportGenerator(object):
 
     def __generate_services_attachment(self):
         fields = [
-            "hostnames",
+            "hostname",
             "ip_int",
             "ip",
             "port",
@@ -2776,10 +2752,6 @@ class ReportGenerator(object):
         # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
             fields.insert(0, "owner")
-
-        # Remove hostnames column if there are no hostnames in the hosts
-        if not self.__results["has_hostnames_in_hosts"]:
-            fields.remove("hostnames")
 
         data = self.__results["services_attachment"]
         with open("services.csv", "wb") as out_file:
@@ -3322,7 +3294,6 @@ class ReportGenerator(object):
             "owner_is_federal_executive"
         ]
         result["has_hostnames_in_tix"] = self.__results["has_hostnames_in_tix"]
-        result["has_hostnames_in_hosts"] = self.__results["has_hostnames_in_hosts"]
 
         if ss0.get(
             "descendants_included"
