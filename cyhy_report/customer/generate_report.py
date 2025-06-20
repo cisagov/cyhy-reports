@@ -298,6 +298,7 @@ class ReportGenerator(object):
                 + self.__results["tickets_1"]
                 + self.__results["recently_detected_closed_tickets"]
                 + self.__results["false_positive_tickets"]
+                + self.__results["risky_services_tickets"]
             ):
                 if t["owner"] == self.__owner:
                     t["owner"] = "SAMPLE"
