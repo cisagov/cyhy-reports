@@ -2393,6 +2393,7 @@ class ReportGenerator(object):
                 "kev",
                 "kev_ransomware",
                 "severity",
+                "hostname",
                 "ip",
                 "port",
                 "time_opened",
