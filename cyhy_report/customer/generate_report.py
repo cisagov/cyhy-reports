@@ -2452,18 +2452,21 @@ class ReportGenerator(object):
     def __table_mitigations(self):
         df = SafeDataFrame(
             self.__results["tickets_0"],
-            columns=["owner", "name", "severity", "solution", "ip", "port", "age"],
+            columns=["owner", "name", "severity", "solution", "hostname", "ip", "port", "age"],
         )
         df = df[df["severity"] >= 3]
         if df.empty:
             self.__results["mitigations"] = []
             return
-        grouper = df.groupby(["owner", "name", "severity", "solution", "ip", "age"])
+        # Without the fillna below, groupby will drop rows where hostname is
+        # null; we want to keep those rows.
+        df["hostname"].fillna("", inplace=True)
+        grouper = df.groupby(["owner", "name", "severity", "solution", "hostname", "ip", "age"])
         grouped_series = grouper["port"].apply(set)  # create sets of ports (avoids duplicate ports)
         df2 = grouped_series.reset_index()  # convert series back to a DataFrame
         df2.rename(columns={"port": "ports", "name": "plugin_name"}, inplace=True)
         df2.sort_values(
-            by=["severity", "plugin_name", "ip"], ascending=[0, 1, 1], inplace=True
+            by=["severity", "plugin_name", "hostname", "ip"], ascending=[0, 1, 1, 1], inplace=True
         )
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")

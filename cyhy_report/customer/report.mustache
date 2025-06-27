@@ -1561,12 +1561,12 @@ This section presents detailed scan results from the network mapping and \gls{vu
 This section presents detailed scan results, ordered by \gls{host}, from the network mapping and \gls{vulnerability} scans.  The table only displays high and critical vulnerabilities.  Vulnerabilities identified have a recommended mitigation solution that should be considered in order to establish or maintain a secure network.
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>lp{0.5in}p{1.8in}p{0.5in}rp{3.5in}}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>><<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>lp{0.5in}p{1.8in}p{0.5in}rp{3.0in}}
 	\toprule\label{tab:mitigations}
-  	<<#display_owner>>Owner & <</display_owner>>Host & Port(s) & Vulnerability & Severity & Age & Solution \\
-  	<<#display_owner>> & <</display_owner>> & & & & Days & \\
+  	<<#display_owner>>Owner & <</display_owner>><<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port(s) & Vulnerability & Severity & Age & Solution \\
+  	<<#display_owner>> & <</display_owner>><<#has_hostnames_in_tix>> & <</has_hostnames_in_tix>>Address & & & & Days & \\
 	\midrule \endhead
-	<<#mitigations>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&ports>> & <<&plugin_name>> & <<&severity>> & <<&age>> & <<&solution>> \\
+	<<#mitigations>><<#display_owner>><<&owner>> & <</display_owner>><<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&ports>> & <<&plugin_name>> & <<&severity>> & <<&age>> & <<&solution>> \\
 	<</mitigations>>
 	\bottomrule
 \end{longtable}
