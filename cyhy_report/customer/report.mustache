@@ -1472,7 +1472,7 @@ This section presents counts of all distinct \glspl{vulnerability} that were det
 \label{app:mitigated-vulnerabilities}
 This section lists the \glspl{vulnerability} that were included on the previous report, but were not detected by the latest scans.  The table provides the \gls{initial detection} and \gls{mitigation detection} dates, plus the number of days it took to mitigate each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.5in}r<</has_hostnames_in_tix>>rrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:resolved-vulnerabilities}
 	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial & Mitigation & Days To \\
 	<<#display_owner>> & <</display_owner>>& <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address & & Detection & Detected (UTC) & Mitigate \\
@@ -1488,7 +1488,7 @@ This section lists the \glspl{vulnerability} that were included on the previous 
 \label{app:new-vulnerabilities}
 This section lists the new \glspl{vulnerability} that were detected for the first time in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.5in}r<</has_hostnames_in_tix>>rrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrr}
 	\toprule\label{tab:new-vulnerabilities}
 	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection \\
 	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC)\\
@@ -1504,7 +1504,7 @@ This section lists the new \glspl{vulnerability} that were detected for the firs
 \label{app:redetected-vulnerabilities}
 This section lists the \glspl{vulnerability} that were previously detected, then mitigated, and were re-detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.5in}r<</has_hostnames_in_tix>>rrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrr}
 	\toprule\label{tab:redetected-vulnerabilities}
 	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & Age \\
 	<<#display_owner>> & <</display_owner>>& <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address & & (UTC) & (UTC) & Days \\
@@ -1520,7 +1520,7 @@ This section lists the \glspl{vulnerability} that were previously detected, then
 \label{app:recently-detected-vulnerabilities}
 This section lists the \glspl{vulnerability} that were detected since the last report, but not detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerabilty.  It is \textbf{strongly recommended} to verify if the vulnerabilities below were actively mitigated by your organization.  If they were not, it is highly likely these vulnerabilities will be detected again by future scans.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.5in}r<</has_hostnames_in_tix>>rrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrr}
 	\toprule\label{tab:recently-detected-vulnerabilities}
 	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & Age \\
 	<<#display_owner>> & <</display_owner>> & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address &  & (UTC) & (UTC) & Days \\
