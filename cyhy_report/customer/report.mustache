@@ -1585,12 +1585,12 @@ This section lists findings that \gls{AGENCY} asserted to \gls{CISA} to be \glsp
 This section lists false positive findings whose status as a false positive is expiring within <<&false_positive_expiring_soon_days>> days. If \gls{AGENCY} would like to extend the expiration date of a false positive, please submit an email through your designated technical point of contact with an analysis and evidence indicating how \gls{AGENCY} determined the finding is still considered a false positive. For a full listing of false positives, please see \autoref{app:all-false-positive-findings}: \nameref{app:all-false-positive-findings}.
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}r<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:expiring-soon-false-positive-findings}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC) & Effective & Expiration \\
 	\midrule \endhead
-	<<#expiring_soon_false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<<#expiring_soon_false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
 	<</expiring_soon_false_positive_tickets>>
 	\bottomrule
 \end{longtable}
@@ -1601,12 +1601,12 @@ This section lists false positive findings whose status as a false positive is e
 \label{app:all-false-positive-findings}
 <</false_positive_tickets_count>>
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}r<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:false-positive-findings}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC) & Effective & Expiration \\
 	\midrule \endhead
-	<<#false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<<#false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
 	<</false_positive_tickets>>
 	\bottomrule
 \end{longtable}
