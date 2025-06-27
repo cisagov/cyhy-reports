@@ -2459,7 +2459,7 @@ class ReportGenerator(object):
             self.__results["mitigations"] = []
             return
         grouper = df.groupby(["owner", "name", "severity", "solution", "ip", "age"])
-        grouped_series = grouper["port"].apply(list)  # create lists of ports
+        grouped_series = grouper["port"].apply(set)  # create sets of ports (avoids duplicate ports)
         df2 = grouped_series.reset_index()  # convert series back to a DataFrame
         df2.rename(columns={"port": "ports", "name": "plugin_name"}, inplace=True)
         df2.sort_values(
