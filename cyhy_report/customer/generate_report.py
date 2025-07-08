@@ -2417,6 +2417,7 @@ class ReportGenerator(object):
                 "severity",
                 "cvss_base_score",
                 "solution",
+                "hostname",
                 "ip",
                 "time_opened",
                 "last_detected",
@@ -2427,12 +2428,19 @@ class ReportGenerator(object):
             return
         for col in ("time_opened", "last_detected"):
             df[col] = pd.to_datetime(df[col], utc=True)
+
+        # Make a combined hostname/ip column
+        df["hostname_ip"] = df.apply(
+            lambda t: "%s (%s)" % (t["hostname"], t["ip"]) if t["hostname"] else t["ip"],
+            axis=1,
+        )
+
         grouper = df.groupby(
             ["name", "description", "severity", "cvss_base_score", "solution"]
         )
-        grouped_series = grouper["ip"].apply(
+        grouped_series = grouper["hostname_ip"].apply(
             set
-        )  # create sets of IPs (avoids duplicate IPs)
+        )  # create sets of hostname/IP combos (avoids duplicates)
         initial_detection = grouper[
             "time_opened"
         ].min()  # get earliest initial detection
@@ -2443,7 +2451,7 @@ class ReportGenerator(object):
         df2.sort_values(
             by=["severity", "cvss_base_score"], ascending=[0, 0], inplace=True
         )
-        df2.rename(columns={"ip": "addresses", "name": "plugin_name"}, inplace=True)
+        df2.rename(columns={"hostname_ip": "addresses", "name": "plugin_name"}, inplace=True)
         df2["addresses_count"] = df2["addresses"].apply(lambda x: len(x))
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")
