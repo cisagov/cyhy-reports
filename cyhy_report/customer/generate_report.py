@@ -2502,7 +2502,8 @@ class ReportGenerator(object):
         self.__generate_services_attachment()
         self.__generate_risky_services_attachment()
         self.__generate_hosts_attachment()
-        self.__generate_scope_attachment()
+        self.__generate_scope_ip_attachment()
+        self.__generate_scope_host_attachment()
         self.__generate_false_positives_attachment()
         self.__generate_sub_org_summary_attachment()
         self.__generate_days_to_mitigate_attachment()
@@ -2858,7 +2859,7 @@ class ReportGenerator(object):
             for row in data:
                 data_writer.writerow(row)
 
-    def __generate_scope_attachment(self):
+    def __generate_scope_ip_attachment(self):
         if self.__snapshots[0].get("descendants_included") and not self.__anonymize:
             header_fields = ("owner", "cidr", "first", "last", "count")
             snapshot_family = self.__results["ss0_descendant_snapshots"] + [
@@ -2867,7 +2868,7 @@ class ReportGenerator(object):
         else:
             header_fields = ("cidr", "first", "last", "count")
         data = self.__snapshots[0]["networks"]
-        with open("scope.csv", "wb") as out_file:
+        with open("scope-ip.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             writer.writeheader()
             for net in data:
@@ -2899,6 +2900,43 @@ class ReportGenerator(object):
                         "first": IPAddress(net.first),
                         "last": IPAddress(net.last),
                         "count": net.size,
+                    }
+                writer.writerow(row)
+
+    def __generate_scope_host_attachment(self):
+        self.__results["has_scope_host_attachment"] = False
+        if not self.__snapshots[0].get("hostnames"):
+            # No hostnames in the snapshot, so no need to generate this attachment
+            return
+
+        self.__results["has_scope_host_attachment"] = True
+        if self.__snapshots[0].get("descendants_included") and not self.__anonymize:
+            header_fields = ["owner", "hostname"]
+            snapshot_family = self.__results["ss0_descendant_snapshots"] + [
+                self.__snapshots[0]
+            ]
+        else:
+            header_fields = ["hostname"]
+        data = self.__snapshots[0].get("hostnames")
+        with open("scope-hostname.csv", "wb") as out_file:
+            writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            writer.writeheader()
+            for hostname in data:
+                if self.__anonymize:
+                    row = {
+                        "hostname": "www.example.com"
+                    }
+                elif self.__snapshots[0].get("descendants_included"):
+                    for snap in snapshot_family:
+                        if hostname in snap["hostnames"]:
+                            break
+                    row = {
+                        "owner": snap["owner"],
+                        "hostname": hostname,
+                    }
+                else:
+                    row = {
+                        "hostname": hostname,
                     }
                 writer.writerow(row)
 
@@ -3466,6 +3504,8 @@ class ReportGenerator(object):
         result["expiring_soon_false_positive_tickets_count"] = len(
             result["expiring_soon_false_positive_tickets"]
         )
+
+        result["has_scope_host_attachment"] = self.__results["has_scope_host_attachment"]
 
         if self.__log_report_to_db:
             result["report_oid"] = str(self.__report_oid)
