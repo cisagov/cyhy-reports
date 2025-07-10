@@ -2429,33 +2429,54 @@ class ReportGenerator(object):
         for col in ("time_opened", "last_detected"):
             df[col] = pd.to_datetime(df[col], utc=True)
 
-        # Make a combined hostname/ip column
-        df["hostname_ip"] = df.apply(
-            lambda t: "%s (%s)" % (t["hostname"], t["ip"]) if t["hostname"] else t["ip"],
-            axis=1,
-        )
-
+        # Group distinct findings
         grouper = df.groupby(
             ["name", "description", "severity", "cvss_base_score", "solution"]
         )
-        grouped_series = grouper["hostname_ip"].apply(
-            set
-        )  # create sets of hostname/IP combos (avoids duplicates)
-        initial_detection = grouper[
-            "time_opened"
-        ].min()  # get earliest initial detection
-        latest_detection = grouper["last_detected"].max()  # get most-recent detection
-        df2 = grouped_series.reset_index()  # convert series back to a DataFrame
-        df2["first_detected"] = initial_detection.reset_index()["time_opened"]
-        df2["last_detected"] = latest_detection.reset_index()["last_detected"]
+
+        def build_addresses_output(group):
+            """Build a string of IPs and hostname/IPs for a finding."""
+            host_to_ips = {}  # Map: hostname -> set of IPs
+            ips_without_hostname = set()
+            for _, row in group.iterrows():
+                hostname = row["hostname"]
+                ip = row["ip"]
+                if hostname:
+                    host_to_ips.setdefault(hostname, set()).add(ip)
+                else:
+                    ips_without_hostname.add(ip)
+
+            # Build output string
+            parts = []
+            # Add IPs that don't have an associated hostname
+            for ip in sorted(ips_without_hostname):
+                parts.append(str(ip))
+            # Add hostnames with all of their associated IPs
+            for hostname in sorted(host_to_ips):
+                ip_list = sorted(host_to_ips[hostname], key=str)
+                ip_str = ", ".join([str(ip) for ip in ip_list])
+                parts.append("%s (%s)" % (hostname, ip_str))
+            return ", ".join(parts)
+
+        # Create a list of dictionaries, one dict per finding, and add some
+        # additional information for each finding (e.g. addresses, counts,
+        # first/last detected times)
+        grouped = []
+        for _, group in grouper:
+            row = group.iloc[0][["name", "description", "severity", "cvss_base_score", "solution"]].to_dict()
+            row["addresses"] = build_addresses_output(group)
+            row["addresses_count"] = len(set(group["ip"]))
+            row["first_detected"] = group["time_opened"].min()
+            row["last_detected"] = group["last_detected"].max()
+            grouped.append(row)
+
+        df2 = pd.DataFrame(grouped)
         df2.sort_values(
             by=["severity", "cvss_base_score"], ascending=[0, 0], inplace=True
         )
-        df2.rename(columns={"hostname_ip": "addresses", "name": "plugin_name"}, inplace=True)
-        df2["addresses_count"] = df2["addresses"].apply(lambda x: len(x))
+        df2.rename(columns={"name": "plugin_name"}, inplace=True)
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")
-        self.__join_lists(d, "addresses", ", ", True)
         self.__results["detailed_findings"] = d
 
     def __table_mitigations(self):
