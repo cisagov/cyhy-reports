@@ -2816,6 +2816,13 @@ class ReportGenerator(object):
         if self.__snapshots[0].get("descendants_included"):
             fields.insert(0, "owner")
 
+        # Remove hostname column if there are no hostnames in the services
+        has_hostnames_in_services = any(
+            t.get("hostname") for t in self.__results["services_attachment"]
+        )
+        if not has_hostnames_in_services:
+            fields.remove("hostname")
+
         data = self.__results["services_attachment"]
         with open("services.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
