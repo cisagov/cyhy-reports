@@ -2429,6 +2429,13 @@ class ReportGenerator(object):
         for col in ("time_opened", "last_detected"):
             df[col] = pd.to_datetime(df[col], utc=True)
 
+        # Replace nonexistent hostnames with empty strings so that they are not
+        # converted to "NaN" by the groupby below. Otherwise,
+        # build_addresses_output() creates addresses like "nan (<ip-address>),
+        # nan (<ip-address>)" instead of the desired "<ip-address>,
+        # <ip-address>".
+        df["hostname"].fillna("", inplace=True)
+
         # Group distinct findings
         grouper = df.groupby(
             ["name", "description", "severity", "cvss_base_score", "solution"]
