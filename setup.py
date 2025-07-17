@@ -14,7 +14,7 @@ extra_files = package_files("cyhy_report/assets")
 
 setup(
     name="cyhy-reports",
-    version="0.0.2",
+    version="1.1.0",
     author="Mark Feldhousen Jr.",
     author_email="mark.feldhousen@hq.dhs.gov",
     packages=[
