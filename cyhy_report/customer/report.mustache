@@ -481,6 +481,7 @@ As you review the report, you may have additional questions. Check out the answe
 \label{subsec:points-of-contact}
 \gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, the \gls{CISA} requests that you funnel your request through your technical POC(s).
 	\begin{table*}[h!]
+	    \setlength{\tabcolsep}{6pt}
  		\centering
  		\rowcolors{2}{white}{row-gray}
   		\begin{tabular}{llll}
@@ -1011,6 +1012,7 @@ For this reporting period, a total of \numprint{<<&ss0.host_count>>} hosts were 
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
 			  \toprule
@@ -1071,6 +1073,7 @@ The most frequently detected operating systems and services for \gls{AGENCY} are
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{p{2.0in}rr}
 			  \toprule
@@ -1087,6 +1090,7 @@ The most frequently detected operating systems and services for \gls{AGENCY} are
     \hspace{0.05\linewidth}
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{p{2.0in}rr}
 			  \toprule
@@ -1134,6 +1138,7 @@ The next two figures illustrate how quickly \gls{AGENCY} responds to \glspl{vuln
 
 \vspace{0.2in}
 \begin{table}[h]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \begin{tabular}{l<<#active_critical_age_counts>>r<</active_critical_age_counts>>}
 	  \toprule
@@ -1285,6 +1290,7 @@ The scanning detected \numprint{<<&ss0.vulnerable_host_count>>} vulnerable \glsp
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{6pt}
 		  \centering
 		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
 			  \toprule
@@ -1321,6 +1327,7 @@ The \gls{CVSS} scores for all \glspl{active vulnerability} can be found in \auto
 The top vulnerabilities according to \gls{CVSS} score are represented in \autoref{tab:top-ten-vulnerabilities}.
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{6pt}
   \centering
   \rowcolors{2}{white}{row-gray}
   \begin{tabular}{p{4.75in}rrr}
@@ -1342,6 +1349,7 @@ A complete list of distinct \glspl{vulnerability} detected, including \gls{sever
 The top high-risk hosts are identified in \autoref{tab:top-hosts} by combining the total number of vulnerabilities, the severity of the vulnerabilities, and a weighted \gls{CVSS} score for vulnerabilities detected.  For more information on the formula, please refer to \autoref{tab:risk-rating-system}: \nameref{tab:risk-rating-system}.
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{4pt}
   \centering
   \rowcolors{2}{white}{row-gray}
   \begin{tabular}{<<#has_hostnames_in_tix>>p{2.0in}r<</has_hostnames_in_tix>>rrrrrr}
@@ -1362,6 +1370,7 @@ The \gls{RRS} emphasizes higher-rated \gls{CVSS} scores to ensure that hosts wit
 \autoref{tab:risk-rating-system} illustrates the base and weighted \gls{CVSS} scores and shows the equivalent number of lower-risk vulnerabilities to weigh evenly with a single critical (\gls{CVSS} score of 10) vulnerability.
 
 \begin{table}[h!]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \rowcolors{2}{white}{row-gray}
   \begin{tabular}{rrr}
@@ -1420,6 +1429,7 @@ To help decision-makers, this section provides a comparison of the current data 
 \clearpage
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \begin{tabular}{lrrr}
 	  \toprule
@@ -1443,6 +1453,9 @@ Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_
 \section{Conclusion}
 \label{sec:conclusion}
 \gls{AGENCY} should use the data provided in this report to correct any identified \glspl{vulnerability}, configuration errors, and security concerns in your external network perimeter. If \gls{AGENCY} has questions, comments, or concerns about the findings or data contained in this report, please work with your designated technical point of contact when requesting assistance from \gls{CISA} at \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
+
+% Set table column padding for all remaining longtables in the appendices
+\setlength{\tabcolsep}{6pt}
 
 \onecolumn
 \appendices
