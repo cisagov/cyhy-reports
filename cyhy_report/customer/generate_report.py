@@ -2875,7 +2875,7 @@ class ReportGenerator(object):
             "ip",
             "name",
         ]
-        
+
         # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
             header_fields.remove("ip_int")
