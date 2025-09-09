@@ -460,11 +460,15 @@ class ScorecardGenerator(object):
         ], database.HOST_COLLECTION
 
     def __active_hosts_for_orgs_pl(self, parent_org, descendant_orgs):
+        owners = [parent_org] + descendant_orgs
         return [
             {
                 '$match': {
                     'state.up': True,
-                    'owner': {'$in': [parent_org] + descendant_orgs}
+                    '$or': [
+                        {'owner': {'$in': owners}},
+                        {'hostnames': {'$elemMatch': {'owner': {'$in': owners}}}}
+                    ],
                 }
             },
             {
@@ -3407,7 +3411,7 @@ def generate_empty_scorecard_json():
     return to_json(result)
 
 def main():
-    args = docopt(__doc__, version='v0.0.1')
+    args = docopt(__doc__, version='v1.1.0')
 
     if args['--generate-empty-scorecard-json']:
         print generate_empty_scorecard_json()

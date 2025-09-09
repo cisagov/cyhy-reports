@@ -9,7 +9,12 @@ from bson.son import SON
 def host_latest_scan_time_span_pl(owners):
     return (
         [
-            {"$match": {"owner": {"$in": owners}, "latest_scan.DONE": {"$ne": None}}},
+            {"$match": {
+                "$or": [
+                    {"owner": {"$in": owners}},
+                    {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
+                ],
+                "latest_scan.DONE": {"$ne": None}}},
             {
                 "$group": {
                     "_id": {},
@@ -27,7 +32,10 @@ def host_latest_vulnscan_time_span_pl(owners):
         [
             {
                 "$match": {
-                    "owner": {"$in": owners},
+                    "$or": [
+                        {"owner": {"$in": owners}},
+                        {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
+                    ],
                     "state.up": True,
                     "latest_scan.VULNSCAN": {"$ne": None},
                 }
@@ -76,7 +84,14 @@ def operating_system_count_pl(snapshot_oids):
 def ip_geoloc_pl(owners):
     return (
         [
-            {"$match": {"owner": {"$in": owners}, "state.up": True}},
+            {"$match": {
+                "$or": [
+                    {"owner": {"$in": owners}},
+                    {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
+                ],
+                "state.up": True,
+                }
+            },
             {"$group": {"_id": {"loc": "$loc"}}},
         ],
         database.HOST_COLLECTION,
@@ -91,13 +106,14 @@ def services_attachment_pl(snapshot_oids):
                 "$project": {
                     "_id": False,
                     "owner": True,
+                    "hostname": True,
                     "ip_int": True,
                     "ip": True,
                     "port": True,
                     "service": "$service.name",
                 }
             },
-            {"$sort": SON([("ip_int", 1), ("port", 1)])},
+            {"$sort": SON([("hostname", 1), ("ip_int", 1), ("port", 1)])},
         ],
         database.PORT_SCAN_COLLECTION,
     )

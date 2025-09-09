@@ -481,6 +481,7 @@ As you review the report, you may have additional questions. Check out the answe
 \label{subsec:points-of-contact}
 \gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, the \gls{CISA} requests that you funnel your request through your technical POC(s).
 	\begin{table*}[h!]
+	    \setlength{\tabcolsep}{6pt}
  		\centering
  		\rowcolors{2}{white}{row-gray}
   		\begin{tabular}{llll}
@@ -1011,6 +1012,7 @@ For this reporting period, a total of \numprint{<<&ss0.host_count>>} hosts were 
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
 			  \toprule
@@ -1071,6 +1073,7 @@ The most frequently detected operating systems and services for \gls{AGENCY} are
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{p{2.0in}rr}
 			  \toprule
@@ -1087,6 +1090,7 @@ The most frequently detected operating systems and services for \gls{AGENCY} are
     \hspace{0.05\linewidth}
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
 		  \centering
 		  \begin{tabular}{p{2.0in}rr}
 			  \toprule
@@ -1134,6 +1138,7 @@ The next two figures illustrate how quickly \gls{AGENCY} responds to \glspl{vuln
 
 \vspace{0.2in}
 \begin{table}[h]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \begin{tabular}{l<<#active_critical_age_counts>>r<</active_critical_age_counts>>}
 	  \toprule
@@ -1285,6 +1290,7 @@ The scanning detected \numprint{<<&ss0.vulnerable_host_count>>} vulnerable \glsp
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{table}[H]
+		  \setlength{\tabcolsep}{6pt}
 		  \centering
 		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
 			  \toprule
@@ -1321,6 +1327,7 @@ The \gls{CVSS} scores for all \glspl{active vulnerability} can be found in \auto
 The top vulnerabilities according to \gls{CVSS} score are represented in \autoref{tab:top-ten-vulnerabilities}.
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{6pt}
   \centering
   \rowcolors{2}{white}{row-gray}
   \begin{tabular}{p{4.75in}rrr}
@@ -1342,13 +1349,14 @@ A complete list of distinct \glspl{vulnerability} detected, including \gls{sever
 The top high-risk hosts are identified in \autoref{tab:top-hosts} by combining the total number of vulnerabilities, the severity of the vulnerabilities, and a weighted \gls{CVSS} score for vulnerabilities detected.  For more information on the formula, please refer to \autoref{tab:risk-rating-system}: \nameref{tab:risk-rating-system}.
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{4pt}
   \centering
   \rowcolors{2}{white}{row-gray}
-  \begin{tabular}{lrrrrr}
+  \begin{tabular}{<<#has_hostnames_in_tix>>p{2.0in}r<</has_hostnames_in_tix>>rrrrrr}
 	  \toprule
-	  IP Address & Critical & High & Medium & Low & Total \\
+	  <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP Address & Critical & High & Medium & Low & Total \\
 	  \midrule
-	  <<#top_10_risky_hosts>><<&ip>> & <<&critical>> & <<&high>> & <<&medium>> & <<&low>> & <<&total>> \\
+	  <<#top_10_risky_hosts>><<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&critical>> & <<&high>> & <<&medium>> & <<&low>> & <<&total>> \\
 	  <</top_10_risky_hosts>>
 	  \bottomrule
   \end{tabular}
@@ -1362,6 +1370,7 @@ The \gls{RRS} emphasizes higher-rated \gls{CVSS} scores to ensure that hosts wit
 \autoref{tab:risk-rating-system} illustrates the base and weighted \gls{CVSS} scores and shows the equivalent number of lower-risk vulnerabilities to weigh evenly with a single critical (\gls{CVSS} score of 10) vulnerability.
 
 \begin{table}[h!]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \rowcolors{2}{white}{row-gray}
   \begin{tabular}{rrr}
@@ -1420,6 +1429,7 @@ To help decision-makers, this section provides a comparison of the current data 
 \clearpage
 
 \begin{table*}[h!]
+  \setlength{\tabcolsep}{8pt}
   \centering
   \begin{tabular}{lrrr}
 	  \toprule
@@ -1443,6 +1453,9 @@ Overall, for all \glspl{host} identified, \gls{AGENCY} averaged <<&calc.average_
 \section{Conclusion}
 \label{sec:conclusion}
 \gls{AGENCY} should use the data provided in this report to correct any identified \glspl{vulnerability}, configuration errors, and security concerns in your external network perimeter. If \gls{AGENCY} has questions, comments, or concerns about the findings or data contained in this report, please work with your designated technical point of contact when requesting assistance from \gls{CISA} at \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
+
+% Set table column padding for all remaining longtables in the appendices
+\setlength{\tabcolsep}{6pt}
 
 \onecolumn
 \appendices
@@ -1472,12 +1485,12 @@ This section presents counts of all distinct \glspl{vulnerability} that were det
 \label{app:mitigated-vulnerabilities}
 This section lists the \glspl{vulnerability} that were included on the previous report, but were not detected by the latest scans.  The table provides the \gls{initial detection} and \gls{mitigation detection} dates, plus the number of days it took to mitigate each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.2in}rrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:resolved-vulnerabilities}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial & Mitigation & Days To \\
-	<<#display_owner>> & <</display_owner>>&  &  &  & Detection & Detected (UTC) & Mitigate \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial & Mitigation & Days To \\
+	<<#display_owner>> & <</display_owner>>& <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address & & Detection & Detected (UTC) & Mitigate \\
 	\midrule \endhead
-	<<#resolved_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> & <<#time_closed_date_tex>>\isodate\formatdate<<&time_closed_date_tex>><</time_closed_date_tex>> \  <<#time_closed_time_tex>>\formattime<<&time_closed_time_tex>><</time_closed_time_tex>><<^time_closed_time_tex>>NA<</time_closed_time_tex>> & <<#days_to_close>><<&days_to_close>><</days_to_close>><<^days_to_close>>NA<</days_to_close>>\\
+	<<#resolved_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> & <<#time_closed_date_tex>>\isodate\formatdate<<&time_closed_date_tex>><</time_closed_date_tex>> \  <<#time_closed_time_tex>>\formattime<<&time_closed_time_tex>><</time_closed_time_tex>><<^time_closed_time_tex>>NA<</time_closed_time_tex>> & <<#days_to_close>><<&days_to_close>><</days_to_close>><<^days_to_close>>NA<</days_to_close>>\\
 	<</resolved_vulnerabilities>>
 	\bottomrule
 \end{longtable}
@@ -1488,12 +1501,12 @@ This section lists the \glspl{vulnerability} that were included on the previous 
 \label{app:new-vulnerabilities}
 This section lists the new \glspl{vulnerability} that were detected for the first time in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.5in}rrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrr}
 	\toprule\label{tab:new-vulnerabilities}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC)\\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection \\
+	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC)\\
 	\midrule \endhead
-	<<#brand_new_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
+	<<#brand_new_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> \\
 	<</brand_new_vulnerabilities>>
 	\bottomrule
 \end{longtable}
@@ -1504,12 +1517,12 @@ This section lists the new \glspl{vulnerability} that were detected for the firs
 \label{app:redetected-vulnerabilities}
 This section lists the \glspl{vulnerability} that were previously detected, then mitigated, and were re-detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerability.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.0in}rrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrr}
 	\toprule\label{tab:redetected-vulnerabilities}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & Age \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Days \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & Age \\
+	<<#display_owner>> & <</display_owner>>& <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address & & (UTC) & (UTC) & Days \\
 	\midrule \endhead
-	<<#redetected_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
+	<<#redetected_vulnerabilities>><<#display_owner>><<&owner>> & <</display_owner>><<&plugin_name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
 	<</redetected_vulnerabilities>>
 	\bottomrule
 \end{longtable}
@@ -1520,12 +1533,12 @@ This section lists the \glspl{vulnerability} that were previously detected, then
 \label{app:recently-detected-vulnerabilities}
 This section lists the \glspl{vulnerability} that were detected since the last report, but not detected in the latest scans.  The table provides the \gls{initial detection} and \gls{latest detection} dates for each vulnerabilty.  It is \textbf{strongly recommended} to verify if the vulnerabilities below were actively mitigated by your organization.  If they were not, it is highly likely these vulnerabilities will be detected again by future scans.
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{3.2in}rrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.5in}<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrr}
 	\toprule\label{tab:recently-detected-vulnerabilities}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & Age \\
-	<<#display_owner>> & <</display_owner>> &  &  &  & (UTC) & (UTC) & Days \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & Age \\
+	<<#display_owner>> & <</display_owner>> & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>& Address &  & (UTC) & (UTC) & Days \\
 	\midrule \endhead
-	<<#recently_detected_closed_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
+	<<#recently_detected_closed_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & <<&age>> \\
 	<</recently_detected_closed_tickets>>
 	\bottomrule
 \end{longtable}
@@ -1561,12 +1574,12 @@ This section presents detailed scan results from the network mapping and \gls{vu
 This section presents detailed scan results, ordered by \gls{host}, from the network mapping and \gls{vulnerability} scans.  The table only displays high and critical vulnerabilities.  Vulnerabilities identified have a recommended mitigation solution that should be considered in order to establish or maintain a secure network.
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>lp{0.5in}p{1.8in}p{0.5in}rp{3.5in}}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>><<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>lp{0.5in}p{1.8in}p{0.5in}rp{3.0in}}
 	\toprule\label{tab:mitigations}
-  	<<#display_owner>>Owner & <</display_owner>>Host & Port(s) & Vulnerability & Severity & Age & Solution \\
-  	<<#display_owner>> & <</display_owner>> & & & & Days & \\
+  	<<#display_owner>>Owner & <</display_owner>><<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port(s) & Vulnerability & Severity & Age & Solution \\
+  	<<#display_owner>> & <</display_owner>><<#has_hostnames_in_tix>> & <</has_hostnames_in_tix>>Address & & & & Days & \\
 	\midrule \endhead
-	<<#mitigations>><<#display_owner>><<&owner>> & <</display_owner>><<&ip>> & <<&ports>> & <<&plugin_name>> & <<&severity>> & <<&age>> & <<&solution>> \\
+	<<#mitigations>><<#display_owner>><<&owner>> & <</display_owner>><<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&ports>> & <<&plugin_name>> & <<&severity>> & <<&age>> & <<&solution>> \\
 	<</mitigations>>
 	\bottomrule
 \end{longtable}
@@ -1585,12 +1598,12 @@ This section lists findings that \gls{AGENCY} asserted to \gls{CISA} to be \glsp
 This section lists false positive findings whose status as a false positive is expiring within <<&false_positive_expiring_soon_days>> days. If \gls{AGENCY} would like to extend the expiration date of a false positive, please submit an email through your designated technical point of contact with an analysis and evidence indicating how \gls{AGENCY} determined the finding is still considered a false positive. For a full listing of false positives, please see \autoref{app:all-false-positive-findings}: \nameref{app:all-false-positive-findings}.
 
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}r<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:expiring-soon-false-positive-findings}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC) & Effective & Expiration \\
 	\midrule \endhead
-	<<#expiring_soon_false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<<#expiring_soon_false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
 	<</expiring_soon_false_positive_tickets>>
 	\bottomrule
 \end{longtable}
@@ -1601,12 +1614,12 @@ This section lists false positive findings whose status as a false positive is e
 \label{app:all-false-positive-findings}
 <</false_positive_tickets_count>>
 \rowcolors{3}{white}{row-gray}
-\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}rrrrrrrr}
+\begin{longtable}{<<#display_owner>>p{0.7in}<</display_owner>>p{2.0in}r<<#has_hostnames_in_tix>>p{1.0in}<</has_hostnames_in_tix>>rrrrrrr}
 	\toprule\label{tab:false-positive-findings}
-	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & Host & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
-	<<#display_owner>> & <</display_owner>>& & & & (UTC) & (UTC) & Effective & Expiration \\
+	<<#display_owner>>Owner & <</display_owner>>Vulnerability & Severity & <<#has_hostnames_in_tix>>Hostname & <</has_hostnames_in_tix>>IP & Port & Initial Detection & Latest Detection & False Positive & False Positive \\
+	<<#display_owner>> & <</display_owner>>& & <<#has_hostnames_in_tix>>& <</has_hostnames_in_tix>>Address & & (UTC) & (UTC) & Effective & Expiration \\
 	\midrule \endhead
-	<<#false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
+	<<#false_positive_tickets>><<#display_owner>><<&owner>> & <</display_owner>><<&name>> & <<&severity>> & <<#has_hostnames_in_tix>><<&hostname>> & <</has_hostnames_in_tix>><<&ip>> & <<&port>> & \isodate\formatdate<<&time_opened_date_tex>> \  \formattime<<&time_opened_time_tex>> & \isodate\formatdate<<&last_detected_date_tex>> \ \formattime<<&last_detected_time_tex>> & \isodate\formatdate<<&fp_effective_date_tex>> & \isodate\formatdate<<&fp_expiration_date_tex>> \\
 	<</false_positive_tickets>>
 	\bottomrule
 \end{longtable}
@@ -1750,7 +1763,8 @@ If your PDF viewer supports embedded attachments you will see paper clip icons b
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=mitigated-vulnerabilities.csv]{mitigated-vulnerabilities.csv} mitigated-vulnerabilities.csv : List of vulnerabilities that were included on the last report, but were not detected in the latest scans.
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=potentially-risky-services.csv]{potentially-risky-services.csv} potentially-risky-services.csv : List of all potentially risky \glspl{service} detected and the associated \gls{IP} address and port.
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=recently-detected.csv]{recently-detected.csv} recently-detected.csv : List of all vulnerabilities detected since the last report, but not detected in the latest scans.
-\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope.csv]{scope.csv} scope.csv : List of \gls{IP} addresses that were in scope for this report.
+<<#has_scope_host_attachment>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope-hostname.csv]{scope-hostname.csv} scope-hostname.csv : List of hostnames that were in scope for this report.<</has_scope_host_attachment>>
+\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=scope-ip.csv]{scope-ip.csv} scope-ip.csv : List of \gls{IP} addresses that were in scope for this report.
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=services.csv]{services.csv} services.csv : List of all discovered \glspl{service} and the associated \gls{IP} address and port.  <<#ss0.silent_port_count>>NOTE: This attachment excludes the \numprint{<<&ss0.silent_port_count>>} service(s) detected as 'tcpwrapped', which indicates that a full \gls{TCP} handshake was completed, but the connection was closed before any data was sent.  For more information, refer to the \nameref{app:FAQ} section.<</ss0.silent_port_count>>
 <<#display_owner>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=sub-org-summary.csv]{sub-org-summary.csv} sub-org-summary.csv : Data from the \nameref{sec:sub-org-summary}.<</display_owner>>
 \end{itemize}

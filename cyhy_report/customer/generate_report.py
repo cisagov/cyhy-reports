@@ -298,11 +298,14 @@ class ReportGenerator(object):
                 + self.__results["tickets_1"]
                 + self.__results["recently_detected_closed_tickets"]
                 + self.__results["false_positive_tickets"]
+                + self.__results["risky_services_tickets"]
             ):
                 if t["owner"] == self.__owner:
                     t["owner"] = "SAMPLE"
                 else:
                     t["owner"] = "SUB_ORG"
+                if t.get("hostname"):
+                    t["hostname"] = "host.sample.gov"
             self.__owner = "SAMPLE"
             self.__snapshots[0]["owner"] = "SAMPLE"
             self.__results = self.__anonymize_structure(self.__results)
@@ -567,6 +570,7 @@ class ReportGenerator(object):
                 },
                 {
                     "details.service": True,
+                    "hostname": True,
                     "ip": True,
                     "ip_int": True,
                     "owner": True,
@@ -625,14 +629,17 @@ class ReportGenerator(object):
         return df
 
     def __top_risky_hosts(self, tickets):
-        df = SafeDataFrame(tickets, columns=["ip", "severity", "cvss_base_score"])
+        df = SafeDataFrame(tickets, columns=["hostname", "ip", "severity", "cvss_base_score"])
         df["total"] = 1
         df["low"] = (df["severity"] == 1).astype(int)
         df["medium"] = (df["severity"] == 2).astype(int)
         df["high"] = (df["severity"] == 3).astype(int)
         df["critical"] = (df["severity"] == 4).astype(int)
         df["weighted"] = np.power(df["cvss_base_score"], 7) / np.power(10, 6)
-        grouper = df.groupby(["ip"], as_index=False)
+        # Without the fillna below, groupby will drop rows where hostname is
+        # null; we want to keep those rows.
+        df["hostname"].fillna("", inplace=True)
+        grouper = df.groupby(["ip", "hostname"], as_index=False)
         df2 = grouper.agg(
             {
                 "total": np.sum,
@@ -714,6 +721,17 @@ class ReportGenerator(object):
             self.__results["risky_services_tickets"]
         )
 
+        # Set flag based on whether any tickets have a hostname set
+        self.__results["has_hostnames_in_tix"] = any(
+            t.get("hostname") for t in (
+                self.__results["tickets_0"]
+                + self.__results["tickets_1"]
+                + self.__results["recently_detected_closed_tickets"]
+                + self.__results["false_positive_tickets"]
+                + self.__results["risky_services_tickets"]
+            )
+        )
+
         results = database.run_pipeline_cursor(
             queries.operating_system_count_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
@@ -732,6 +750,11 @@ class ReportGenerator(object):
         results = database.run_pipeline_cursor(
             queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
+        # Anonymize hostname if requested
+        if self.__anonymize:
+            for r in results:
+                if r.get("hostname"):
+                    r["hostname"] = "host.sample.gov"
         self.__results["services_attachment"] = results
 
         ss0_host_scans = list(
@@ -748,7 +771,7 @@ class ReportGenerator(object):
                             "hostname": 1,
                         }
                     },
-                    {"$sort": {"ip_int": 1}},
+                    {"$sort": {"hostname": 1, "ip_int": 1}},
                 ],
                 cursor={},
                 allowDiskUse=True,
@@ -758,12 +781,22 @@ class ReportGenerator(object):
         active_host_ip_ints = set(
             i["_id"]
             for i in self.__cyhy_db.hosts.find(
-                {"state.up": True, "owner": {"$in": ss0_owners}}, {"_id": 1}
+                {"state.up": True,
+                 "$or": [
+                     {"owner": {"$in": ss0_owners}},
+                     {"hostnames": {"$elemMatch": {"owner": {"$in": ss0_owners}}}},
+                 ]},
+                {"_id": 1}
             )
         )
         self.__results["hosts_attachment"] = [
             i for i in ss0_host_scans if i["ip_int"] in active_host_ip_ints
         ]
+        # Anonymize hostname if requested
+        if self.__anonymize:
+            for host in self.__results["hosts_attachment"]:
+                if host.get("hostname"):
+                    host["hostname"] = "host.sample.gov"
 
         results = self.__cyhy_db.snapshots.find(
             {"latest": True},
@@ -2023,6 +2056,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "cvss_base_score",
+                "hostname",
                 "ip",
                 "name",
                 "port",
@@ -2043,6 +2077,7 @@ class ReportGenerator(object):
                 columns=[
                     "owner",
                     "cvss_base_score",
+                    "hostname",
                     "ip",
                     "name",
                     "port",
@@ -2061,6 +2096,7 @@ class ReportGenerator(object):
                 columns=[
                     "owner",
                     "cvss_base_score",
+                    "hostname",
                     "ip",
                     "name",
                     "port",
@@ -2088,7 +2124,9 @@ class ReportGenerator(object):
         NULL_TIMESTAMP = pd.Timestamp("1970-01-01 00:00:00.000+0000")
         for df in (df0, df1):
             # Without the fillna steps below, groupby will drop rows where
-            # kev/kev_ransomware is None (NaN) and time_closed is None (NaT)
+            # hostname/kev/kev_ransomware is None (NaN) and time_closed is None
+            # (NaT)
+            df["hostname"].fillna("", inplace=True)
             df["kev"].fillna("", inplace=True)
             df["kev_ransomware"].fillna("", inplace=True)
             # This changes 'time_closed' dtype to object
@@ -2110,6 +2148,7 @@ class ReportGenerator(object):
                 [
                     "owner",
                     "plugin_name",
+                    "hostname",
                     "ip",
                     "port",
                     "kev",
@@ -2127,6 +2166,7 @@ class ReportGenerator(object):
                 [
                     "owner",
                     "plugin_name",
+                    "hostname",
                     "ip",
                     "port",
                     "kev",
@@ -2150,6 +2190,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "plugin_name",
+                "hostname",
                 "ip",
                 "port",
                 "kev",
@@ -2181,6 +2222,7 @@ class ReportGenerator(object):
             columns=[
                 "owner",
                 "plugin_name",
+                "hostname",
                 "ip",
                 "port",
                 "kev",
@@ -2351,6 +2393,7 @@ class ReportGenerator(object):
                 "kev",
                 "kev_ransomware",
                 "severity",
+                "hostname",
                 "ip",
                 "port",
                 "time_opened",
@@ -2374,6 +2417,7 @@ class ReportGenerator(object):
                 "severity",
                 "cvss_base_score",
                 "solution",
+                "hostname",
                 "ip",
                 "time_opened",
                 "last_detected",
@@ -2384,44 +2428,82 @@ class ReportGenerator(object):
             return
         for col in ("time_opened", "last_detected"):
             df[col] = pd.to_datetime(df[col], utc=True)
+
+        # Replace nonexistent hostnames with empty strings so that they are not
+        # converted to "NaN" by the groupby below. Otherwise,
+        # build_addresses_output() creates addresses like "nan (<ip-address>),
+        # nan (<ip-address>)" instead of the desired "<ip-address>,
+        # <ip-address>".
+        df["hostname"].fillna("", inplace=True)
+
+        # Group distinct findings
         grouper = df.groupby(
             ["name", "description", "severity", "cvss_base_score", "solution"]
         )
-        grouped_series = grouper["ip"].apply(
-            set
-        )  # create sets of IPs (avoids duplicate IPs)
-        initial_detection = grouper[
-            "time_opened"
-        ].min()  # get earliest initial detection
-        latest_detection = grouper["last_detected"].max()  # get most-recent detection
-        df2 = grouped_series.reset_index()  # convert series back to a DataFrame
-        df2["first_detected"] = initial_detection.reset_index()["time_opened"]
-        df2["last_detected"] = latest_detection.reset_index()["last_detected"]
+
+        def build_addresses_output(group):
+            """Build a string of IPs and hostname/IPs for a finding."""
+            host_to_ips = {}  # Map: hostname -> set of IPs
+            ips_without_hostname = set()
+            for _, row in group.iterrows():
+                hostname = row["hostname"]
+                ip = row["ip"]
+                if hostname:
+                    host_to_ips.setdefault(hostname, set()).add(ip)
+                else:
+                    ips_without_hostname.add(ip)
+
+            # Build output string
+            parts = []
+            # Add IPs that don't have an associated hostname
+            for ip in sorted(ips_without_hostname):
+                parts.append(str(ip))
+            # Add hostnames with all of their associated IPs
+            for hostname in sorted(host_to_ips):
+                ip_list = sorted(host_to_ips[hostname], key=str)
+                ip_str = ", ".join([str(ip) for ip in ip_list])
+                parts.append("%s (%s)" % (hostname, ip_str))
+            return ", ".join(parts)
+
+        # Create a list of dictionaries, one dict per finding, and add some
+        # additional information for each finding (e.g. addresses, counts,
+        # first/last detected times)
+        grouped = []
+        for _, group in grouper:
+            row = group.iloc[0][["name", "description", "severity", "cvss_base_score", "solution"]].to_dict()
+            row["addresses"] = build_addresses_output(group)
+            row["addresses_count"] = len(set(group["ip"]))
+            row["first_detected"] = group["time_opened"].min()
+            row["last_detected"] = group["last_detected"].max()
+            grouped.append(row)
+
+        df2 = pd.DataFrame(grouped)
         df2.sort_values(
             by=["severity", "cvss_base_score"], ascending=[0, 0], inplace=True
         )
-        df2.rename(columns={"ip": "addresses", "name": "plugin_name"}, inplace=True)
-        df2["addresses_count"] = df2["addresses"].apply(lambda x: len(x))
+        df2.rename(columns={"name": "plugin_name"}, inplace=True)
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")
-        self.__join_lists(d, "addresses", ", ", True)
         self.__results["detailed_findings"] = d
 
     def __table_mitigations(self):
         df = SafeDataFrame(
             self.__results["tickets_0"],
-            columns=["owner", "name", "severity", "solution", "ip", "port", "age"],
+            columns=["owner", "name", "severity", "solution", "hostname", "ip", "port", "age"],
         )
         df = df[df["severity"] >= 3]
         if df.empty:
             self.__results["mitigations"] = []
             return
-        grouper = df.groupby(["owner", "name", "severity", "solution", "ip", "age"])
-        grouped_series = grouper["port"].apply(list)  # create lists of ports
+        # Without the fillna below, groupby will drop rows where hostname is
+        # null; we want to keep those rows.
+        df["hostname"].fillna("", inplace=True)
+        grouper = df.groupby(["owner", "name", "severity", "solution", "hostname", "ip", "age"])
+        grouped_series = grouper["port"].apply(set)  # create sets of ports (avoids duplicate ports)
         df2 = grouped_series.reset_index()  # convert series back to a DataFrame
         df2.rename(columns={"port": "ports", "name": "plugin_name"}, inplace=True)
         df2.sort_values(
-            by=["severity", "plugin_name", "ip"], ascending=[0, 1, 1], inplace=True
+            by=["severity", "plugin_name", "hostname", "ip"], ascending=[0, 1, 1, 1], inplace=True
         )
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")
@@ -2448,7 +2530,8 @@ class ReportGenerator(object):
         self.__generate_services_attachment()
         self.__generate_risky_services_attachment()
         self.__generate_hosts_attachment()
-        self.__generate_scope_attachment()
+        self.__generate_scope_ip_attachment()
+        self.__generate_scope_host_attachment()
         self.__generate_false_positives_attachment()
         self.__generate_sub_org_summary_attachment()
         self.__generate_days_to_mitigate_attachment()
@@ -2546,143 +2629,69 @@ class ReportGenerator(object):
                     writer.writerow([d])
 
     def __generate_findings_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+            "cvss_base_score",
+            "cvss_version",
+            "cvss_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "plugin_id",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "time_opened",
+            "last_detected",
+            "age",
+            "cvss_base_score",
+            "cvss_version",
+            "score_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "source_id",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            header_fields = (
-                "ip",
-                "port",
-                "protocol",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-                "cvss_base_score",
-                "cvss_version",
-                "cvss_source",
-                "vpr_score",
-                "cve",
-                "name",
-                "description",
-                "solution",
-                "source",
-                "plugin_id",
-            )
-            data_fields = (
-                "ip",
-                "port",
-                "protocol",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "time_opened",
-                "last_detected",
-                "age",
-                "cvss_base_score",
-                "cvss_version",
-                "score_source",
-                "vpr_score",
-                "cve",
-                "name",
-                "description",
-                "solution",
-                "source",
-                "source_id",
-            )
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                header_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "known_exploited",
-                    "ransomware_exploited",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "age_days",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "cvss_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "plugin_id",
-                )
-                data_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "kev",
-                    "kev_ransomware",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "age",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "score_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "source_id",
-                )
-            else:
-                header_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "known_exploited",
-                    "ransomware_exploited",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "age_days",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "cvss_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "plugin_id",
-                )
-                data_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "protocol",
-                    "kev",
-                    "kev_ransomware",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "age",
-                    "cvss_base_score",
-                    "cvss_version",
-                    "score_source",
-                    "vpr_score",
-                    "cve",
-                    "name",
-                    "description",
-                    "solution",
-                    "source",
-                    "source_id",
-                )
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+    
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
@@ -2692,46 +2701,38 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_mitigated_vulns_attachment(self):
+        header_fields = [
+            "vulnerability",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "initial_detection",
+            "mitigation_detected",
+            "days_to_mitigate",
+        ]
+
+        data_fields = [
+            "plugin_name",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "time_opened",
+            "time_closed",
+            "days_to_close",
+        ]
+
+        # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
-            header_fields = (
-                "owner",
-                "vulnerability",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "mitigation_detected",
-                "days_to_mitigate",
-            )
-            data_fields = (
-                "owner",
-                "plugin_name",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "time_closed",
-                "days_to_close",
-            )
-        else:
-            header_fields = (
-                "vulnerability",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "mitigation_detected",
-                "days_to_mitigate",
-            )
-            data_fields = (
-                "plugin_name",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "time_closed",
-                "days_to_close",
-            )
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["resolved_vulnerabilities"]
         with open("mitigated-vulnerabilities.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
@@ -2752,58 +2753,44 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_recently_detected_vulns_attachment(self):
+        header_fields = [
+            "name",
+            "cve",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+        ]
+
+        data_fields = [
+            "name",
+            "cve",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "hostname",
+            "ip",
+            "port",
+            "time_opened",
+            "last_detected",
+            "age",
+        ]
+
+        # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
-            header_fields = (
-                "owner",
-                "name",
-                "cve",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-            )
-            data_fields = (
-                "owner",
-                "name",
-                "cve",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "last_detected",
-                "age",
-            )
-        else:
-            header_fields = (
-                "name",
-                "cve",
-                "known_exploited",
-                "ransomware_exploited",
-                "severity",
-                "ip",
-                "port",
-                "initial_detection",
-                "latest_detection",
-                "age_days",
-            )
-            data_fields = (
-                "name",
-                "cve",
-                "kev",
-                "kev_ransomware",
-                "severity",
-                "ip",
-                "port",
-                "time_opened",
-                "last_detected",
-                "age",
-            )
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["recently_detected_closed_tickets"]
         with open("recently-detected.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
@@ -2813,14 +2800,29 @@ class ReportGenerator(object):
                 data_writer.writerow(row)
 
     def __generate_services_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            fields = ("ip", "port", "service")
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                fields = ("owner", "ip_int", "ip", "port", "service")
-            else:
-                fields = ("ip_int", "ip", "port", "service")
+            fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the services
+        has_hostnames_in_services = any(
+            t.get("hostname") for t in self.__results["services_attachment"]
+        )
+        if not has_hostnames_in_services:
+            fields.remove("hostname")
+
         data = self.__results["services_attachment"]
         with open("services.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
@@ -2829,38 +2831,29 @@ class ReportGenerator(object):
                 writer.writerow(row)
 
     def __generate_risky_services_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "service",
+            "category",
+            "possible_nmi",
+            "newly_opened_since_last_report",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            fields = (
-                "ip",
-                "port",
-                "service",
-                "category",
-                "possible_nmi",
-                "newly_opened_since_last_report",
-            )
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "service",
-                    "category",
-                    "possible_nmi",
-                    "newly_opened_since_last_report",
-                )
-            else:
-                fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "service",
-                    "category",
-                    "possible_nmi",
-                    "newly_opened_since_last_report",
-                )
+            fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            fields.remove("hostname")
+
         data = self.__results["risky_services_tickets"]
         with open("potentially-risky-services.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, fields, extrasaction="ignore")
@@ -2869,17 +2862,30 @@ class ReportGenerator(object):
                 writer.writerow(row)
 
     def __generate_hosts_attachment(self):
-        # remove ip_int and hostname column if we are trying to be anonymous
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "os",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "name",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            header_fields = ("ip", "os")
-            data_fields = ("ip", "name")
-        else:
-            if self.__snapshots[0].get("descendants_included"):
-                header_fields = ("owner", "ip_int", "ip", "os", "hostname")
-                data_fields = ("owner", "ip_int", "ip", "name", "hostname")
-            else:
-                header_fields = ("ip_int", "ip", "os", "hostname")
-                data_fields = ("ip_int", "ip", "name", "hostname")
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
         data = self.__results["hosts_attachment"]
         with open("hosts.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
@@ -2888,7 +2894,7 @@ class ReportGenerator(object):
             for row in data:
                 data_writer.writerow(row)
 
-    def __generate_scope_attachment(self):
+    def __generate_scope_ip_attachment(self):
         if self.__snapshots[0].get("descendants_included") and not self.__anonymize:
             header_fields = ("owner", "cidr", "first", "last", "count")
             snapshot_family = self.__results["ss0_descendant_snapshots"] + [
@@ -2897,7 +2903,7 @@ class ReportGenerator(object):
         else:
             header_fields = ("cidr", "first", "last", "count")
         data = self.__snapshots[0]["networks"]
-        with open("scope.csv", "wb") as out_file:
+        with open("scope-ip.csv", "wb") as out_file:
             writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             writer.writeheader()
             for net in data:
@@ -2932,78 +2938,85 @@ class ReportGenerator(object):
                     }
                 writer.writerow(row)
 
+    def __generate_scope_host_attachment(self):
+        self.__results["has_scope_host_attachment"] = False
+        if not self.__snapshots[0].get("hostnames"):
+            # No hostnames in the snapshot, so no need to generate this attachment
+            return
+
+        self.__results["has_scope_host_attachment"] = True
+        if self.__snapshots[0].get("descendants_included") and not self.__anonymize:
+            header_fields = ["owner", "hostname"]
+            snapshot_family = self.__results["ss0_descendant_snapshots"] + [
+                self.__snapshots[0]
+            ]
+        else:
+            header_fields = ["hostname"]
+        data = self.__snapshots[0].get("hostnames")
+        with open("scope-hostname.csv", "wb") as out_file:
+            writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            writer.writeheader()
+            for hostname in data:
+                if self.__anonymize:
+                    row = {
+                        "hostname": "www.example.com"
+                    }
+                elif self.__snapshots[0].get("descendants_included"):
+                    for snap in snapshot_family:
+                        if hostname in snap["hostnames"]:
+                            break
+                    row = {
+                        "owner": snap["owner"],
+                        "hostname": hostname,
+                    }
+                else:
+                    row = {
+                        "hostname": hostname,
+                    }
+                writer.writerow(row)
+
     def __generate_false_positives_attachment(self):
-        # remove ip_int column if we are trying to be anonymous
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "severity",
+            "initial_detection",
+            "latest_detection",
+            "name",
+            "false_positive_effective",
+            "false_positive_expiration",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "severity",
+            "time_opened",
+            "last_detected",
+            "name",
+            "fp_effective_date",
+            "fp_expiration_date",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
         if self.__anonymize:
-            header_fields = (
-                "ip",
-                "port",
-                "severity",
-                "initial_detection",
-                "latest_detection",
-                "name",
-                "false_positive_effective",
-                "false_positive_expiration",
-            )
-            data_fields = (
-                "ip",
-                "port",
-                "severity",
-                "time_opened",
-                "last_detected",
-                "name",
-                "fp_effective_date",
-                "fp_expiration_date",
-            )
-        else:  # if there are any descendants in current snapshot, output 'owner' field also
-            if self.__snapshots[0].get("descendants_included"):
-                header_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "name",
-                    "false_positive_effective",
-                    "false_positive_expiration",
-                )
-                data_fields = (
-                    "owner",
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "name",
-                    "fp_effective_date",
-                    "fp_expiration_date",
-                )
-            else:
-                header_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "initial_detection",
-                    "latest_detection",
-                    "name",
-                    "false_positive_effective",
-                    "false_positive_expiration",
-                )
-                data_fields = (
-                    "ip_int",
-                    "ip",
-                    "port",
-                    "severity",
-                    "time_opened",
-                    "last_detected",
-                    "name",
-                    "fp_effective_date",
-                    "fp_expiration_date",
-                )
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+    
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
         data = self.__results["false_positive_tickets"]
         with open("false-positive-findings.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
@@ -3400,6 +3413,7 @@ class ReportGenerator(object):
         result["owner_is_federal_executive"] = self.__results[
             "owner_is_federal_executive"
         ]
+        result["has_hostnames_in_tix"] = self.__results["has_hostnames_in_tix"]
 
         if ss0.get(
             "descendants_included"
@@ -3526,6 +3540,8 @@ class ReportGenerator(object):
             result["expiring_soon_false_positive_tickets"]
         )
 
+        result["has_scope_host_attachment"] = self.__results["has_scope_host_attachment"]
+
         if self.__log_report_to_db:
             result["report_oid"] = str(self.__report_oid)
         else:
@@ -3619,7 +3635,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v0.0.1")
+    args = docopt(__doc__, version="v1.1.0")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
