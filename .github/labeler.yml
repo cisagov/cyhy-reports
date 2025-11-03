@@ -57,6 +57,7 @@ shell script:
           - "**/*.sh"
           - bump-version
           - setup-env
+          - var/getenv
 terraform:
   - changed-files:
       - any-glob-to-any-file:
