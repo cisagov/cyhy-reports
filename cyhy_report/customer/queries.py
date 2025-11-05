@@ -9,12 +9,15 @@ from bson.son import SON
 def host_latest_scan_time_span_pl(owners):
     return (
         [
-            {"$match": {
-                "$or": [
-                    {"owner": {"$in": owners}},
-                    {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
-                ],
-                "latest_scan.DONE": {"$ne": None}}},
+            {
+                "$match": {
+                    "$or": [
+                        {"owner": {"$in": owners}},
+                        {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}},
+                    ],
+                    "latest_scan.DONE": {"$ne": None},
+                }
+            },
             {
                 "$group": {
                     "_id": {},
@@ -34,7 +37,7 @@ def host_latest_vulnscan_time_span_pl(owners):
                 "$match": {
                     "$or": [
                         {"owner": {"$in": owners}},
-                        {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
+                        {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}},
                     ],
                     "state.up": True,
                     "latest_scan.VULNSCAN": {"$ne": None},
@@ -62,7 +65,14 @@ def operating_system_count_pl(snapshot_oids):
                     "name": {"$exists": True},
                 }
             },
-            {"$group": {"_id": {"ip": "$ip", "operating_system": "$name",}}},
+            {
+                "$group": {
+                    "_id": {
+                        "ip": "$ip",
+                        "operating_system": "$name",
+                    }
+                }
+            },
             {
                 "$group": {
                     "_id": {"operating_system": "$_id.operating_system"},
@@ -84,12 +94,13 @@ def operating_system_count_pl(snapshot_oids):
 def ip_geoloc_pl(owners):
     return (
         [
-            {"$match": {
-                "$or": [
-                    {"owner": {"$in": owners}},
-                    {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}}
-                ],
-                "state.up": True,
+            {
+                "$match": {
+                    "$or": [
+                        {"owner": {"$in": owners}},
+                        {"hostnames": {"$elemMatch": {"owner": {"$in": owners}}}},
+                    ],
+                    "state.up": True,
                 }
             },
             {"$group": {"_id": {"loc": "$loc"}}},

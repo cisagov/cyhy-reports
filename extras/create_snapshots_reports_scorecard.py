@@ -101,6 +101,7 @@ successful_tp_reports = list()
 failed_tp_reports = list()
 tp_report_durations = list()
 
+
 def create_subdirectories():
     # Create all required subdirectories (if they don't already exist)
     for subdir in [
@@ -254,13 +255,7 @@ def create_list_of_reports_to_generate(db, third_party):
             "report_period": REPORT_PERIOD.WEEKLY,
             "report_types": REPORT_TYPE.CYHY,
         }
-    return sorted(
-        [
-            i["_id"] for i in db.RequestDoc.collection.find(
-                query, {"_id": 1}
-            )
-        ]
-    )
+    return sorted([i["_id"] for i in db.RequestDoc.collection.find(query, {"_id": 1})])
 
 
 def create_list_of_snapshots_to_generate(db, reports_to_generate):
@@ -410,7 +405,7 @@ def generate_snapshots_from_list(db, cyhy_db_section, third_party):
 
 def prepare_for_third_party_snapshots(db, cyhy_db_section, tp_reports_to_generate):
     """Create grouping node snapshots needed for third-party reports
-    
+
     Also, return the list of third-party snapshots and reports to create.
     """
     start_time = time.time()
@@ -478,18 +473,21 @@ def prepare_for_third_party_snapshots(db, cyhy_db_section, tp_reports_to_generat
                         tp_reports_to_generate.remove(tp_org_id)
     else:
         logging.info("No grouping node snapshots needed for third-party reports")
-    
+
     time_to_generate_grouping_node_snapshots = time.time() - start_time
     logging.info(
         "Time to complete grouping node snapshots: %.2f minutes",
         time_to_generate_grouping_node_snapshots / 60,
     )
-    return sorted(list(tp_reports_to_generate)), time_to_generate_grouping_node_snapshots
+    return (
+        sorted(list(tp_reports_to_generate)),
+        time_to_generate_grouping_node_snapshots,
+    )
 
 
 def manage_snapshot_threads(db, cyhy_db_section, third_party):
     """Spawn threads to generate snapshots
-    
+
     Build the list of snapshots to be generated, then spawn the threads that
     generate the snapshots."""
     start_time = time.time()
@@ -504,8 +502,10 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
 
     if third_party:
         # Some extra preparation must be done before generating third-party snapshots
-        snapshots_to_generate, time_to_generate_grouping_node_snapshots = \
-        prepare_for_third_party_snapshots(db, cyhy_db_section, reports_to_generate)
+        (
+            snapshots_to_generate,
+            time_to_generate_grouping_node_snapshots,
+        ) = prepare_for_third_party_snapshots(db, cyhy_db_section, reports_to_generate)
     else:
         logging.info("Building list of snapshots to generate...")
         snapshots_to_generate = create_list_of_snapshots_to_generate(
@@ -527,7 +527,7 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
         try:
             snapshot_thread = threading.Thread(
                 target=generate_snapshots_from_list,
-                args=(db, cyhy_db_section, third_party)
+                args=(db, cyhy_db_section, third_party),
             )
             snapshot_threads.append(snapshot_thread)
             snapshot_thread.start()
@@ -541,7 +541,7 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
     # Wait until each thread terminates
     for snapshot_thread in snapshot_threads:
         snapshot_thread.join()
-    
+
     # If there are any failed snapshots, attempt to regenerate them in a
     # single-threaded manner, which may be less likely to fail than the
     # multi-threaded approach.
@@ -557,12 +557,14 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
         global failed_snapshots
         snapshots_to_reattempt = list(failed_snapshots)
         failed_snapshots = list()
-    
+
     if snapshots_to_reattempt:
         reattempt_start_time = time.time()
-        logging.info("Attempting to regenerate failed %ssnapshots: %s",
-                     "third-party " if third_party else "",
-                     snapshots_to_reattempt)
+        logging.info(
+            "Attempting to regenerate failed %ssnapshots: %s",
+            "third-party " if third_party else "",
+            snapshots_to_reattempt,
+        )
         for org_id in snapshots_to_reattempt:
             generate_snapshot(db, cyhy_db_section, org_id, third_party)
         logging.info(
@@ -570,7 +572,7 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
             "third-party " if third_party else "",
             (time.time() - reattempt_start_time) / 60,
         )
-  
+
     time_to_generate_snapshots = time.time() - start_time
     logging.info(
         "Time to complete %ssnapshots: %.2f minutes",
@@ -584,10 +586,16 @@ def manage_snapshot_threads(db, cyhy_db_section, third_party):
     else:
         reports_to_generate = set(reports_to_generate) - set(failed_snapshots)
 
-    return sorted(list(reports_to_generate)), time_to_generate_snapshots, time_to_generate_grouping_node_snapshots
+    return (
+        sorted(list(reports_to_generate)),
+        time_to_generate_snapshots,
+        time_to_generate_grouping_node_snapshots,
+    )
 
 
-def generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog, third_party):
+def generate_report(
+    org_id, cyhy_db_section, scan_db_section, use_docker, nolog, third_party
+):
     """Generate a report for a specified organization."""
     report_start_time = time.time()
     logging.info(
@@ -618,7 +626,7 @@ def generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog,
             "--volume",
             "{}:/home/cyhy".format(CYHY_REPORT_DIR),
             "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
-        ] + report_command        
+        ] + report_command
 
     # Skip logging if requested
     if nolog:
@@ -676,7 +684,9 @@ def generate_report(org_id, cyhy_db_section, scan_db_section, use_docker, nolog,
                 failed_reports.append(org_id)
 
 
-def generate_reports_from_list(cyhy_db_section, scan_db_section, use_docker, nolog, third_party):
+def generate_reports_from_list(
+    cyhy_db_section, scan_db_section, use_docker, nolog, third_party
+):
     """Attempt to generate a report for each organization in a global list.
 
     Each thread pulls an organization ID from the global list
@@ -700,16 +710,13 @@ def generate_reports_from_list(cyhy_db_section, scan_db_section, use_docker, nol
                 )
                 break
         generate_report(
-            org_id,
-            cyhy_db_section,
-            scan_db_section,
-            use_docker,
-            nolog,
-            third_party
+            org_id, cyhy_db_section, scan_db_section, use_docker, nolog, third_party
         )
 
 
-def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog, third_party):
+def manage_report_threads(
+    cyhy_db_section, scan_db_section, use_docker, nolog, third_party
+):
     """Spawn the threads that generate the reports."""
     os.chdir(os.path.join(WEEKLY_REPORT_BASE_DIR, CYHY_REPORT_DIR))
     start_time = time.time()
@@ -761,20 +768,17 @@ def manage_report_threads(cyhy_db_section, scan_db_section, use_docker, nolog, t
         global failed_reports
         reports_to_reattempt = list(failed_reports)
         failed_reports = list()
-    
+
     if reports_to_reattempt:
         reattempt_start_time = time.time()
-        logging.info("Attempting to regenerate failed %sreports: %s",
-                     "third-party " if third_party else "",
-                     reports_to_reattempt)
+        logging.info(
+            "Attempting to regenerate failed %sreports: %s",
+            "third-party " if third_party else "",
+            reports_to_reattempt,
+        )
         for org_id in reports_to_reattempt:
             generate_report(
-                org_id,
-                cyhy_db_section,
-                scan_db_section,
-                use_docker,
-                nolog,
-                third_party
+                org_id, cyhy_db_section, scan_db_section, use_docker, nolog, third_party
             )
         logging.info(
             "Time to complete re-attempting failed %sreports: %.2f minutes",
@@ -1024,10 +1028,11 @@ def main():
         else:
             # Generate all "regular" (non-third-party) snapshots and return the
             # updated list of reports to be generated
-            reports_to_generate, time_to_generate_snapshots, \
-            time_to_generate_grouping_node_snapshots = manage_snapshot_threads(
-                db, cyhy_db_section, third_party=False
-            )
+            (
+                reports_to_generate,
+                time_to_generate_snapshots,
+                time_to_generate_grouping_node_snapshots,
+            ) = manage_snapshot_threads(db, cyhy_db_section, third_party=False)
 
         sample_report(
             cyhy_db_section, scan_db_section, nolog
@@ -1046,14 +1051,17 @@ def main():
 
         if args["--no-snapshots"]:
             # Skip creation of third-party snapshots
-            logging.info("Skipping third-party snapshot creation due to --no-snapshots parameter")
+            logging.info(
+                "Skipping third-party snapshot creation due to --no-snapshots parameter"
+            )
         else:
             # Generate all third-party snapshots and return the updated list of
             # third-party reports to be generated
-            reports_to_generate, time_to_generate_tp_snapshots, \
-            time_to_generate_grouping_node_snapshots = manage_snapshot_threads(
-                db, cyhy_db_section, third_party=True
-            )
+            (
+                reports_to_generate,
+                time_to_generate_tp_snapshots,
+                time_to_generate_grouping_node_snapshots,
+            ) = manage_snapshot_threads(db, cyhy_db_section, third_party=True)
 
         # Generate all necessary third-party reports
         time_to_generate_tp_reports = manage_report_threads(
@@ -1099,13 +1107,15 @@ def main():
             len(successful_reports + successful_tp_reports),
         )
         logging.info(
-            "  Third-party reports generated: %d", len(successful_tp_reports),
+            "  Third-party reports generated: %d",
+            len(successful_tp_reports),
         )
         logging.info(
             "Number of reports failed: %d", len(failed_reports + failed_tp_reports)
         )
         logging.info(
-            "  Third-party reports failed: %d", len(failed_tp_reports),
+            "  Third-party reports failed: %d",
+            len(failed_tp_reports),
         )
         if failed_reports or failed_tp_reports:
             logging.error("Failed reports:")
@@ -1119,13 +1129,21 @@ def main():
             logging.info("Snapshot performance:")
             durations = [x[1] for x in snapshot_durations]
             max = numpy.max(durations)
-            logging.info("  Longest snapshot: %.1f seconds (%.1f minutes)", max, max / 60)
+            logging.info(
+                "  Longest snapshot: %.1f seconds (%.1f minutes)", max, max / 60
+            )
             median = numpy.median(durations)
-            logging.info("  Median snapshot: %.1f seconds (%.1f minutes)", median, median / 60)
+            logging.info(
+                "  Median snapshot: %.1f seconds (%.1f minutes)", median, median / 60
+            )
             mean = numpy.mean(durations)
-            logging.info("  Mean snapshot: %.1f seconds (%.1f minutes)", mean, mean / 60)
+            logging.info(
+                "  Mean snapshot: %.1f seconds (%.1f minutes)", mean, mean / 60
+            )
             min = numpy.min(durations)
-            logging.info("  Shortest snapshot: %.1f seconds (%.1f minutes)", min, min / 60)
+            logging.info(
+                "  Shortest snapshot: %.1f seconds (%.1f minutes)", min, min / 60
+            )
 
             snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
             logging.info("Longest snapshots:")
@@ -1136,39 +1154,52 @@ def main():
                 logging.info("Third-party and grouping node snapshot performance:")
                 durations = [x[1] for x in tp_snapshot_durations]
                 max = numpy.max(durations)
-                logging.info("  Longest third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
-                             max, max / 60)
+                logging.info(
+                    "  Longest third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
+                    max,
+                    max / 60,
+                )
                 median = numpy.median(durations)
-                logging.info("  Median third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
-                             median, median / 60)
+                logging.info(
+                    "  Median third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
+                    median,
+                    median / 60,
+                )
                 mean = numpy.mean(durations)
-                logging.info("  Mean third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
-                             mean, mean / 60)
+                logging.info(
+                    "  Mean third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
+                    mean,
+                    mean / 60,
+                )
                 min = numpy.min(durations)
-                logging.info("  Shortest third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
-                             min, min / 60)
+                logging.info(
+                    "  Shortest third-party/grouping node snapshot: %.1f seconds (%.1f minutes)",
+                    min,
+                    min / 60,
+                )
 
                 tp_snapshot_durations.sort(key=lambda tup: tup[1], reverse=True)
                 logging.info("Longest third-party/grouping node snapshots:")
                 for i in tp_snapshot_durations[:10]:
-                    logging.info("  %s: %.1f seconds (%.1f minutes)",
-                                 i[0], i[1], i[1] / 60)
+                    logging.info(
+                        "  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60
+                    )
 
         if len(report_durations) > 0:
             logging.info("Report performance:")
             durations = [x[1] for x in report_durations]
             max = numpy.max(durations)
-            logging.info("  Longest report: %.1f seconds (%.1f minutes)",
-                         max, max / 60)
+            logging.info("  Longest report: %.1f seconds (%.1f minutes)", max, max / 60)
             median = numpy.median(durations)
-            logging.info("  Median report: %.1f seconds (%.1f minutes)",
-                         median, median / 60)
+            logging.info(
+                "  Median report: %.1f seconds (%.1f minutes)", median, median / 60
+            )
             mean = numpy.mean(durations)
-            logging.info("  Mean report: %.1f seconds (%.1f minutes)",
-                         mean, mean / 60)
+            logging.info("  Mean report: %.1f seconds (%.1f minutes)", mean, mean / 60)
             min = numpy.min(durations)
-            logging.info("  Shortest report: %.1f seconds (%.1f minutes)",
-                         min, min / 60)
+            logging.info(
+                "  Shortest report: %.1f seconds (%.1f minutes)", min, min / 60
+            )
 
             report_durations.sort(key=lambda tup: tup[1], reverse=True)
             logging.info("Longest reports:")
@@ -1179,34 +1210,53 @@ def main():
             logging.info("Third-party report performance:")
             durations = [x[1] for x in tp_report_durations]
             max = numpy.max(durations)
-            logging.info("  Longest third-party report: %.1f seconds (%.1f minutes)",
-                         max, max / 60)
+            logging.info(
+                "  Longest third-party report: %.1f seconds (%.1f minutes)",
+                max,
+                max / 60,
+            )
             median = numpy.median(durations)
-            logging.info("  Median third-party report: %.1f seconds (%.1f minutes)",
-                         median, median / 60)
+            logging.info(
+                "  Median third-party report: %.1f seconds (%.1f minutes)",
+                median,
+                median / 60,
+            )
             mean = numpy.mean(durations)
-            logging.info("  Mean third-party report: %.1f seconds (%.1f minutes)",
-                         mean, mean / 60)
+            logging.info(
+                "  Mean third-party report: %.1f seconds (%.1f minutes)",
+                mean,
+                mean / 60,
+            )
             min = numpy.min(durations)
-            logging.info("  Shortest third-party report: %.1f seconds (%.1f minutes)",
-                         min, min / 60)
+            logging.info(
+                "  Shortest third-party report: %.1f seconds (%.1f minutes)",
+                min,
+                min / 60,
+            )
 
             tp_report_durations.sort(key=lambda tup: tup[1], reverse=True)
             logging.info("Longest third-party reports:")
             for i in tp_report_durations[:10]:
-                logging.info("  %s: %.1f seconds (%.1f minutes)",
-                             i[0], i[1], i[1] / 60)
+                logging.info("  %s: %.1f seconds (%.1f minutes)", i[0], i[1], i[1] / 60)
 
-        logging.info("Time to generate snapshots: %.2f minutes",
-                     time_to_generate_snapshots / 60)
-        logging.info("Time to generate reports: %.2f minutes",
-                     time_to_generate_reports / 60)
-        logging.info("Time to generate grouping node snapshots: %.2f minutes",
-                     time_to_generate_grouping_node_snapshots / 60)
-        logging.info("Time to generate third-party snapshots: %.2f minutes",
-                     time_to_generate_tp_snapshots / 60)
-        logging.info("Time to generate third-party reports: %.2f minutes",
-                     time_to_generate_tp_reports / 60)
+        logging.info(
+            "Time to generate snapshots: %.2f minutes", time_to_generate_snapshots / 60
+        )
+        logging.info(
+            "Time to generate reports: %.2f minutes", time_to_generate_reports / 60
+        )
+        logging.info(
+            "Time to generate grouping node snapshots: %.2f minutes",
+            time_to_generate_grouping_node_snapshots / 60,
+        )
+        logging.info(
+            "Time to generate third-party snapshots: %.2f minutes",
+            time_to_generate_tp_snapshots / 60,
+        )
+        logging.info(
+            "Time to generate third-party reports: %.2f minutes",
+            time_to_generate_tp_reports / 60,
+        )
         logging.info("Total time: %.2f minutes", (time.time() - start_time) / 60)
         logging.info("END\n\n")
 

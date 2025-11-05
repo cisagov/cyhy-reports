@@ -183,17 +183,18 @@ RISKY_SERVICES_MAP = {
 # publicly-accessible network management interfaces that should be protected.
 # This list may change in the future.
 POTENTIAL_NMI_SERVICES = [
-    "microsoft-ds",   # SMB
+    "microsoft-ds",  # SMB
     "ms-wbt-server",  # RDP
-    "rtelnet",        # Telnet
-    "smbdirect",      # SMB
-    "telnet",         # Telnet
+    "rtelnet",  # Telnet
+    "smbdirect",  # SMB
+    "telnet",  # Telnet
 ]
 
 # I wanted to make the cutoff 4096 characters, but that barely fit on a single
 # page when there was a single affected host.  I went with 3072 instead to save
 # space on the page for when there are many affected hosts listed.
 FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH = 3072
+
 
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
@@ -629,7 +630,9 @@ class ReportGenerator(object):
         return df
 
     def __top_risky_hosts(self, tickets):
-        df = SafeDataFrame(tickets, columns=["hostname", "ip", "severity", "cvss_base_score"])
+        df = SafeDataFrame(
+            tickets, columns=["hostname", "ip", "severity", "cvss_base_score"]
+        )
         df["total"] = 1
         df["low"] = (df["severity"] == 1).astype(int)
         df["medium"] = (df["severity"] == 2).astype(int)
@@ -707,9 +710,10 @@ class ReportGenerator(object):
             {"_id": self.__owner}
         )
         if self.__cyhy_db.RequestDoc.find_one("EXECUTIVE"):
-            self.__results["owner_is_federal_executive"] = (
-                self.__owner
-                in self.__cyhy_db.RequestDoc.get_all_descendants("EXECUTIVE")
+            self.__results[
+                "owner_is_federal_executive"
+            ] = self.__owner in self.__cyhy_db.RequestDoc.get_all_descendants(
+                "EXECUTIVE"
             )
         else:
             self.__results["owner_is_federal_executive"] = False
@@ -723,7 +727,8 @@ class ReportGenerator(object):
 
         # Set flag based on whether any tickets have a hostname set
         self.__results["has_hostnames_in_tix"] = any(
-            t.get("hostname") for t in (
+            t.get("hostname")
+            for t in (
                 self.__results["tickets_0"]
                 + self.__results["tickets_1"]
                 + self.__results["recently_detected_closed_tickets"]
@@ -781,12 +786,14 @@ class ReportGenerator(object):
         active_host_ip_ints = set(
             i["_id"]
             for i in self.__cyhy_db.hosts.find(
-                {"state.up": True,
-                 "$or": [
-                     {"owner": {"$in": ss0_owners}},
-                     {"hostnames": {"$elemMatch": {"owner": {"$in": ss0_owners}}}},
-                 ]},
-                {"_id": 1}
+                {
+                    "state.up": True,
+                    "$or": [
+                        {"owner": {"$in": ss0_owners}},
+                        {"hostnames": {"$elemMatch": {"owner": {"$in": ss0_owners}}}},
+                    ],
+                },
+                {"_id": 1},
             )
         )
         self.__results["hosts_attachment"] = [
@@ -935,7 +942,9 @@ class ReportGenerator(object):
                         "trimmed_subjects": {
                             "$in": self.__results["second_level_domains"]
                         },
-                        "not_after": {"$gte": thirty_days_ago,},
+                        "not_after": {
+                            "$gte": thirty_days_ago,
+                        },
                     }
                 )
             )
@@ -1271,8 +1280,8 @@ class ReportGenerator(object):
             # Magic numbers below are the result of trial and error to get a
             # chart that looks aesthetically pleasing.
             [10, 25, 40, 55],  # Bubble x coordinates
-            [6, 6, 6, 6],      # Bubble y coordinates
-            [5, 5, 5, 5],      # Make all bubbles the same size
+            [6, 6, 6, 6],  # Bubble y coordinates
+            [5, 5, 5, 5],  # Make all bubbles the same size
             (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
             [i.upper() for i in severities],
             kev_ransomware_counts,
@@ -1345,7 +1354,7 @@ class ReportGenerator(object):
         for k in counts.keys():
             if k not in nmi_categories:
                 counts.pop(k)
-        
+
         if counts.sum() > 0:
             # 2 = medium severity = yellow color for our graph bars
             severity_colors = [2] * len(counts)
@@ -1354,7 +1363,7 @@ class ReportGenerator(object):
         else:
             message = graphs.MyMessage(OMITTED_MESSAGE_NO_SERVICES)
             message.plot("potential-nmi-service-counts", size=0.5)
-    
+
     def __figure_top_five_high_risk_hosts(self):
         if self.__results["tickets_0"]:
             df = self.__top_risky_hosts(self.__results["tickets_0"])
@@ -1612,9 +1621,7 @@ class ReportGenerator(object):
 
     def __figure_medium_low_vulns_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex(
-            ["medium", "low"], axis=1
-        )  # reorder and filter
+        data = DataFrame(d1).T.reindex(["medium", "low"], axis=1)  # reorder and filter
         data.columns = [i.title() for i in data.columns]
         line = graphs.MyLine(
             data,
@@ -2130,7 +2137,7 @@ class ReportGenerator(object):
             df["kev"].fillna("", inplace=True)
             df["kev_ransomware"].fillna("", inplace=True)
             # This changes 'time_closed' dtype to object
-            df["time_closed"].fillna(NULL_TIMESTAMP, inplace=True)  
+            df["time_closed"].fillna(NULL_TIMESTAMP, inplace=True)
             for col in ("time_opened", "time_closed", "last_detected"):
                 df[col] = pd.to_datetime(
                     df[col], utc=True
@@ -2270,7 +2277,9 @@ class ReportGenerator(object):
             ).size()  # get counts of each severity
         resolved_counts = resolved_counts.reindex([4, 3, 2, 1]).fillna(0)
         resolved_counts = resolved_counts.apply(np.int)
-        d_resolved_counts = self.__level_keys_to_text(resolved_counts.to_dict(), lowercase=True)
+        d_resolved_counts = self.__level_keys_to_text(
+            resolved_counts.to_dict(), lowercase=True
+        )
 
         self.__results["new_vulnerabilities"] = d_new_vulns
         self.__results["new_vulnerability_counts"] = d_new_counts
@@ -2288,9 +2297,7 @@ class ReportGenerator(object):
             if len(df_active_kev):
                 kev_max_age = df_active_kev["age"].max()
                 # Get count of tickets with each severity
-                active_kev_counts = df_active_kev.groupby(
-                    "severity"
-                ).size()
+                active_kev_counts = df_active_kev.groupby("severity").size()
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
@@ -2298,7 +2305,9 @@ class ReportGenerator(object):
         # Convert counts to integers
         active_kev_counts = active_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
-        d_active_kev_counts = self.__level_keys_to_text(active_kev_counts.to_dict(), lowercase=True)
+        d_active_kev_counts = self.__level_keys_to_text(
+            active_kev_counts.to_dict(), lowercase=True
+        )
         self.__results["active_kev_counts"] = d_active_kev_counts
         self.__results["active_kev_count_total"] = active_kev_counts.sum()
         self.__results["active_kev_max_age"] = kev_max_age
@@ -2309,9 +2318,7 @@ class ReportGenerator(object):
             # Filter for KEV tickets in df_new
             # (tickets opened since last snapshot)
             # and get count of tickets with each severity
-            new_kev_counts = df_new[df_new["kev"] == True].groupby(
-                "severity"
-            ).size()
+            new_kev_counts = df_new[df_new["kev"] == True].groupby("severity").size()
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
@@ -2319,18 +2326,20 @@ class ReportGenerator(object):
         # Convert counts to integers
         new_kev_counts = new_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
-        d_new_kev_counts = self.__level_keys_to_text(new_kev_counts.to_dict(), lowercase=True)
+        d_new_kev_counts = self.__level_keys_to_text(
+            new_kev_counts.to_dict(), lowercase=True
+        )
         self.__results["new_kev_counts"] = d_new_kev_counts
 
         # Resolved KEV counts
         resolved_kev_counts = Series([0, 0, 0, 0])
         if len(df_resolved):
-            # Filter for KEV tickets in df_resolved 
+            # Filter for KEV tickets in df_resolved
             # (tickets resolved since last snapshot)
             # and get count of tickets with each severity
-            resolved_kev_counts = df_resolved[df_resolved["kev"] == True].groupby(
-                "severity"
-            ).size()
+            resolved_kev_counts = (
+                df_resolved[df_resolved["kev"] == True].groupby("severity").size()
+            )
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
@@ -2338,7 +2347,9 @@ class ReportGenerator(object):
         # Convert counts to integers
         resolved_kev_counts = resolved_kev_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
-        d_resolved_kev_counts = self.__level_keys_to_text(resolved_kev_counts.to_dict(), lowercase=True)
+        d_resolved_kev_counts = self.__level_keys_to_text(
+            resolved_kev_counts.to_dict(), lowercase=True
+        )
         self.__results["resolved_kev_counts"] = d_resolved_kev_counts
 
         # Calculate KEV ransomware counts
@@ -2355,18 +2366,24 @@ class ReportGenerator(object):
         # Reorder counts Series to match our preferred order of
         # severity levels (4:Critical, 3:High, 2:Medium, 1:Low)
         # and fill in any missing levels with 0
-        active_kev_ransomware_counts = active_kev_ransomware_counts.reindex([4, 3, 2, 1]).fillna(0)
+        active_kev_ransomware_counts = active_kev_ransomware_counts.reindex(
+            [4, 3, 2, 1]
+        ).fillna(0)
         # Convert counts to integers
         active_kev_ransomware_counts = active_kev_ransomware_counts.apply(np.int)
         # Convert Series to dictionary and severity keys to text
-        d_active_kev_ransomware_counts = self.__level_keys_to_text(active_kev_ransomware_counts.to_dict(), lowercase=True)
+        d_active_kev_ransomware_counts = self.__level_keys_to_text(
+            active_kev_ransomware_counts.to_dict(), lowercase=True
+        )
         self.__results["active_kev_ransomware_counts"] = d_active_kev_ransomware_counts
-        self.__results["active_kev_ransomware_count_total"] = active_kev_ransomware_counts.sum()
+        self.__results[
+            "active_kev_ransomware_count_total"
+        ] = active_kev_ransomware_counts.sum()
 
     def __table_new_and_redetected_vulns(self):
         """Split up 'new_vulnerabilities' (tickets in current snapshot that weren't in previous snapshot) into
-           'brand_new_vulnerabilities' (first detected after previous snapshot end_time) and
-           'redetected_vulnerabilities' (first detected before previous snapshot end_time) """
+        'brand_new_vulnerabilities' (first detected after previous snapshot end_time) and
+        'redetected_vulnerabilities' (first detected before previous snapshot end_time)"""
         self.__results["brand_new_vulnerabilities"] = list()
         self.__results["redetected_vulnerabilities"] = list()
         if self.__no_history:
@@ -2470,7 +2487,9 @@ class ReportGenerator(object):
         # first/last detected times)
         grouped = []
         for _, group in grouper:
-            row = group.iloc[0][["name", "description", "severity", "cvss_base_score", "solution"]].to_dict()
+            row = group.iloc[0][
+                ["name", "description", "severity", "cvss_base_score", "solution"]
+            ].to_dict()
             row["addresses"] = build_addresses_output(group)
             row["addresses_count"] = len(set(group["ip"]))
             row["first_detected"] = group["time_opened"].min()
@@ -2489,7 +2508,16 @@ class ReportGenerator(object):
     def __table_mitigations(self):
         df = SafeDataFrame(
             self.__results["tickets_0"],
-            columns=["owner", "name", "severity", "solution", "hostname", "ip", "port", "age"],
+            columns=[
+                "owner",
+                "name",
+                "severity",
+                "solution",
+                "hostname",
+                "ip",
+                "port",
+                "age",
+            ],
         )
         df = df[df["severity"] >= 3]
         if df.empty:
@@ -2498,12 +2526,18 @@ class ReportGenerator(object):
         # Without the fillna below, groupby will drop rows where hostname is
         # null; we want to keep those rows.
         df["hostname"].fillna("", inplace=True)
-        grouper = df.groupby(["owner", "name", "severity", "solution", "hostname", "ip", "age"])
-        grouped_series = grouper["port"].apply(set)  # create sets of ports (avoids duplicate ports)
+        grouper = df.groupby(
+            ["owner", "name", "severity", "solution", "hostname", "ip", "age"]
+        )
+        grouped_series = grouper["port"].apply(
+            set
+        )  # create sets of ports (avoids duplicate ports)
         df2 = grouped_series.reset_index()  # convert series back to a DataFrame
         df2.rename(columns={"port": "ports", "name": "plugin_name"}, inplace=True)
         df2.sort_values(
-            by=["severity", "plugin_name", "hostname", "ip"], ascending=[0, 1, 1, 1], inplace=True
+            by=["severity", "plugin_name", "hostname", "ip"],
+            ascending=[0, 1, 1, 1],
+            inplace=True,
         )
         d = self.__dataframe_to_dicts(df2)
         self.__convert_levels_to_text(d, "severity")
@@ -2681,7 +2715,7 @@ class ReportGenerator(object):
         if self.__anonymize:
             header_fields.remove("ip_int")
             data_fields.remove("ip_int")
-    
+
         # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
             header_fields.insert(0, "owner")
@@ -2694,7 +2728,9 @@ class ReportGenerator(object):
 
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
@@ -2735,7 +2771,9 @@ class ReportGenerator(object):
 
         data = self.__results["resolved_vulnerabilities"]
         with open("mitigated-vulnerabilities.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
@@ -2793,7 +2831,9 @@ class ReportGenerator(object):
 
         data = self.__results["recently_detected_closed_tickets"]
         with open("recently-detected.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
@@ -2888,7 +2928,9 @@ class ReportGenerator(object):
 
         data = self.__results["hosts_attachment"]
         with open("hosts.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             header_writer.writeheader()
             for row in data:
@@ -2958,9 +3000,7 @@ class ReportGenerator(object):
             writer.writeheader()
             for hostname in data:
                 if self.__anonymize:
-                    row = {
-                        "hostname": "www.example.com"
-                    }
+                    row = {"hostname": "www.example.com"}
                 elif self.__snapshots[0].get("descendants_included"):
                     for snap in snapshot_family:
                         if hostname in snap["hostnames"]:
@@ -3006,7 +3046,7 @@ class ReportGenerator(object):
         if self.__anonymize:
             header_fields.remove("ip_int")
             data_fields.remove("ip_int")
-    
+
         # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
             header_fields.insert(0, "owner")
@@ -3019,7 +3059,9 @@ class ReportGenerator(object):
 
         data = self.__results["false_positive_tickets"]
         with open("false-positive-findings.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
@@ -3083,7 +3125,9 @@ class ReportGenerator(object):
                     out_file, header_fields, extrasaction="ignore"
                 )
                 header_writer.writeheader()
-                data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
+                data_writer = csv.DictWriter(
+                    out_file, data_fields, extrasaction="ignore"
+                )
                 # Output data from descendant orgs
                 for row in self.__results["ss0_descendant_data"]:
                     for severity in ("critical", "high", "medium", "low"):
@@ -3145,7 +3189,9 @@ class ReportGenerator(object):
             "tix_closed_after_date",
         )
         with open("days-to-mitigate.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for snap in self.__snapshots:
@@ -3188,7 +3234,9 @@ class ReportGenerator(object):
             "tix_days_open.low.max",
         )
         with open("days-currently-active.csv", "wb") as out_file:
-            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer = csv.DictWriter(
+                out_file, header_fields, extrasaction="ignore"
+            )
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for snap in self.__snapshots:
@@ -3366,7 +3414,9 @@ class ReportGenerator(object):
             avpvh[k] = safe_divide(v, ss0["vulnerable_host_count"], 2)
 
         calc["active_kev_count_total"] = self.__results["active_kev_count_total"]
-        calc["active_kev_ransomware_count_total"] = self.__results["active_kev_ransomware_count_total"]
+        calc["active_kev_ransomware_count_total"] = self.__results[
+            "active_kev_ransomware_count_total"
+        ]
 
         result["calc"] = calc
 
@@ -3457,9 +3507,10 @@ class ReportGenerator(object):
             # - https://github.com/cisagov/cyhy-reports/issues/123
             # - https://github.com/cisagov/cyhy-reports/issues/124
             if len(t.get("description", "")) > FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH:
-                t["description"] = t["description"][
-                    :FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH] + \
-                    "... (Truncated; the full description is available in the findings attachment.)"
+                t["description"] = (
+                    t["description"][:FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH]
+                    + "... (Truncated; the full description is available in the findings attachment.)"
+                )
 
         result["mitigations"] = self.__results["mitigations"]
         for t in result["mitigations"]:
@@ -3540,7 +3591,9 @@ class ReportGenerator(object):
             result["expiring_soon_false_positive_tickets"]
         )
 
-        result["has_scope_host_attachment"] = self.__results["has_scope_host_attachment"]
+        result["has_scope_host_attachment"] = self.__results[
+            "has_scope_host_attachment"
+        ]
 
         if self.__log_report_to_db:
             result["report_oid"] = str(self.__report_oid)

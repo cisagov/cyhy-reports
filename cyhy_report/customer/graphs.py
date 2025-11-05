@@ -1225,9 +1225,7 @@ class MyBubbleChart(object):
 
 
 class MyHorizontalBubbleChart(object):
-    def __init__(
-        self, x_values, y_values, size_values, colors, categories, data
-    ):
+    def __init__(self, x_values, y_values, size_values, colors, categories, data):
         self.x_values = x_values
         self.y_values = y_values
         self.size_values = size_values
@@ -1291,6 +1289,7 @@ class MyHorizontalBubbleChart(object):
 
         plt.savefig(filename + ".pdf", bbox_inches="tight", pad_inches=0)
         plt.close()
+
 
 if __name__ == "__main__":
     setup()
