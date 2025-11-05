@@ -40,12 +40,19 @@ current_time = util.utcnow()
 
 LOGGING_LEVEL = logging.INFO
 LOG_FILE = "snapshots_reports_scorecard_automation.log"
-# 11/5/2025 - There are 96 available CPUs on the reporter instance.
-# With 80 snapshot threads we are generating all our snapshots in about
-# 20 minutes; with 72 report threads we are generating all our reports
-# in about two hours.  Given this vast speed increase, we can afford to
-# be conservative and not try increasing the numbers of threads further
-# for now.
+# 11/5/2025 - There are 72 available CPUs on the reporter instance, so
+# we are matching the number of reporter threads with the number of CPUs
+# on the reporter instance.  (Report throughput is primarily dependent
+# on the CPU power of the reporter instance.)  With 72 report threads we
+# are generating all our reports in about two hours.
+#
+# There are 96 available CPUs on the database instance.  With 80
+# snapshot threads we are generating all our snapshots in about 20
+# minutes.  (Snapshot throughput is primarily dependent on the CPU power
+# of the database instance.)
+#
+# Given these vast speed increases, we can afford to be conservative and
+# not try increasing the numbers of threads further for now.
 REPORT_THREADS = 72
 SNAPSHOT_THREADS = 80
 
