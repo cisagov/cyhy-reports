@@ -40,7 +40,13 @@ current_time = util.utcnow()
 
 LOGGING_LEVEL = logging.INFO
 LOG_FILE = "snapshots_reports_scorecard_automation.log"
-REPORT_THREADS = 72  # Match the number of available CPUs on the reporter instance
+# 11/5/2025 - There are 96 available CPUs on the reporter instance.
+# With 80 snapshot threads we are generating all our snapshots in about
+# 20 minutes; with 72 report threads we are generating all our reports
+# in about two hours.  Given this vast speed increase, we can afford to
+# be conservative and not try increasing the numbers of threads further
+# for now.
+REPORT_THREADS = 72
 SNAPSHOT_THREADS = 80
 
 NCATS_DHUB_URL = "dhub.ncats.cyber.dhs.gov:5001"
