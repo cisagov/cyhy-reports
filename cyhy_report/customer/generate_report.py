@@ -1230,7 +1230,8 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
-        self.__figure_ssvc_vuln_remediation_deadlines()
+        if self.__results.get("owner_is_federal_executive"):
+            self.__figure_ssvc_vuln_remediation_deadlines()
         self.__figure_kev_severity_by_prominence()
         self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
@@ -2614,7 +2615,8 @@ class ReportGenerator(object):
         self.__generate_certificate_attachment()
         self.__generate_domains_attachment()
         self.__generate_findings_attachment()
-        self.__generate_findings_ssvc_attachment()
+        if self.__results.get("owner_is_federal_executive"):
+            self.__generate_findings_ssvc_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
         self.__generate_services_attachment()
