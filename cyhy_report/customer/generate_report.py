@@ -1211,6 +1211,20 @@ class ReportGenerator(object):
 
             self.__results["certs"] = certs
 
+        # TODO: Update comment with official BOD number when available.
+        # Run BOD XX-XX calculations for Federal executive agencies.
+        if self.__results["owner_is_federal_executive"]:
+            # Build set of CVE IDs in current tickets
+            cve_ids = set()
+            for ticket in self.__results["tickets_0"]:
+                if ticket.get("cve"):
+                    cve_ids.add(ticket["cve"])
+            # Populate SSVC data cache for all current tickets
+            self.__cache_ssvc_data(cve_ids)
+            # Add SSVC data to all current tickets and calculate remediation
+            # deadline for each ticket
+            self.__calc_ssvc_remediation_deadlines()
+
     ###############################################################################
     # Figure Generation
     ###############################################################################
