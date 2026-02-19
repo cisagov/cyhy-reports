@@ -768,6 +768,55 @@ As you review the report, you may have additional questions. Check out the answe
   \end{tikzpicture}
 \restoregeometry
 
+% TODO: Clean up BOD number, name, URL, etc. below once finalized
+<<#owner_is_federal_executive>>
+\section{Binding Operational Directive 26-XX --- KEV-IN}
+\label{sec:bod-26-xx}
+
+\Glspl{vulnerability} that have previously been used to exploit public and
+private organizations are a frequent attack vector for malicious cyber actors,
+particularly for nation-states that work to compromise U.S. critical
+infrastructure to steal sensitive information, disrupt operations, and
+undermine national security. These vulnerabilities pose significant risk to
+agencies and the federal enterprise. It is essential to aggressively remediate
+known exploited vulnerabilities to protect federal information systems and
+reduce cyber incidents.
+
+\gls{CISA} issued BOD 26-XX [TODO: add URL link when available] to improve mission
+readiness across the federal government by efficiently prioritizing the most
+important vulnerabilities for fast action. It divides vulnerability remediation
+into four categories of urgency based on the following variables:
+
+\vspace{-\topsep}  % Minimize vertical spacing
+\begin{itemize}
+	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
+	\item Is the vulnerability, as identified by a \gls{CVE} identifier, on CISA's
+	\href{https://www.cisa.gov/known-exploited-vulnerabilities}{Known Exploitable Vulnerabilities catalog}?
+	\item Is the vulnerable information system internet-exposed?
+	\item Is the adversary able to automate all the steps necessary to exploit
+	the vulnerability?
+	\item Does an adversary gain partial control or total control of the
+	vulnerable information system after exploitation of the vulnerability?
+\end{itemize}
+
+This directive applies to all software and hardware found on federal information
+systems managed on agency premises or hosted by third parties on an agency's
+behalf. These required actions apply to any federal information system, including
+an information system used or operated by another entity on behalf of an agency,
+that collects, processes, stores, transmits, disseminates, or otherwise
+maintains agency information.
+
+This directive supersedes
+\href{https://www.cisa.gov/news-events/directives/bod-19-02-vulnerability-remediation-requirements-internet-accessible-systems}{BOD 19-02: Vulnerability Remediation Requirements for Internet-Accessible Systems}
+(April 29, 2019), and
+\href{https://www.cisa.gov/news-events/directives/bod-22-01-reducing-significant-risk-known-exploited-vulnerabilities}{BOD 22-01: Reducing the Significant Risk of Known Exploited Vulnerabilties}
+(Nov. 3, 2021). CISA will continue to manage the
+\href{https://www.cisa.gov/known-exploited-vulnerabilities}{Known Exploitable Vulnerabilities catalog}.
+
+\newpage
+<</owner_is_federal_executive>>
+
 <<#owner_is_federal_executive>>
 \section{Binding Operational Directive 22-01 --- Reducing the Significant Risk of Known Exploited Vulnerabilities}<</owner_is_federal_executive>><<^owner_is_federal_executive>>\section{Reducing the Significant Risk of Known Exploited Vulnerabilities}<</owner_is_federal_executive>>
 \label{sec:known-exploited-vulnerabilities}
