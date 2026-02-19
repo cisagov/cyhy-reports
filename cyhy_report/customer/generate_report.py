@@ -627,6 +627,27 @@ class ReportGenerator(object):
                 if cve_data and cve_data.get("ssvc", {}) != {}:
                     SSVC_CACHE[cve_id] = cve_data["ssvc"]
 
+    def __calc_ssvc_remediation_deadlines(self):
+        """Calculate remediation deadlines for current tickets based on SSVC data."""
+        for t in self.__results["tickets_0"]:
+            t["remediation_deadline"] = None
+            for ssvc_field in ["ssvc_automatable", "ssvc_exploitation", "ssvc_technical_impact"]:
+                t[ssvc_field] = None
+            if "cve" in t:
+                cve_id = t["cve"]
+                # Add SSVC data to ticket from our SSVC_CACHE
+                if cve_id in SSVC_CACHE:
+                    for ssvc_field in ["automatable", "exploitation", "technical_impact"]:
+                        t["ssvc_" + ssvc_field] = SSVC_CACHE[cve_id].get(ssvc_field)
+                # Calculate ticket remediation deadline based on SSVC metrics
+                if t["kev"] and t["ssvc_technical_impact"] == "total":
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=3)
+                elif (t["kev"] and t["ssvc_technical_impact"] == "partial") or \
+                    (not t["kev"] and t["ssvc_technical_impact"] == "total"):
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=14)
+                elif not t["kev"] and t["ssvc_technical_impact"] == "partial":
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=60)
+
     def __vulnerability_occurrence(self, tickets):
         df = SafeDataFrame(tickets, columns=["cvss_base_score", "name", "severity"])
         if df.empty:
