@@ -195,6 +195,11 @@ POTENTIAL_NMI_SERVICES = [
 # space on the page for when there are many affected hosts listed.
 FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH = 3072
 
+# Dictionary to cache SSVC data for each CVE so that we don't have to hit the
+# database repeatedly for tickets with the same CVE. Keyed by CVE ID, value is
+# either the SSVC data dict or None if there is no SSVC data for that CVE.
+SSVC_CACHE = {}
+
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
     return a DataFrame with columns if requested."""
@@ -613,6 +618,14 @@ class ReportGenerator(object):
                 if ticket["newly_opened_since_last_report"]:
                     risky_service_metrics[category]["any_newly_opened"] = True
         return risky_service_metrics
+
+    def __cache_ssvc_data(self, cve_ids):
+        """Load SSVC data for a set of CVE IDs."""
+        for cve_id in cve_ids:
+            if cve_id not in SSVC_CACHE:
+                cve_data = self.__cyhy_db.CVEDoc.find_one({"_id": cve_id})
+                if cve_data and cve_data.get("ssvc", {}) != {}:
+                    SSVC_CACHE[cve_id] = cve_data["ssvc"]
 
     def __vulnerability_occurrence(self, tickets):
         df = SafeDataFrame(tickets, columns=["cvss_base_score", "name", "severity"])
