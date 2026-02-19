@@ -2614,6 +2614,7 @@ class ReportGenerator(object):
         self.__generate_certificate_attachment()
         self.__generate_domains_attachment()
         self.__generate_findings_attachment()
+        self.__generate_findings_ssvc_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
         self.__generate_services_attachment()
@@ -2783,6 +2784,104 @@ class ReportGenerator(object):
 
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer.writeheader()
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
+            for row in data:
+                data_writer.writerow(row)
+
+    def __generate_findings_ssvc_attachment(self):
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "ssvc_automatable",
+            "ssvc_technical_impact",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+            "remediation_deadline",
+            "cvss_base_score",
+            "cvss_version",
+            "cvss_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "plugin_id",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "ssvc_automatable",
+            "ssvc_technical_impact",
+            "time_opened",
+            "last_detected",
+            "age",
+            "remediation_deadline",
+            "cvss_base_score",
+            "cvss_version",
+            "score_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "source_id",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
+        if self.__anonymize:
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
+        # Filter out tickets that don't have remediation deadlines
+        data = [t for t in self.__results["tickets_0"] if t.get("remediation_deadline")]
+
+        if data:
+            df = DataFrame(data)
+            if "hostname" in df.columns:
+                # Replace nonexistent hostnames with empty strings so that they are
+                # not displayed as "NaN" later.
+                df["hostname"].fillna("", inplace=True)
+            # Sort data by remediation deadline (earliest to latest), then SSVC
+            # technical impact (total, partial, none), then KEV status (true then
+            # false), then CVSS base score (highest to lowest), then finding name
+            # (alphabetically)
+            df.sort_values(
+                by=["remediation_deadline", "ssvc_technical_impact", "kev", "cvss_base_score", "name"],
+                ascending=[True, False, False, False, True],
+                inplace=True,
+            )
+            # Convert back to list of dicts for writing to CSV
+            data = self.__dataframe_to_dicts(df)
+
+        with open("findings-ssvc.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
