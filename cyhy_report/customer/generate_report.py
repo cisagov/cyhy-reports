@@ -195,11 +195,6 @@ POTENTIAL_NMI_SERVICES = [
 # space on the page for when there are many affected hosts listed.
 FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH = 3072
 
-# Dictionary to cache SSVC data for each CVE so that we don't have to hit the
-# database repeatedly for tickets with the same CVE. Keyed by CVE ID, value is
-# either the SSVC data dict or None if there is no SSVC data for that CVE.
-SSVC_CACHE = {}
-
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
     return a DataFrame with columns if requested."""
@@ -240,6 +235,10 @@ class ReportGenerator(object):
         self.__report_oid = ObjectId()
         self.__generated_time = utcnow()
         self.__log_report_to_db = log_report
+        # Dictionary to cache SSVC data for each CVE so that we don't have to
+        # hit the database repeatedly for tickets with the same CVE; keys are
+        # CVE IDs and values are the corresponding SSVC data dicts.
+        self.__ssvc_cache = {}
 
     def __fetch_owner_snapshots(self):
         """loads snapshots sorted with the most recent first"""
@@ -622,10 +621,10 @@ class ReportGenerator(object):
     def __cache_ssvc_data(self, cve_ids):
         """Load SSVC data for a set of CVE IDs."""
         for cve_id in cve_ids:
-            if cve_id not in SSVC_CACHE:
+            if cve_id not in self.__ssvc_cache:
                 cve_data = self.__cyhy_db.CVEDoc.find_one({"_id": cve_id})
                 if cve_data and cve_data.get("ssvc", {}) != {}:
-                    SSVC_CACHE[cve_id] = cve_data["ssvc"]
+                    self.__ssvc_cache[cve_id] = cve_data["ssvc"]
 
     def __calc_ssvc_remediation_deadlines(self):
         """Calculate remediation deadlines for current tickets based on SSVC data."""
@@ -635,10 +634,10 @@ class ReportGenerator(object):
                 t[ssvc_field] = None
             if "cve" in t:
                 cve_id = t["cve"]
-                # Add SSVC data to ticket from our SSVC_CACHE
-                if cve_id in SSVC_CACHE:
+                # Add SSVC data to ticket from our SSVC cache
+                if cve_id in self.__ssvc_cache:
                     for ssvc_field in ["automatable", "exploitation", "technical_impact"]:
-                        t["ssvc_" + ssvc_field] = SSVC_CACHE[cve_id].get(ssvc_field)
+                        t["ssvc_" + ssvc_field] = self.__ssvc_cache[cve_id].get(ssvc_field)
                 # Calculate ticket remediation deadline based on SSVC metrics
                 if t["kev"] and t["ssvc_technical_impact"] == "total":
                     t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=3)
