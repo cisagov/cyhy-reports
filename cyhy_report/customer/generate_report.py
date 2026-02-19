@@ -1289,7 +1289,7 @@ class ReportGenerator(object):
         ]
 
         # Build list of counts of open tickets in each SSVC remediation
-        # deadline category, in the same order as severities list above
+        # deadline category, in the same order as deadline_buckets list above
         tickets_by_deadline_counts = [0, 0, 0, 0, 0]
         for t in self.__results["tickets_0"]:
             if t.get("remediation_deadline"):
