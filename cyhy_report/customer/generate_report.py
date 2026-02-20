@@ -1281,11 +1281,11 @@ class ReportGenerator(object):
     def __figure_ssvc_vuln_remediation_deadlines(self):
         """Generate figure showing distribution of SSVC-based remediation deadlines for open tickets."""
         deadline_buckets = [
-            "OVERDUE",
-            "<5 DAYS",
-            "5-10 DAYS",
-            "10-21 DAYS",
-            "21+ DAYS",
+            "OVERDUE",    # Tickets with remediation deadlines in the past
+            "<5 DAYS",    # Tickets due less than 5 days from now
+            "5-10 DAYS",  # Tickets due 5.0 - 9.9999... days from now
+            "10-21 DAYS", # Tickets due 10.0 - 20.9999... days from now
+            "21+ DAYS",   # Tickets due 21.0 or more days from now
         ]
 
         # Build list of counts of open tickets in each SSVC remediation
