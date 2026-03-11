@@ -235,6 +235,10 @@ class ReportGenerator(object):
         self.__report_oid = ObjectId()
         self.__generated_time = utcnow()
         self.__log_report_to_db = log_report
+        # Dictionary to cache SSVC data for each CVE so that we don't have to
+        # hit the database repeatedly for tickets with the same CVE; keys are
+        # CVE IDs and values are the corresponding SSVC data dicts.
+        self.__ssvc_cache = {}
 
     def __fetch_owner_snapshots(self):
         """loads snapshots sorted with the most recent first"""
@@ -613,6 +617,35 @@ class ReportGenerator(object):
                 if ticket["newly_opened_since_last_report"]:
                     risky_service_metrics[category]["any_newly_opened"] = True
         return risky_service_metrics
+
+    def __cache_ssvc_data(self, cve_ids):
+        """Load SSVC data for a set of CVE IDs."""
+        for cve_id in cve_ids:
+            if cve_id not in self.__ssvc_cache:
+                cve_data = self.__cyhy_db.CVEDoc.find_one({"_id": cve_id})
+                if cve_data and cve_data.get("ssvc", {}) != {}:
+                    self.__ssvc_cache[cve_id] = cve_data["ssvc"]
+
+    def __calc_ssvc_remediation_deadlines(self):
+        """Calculate remediation deadlines for current tickets based on SSVC data."""
+        for t in self.__results["tickets_0"]:
+            t["remediation_deadline"] = None
+            for ssvc_field in ["ssvc_automatable", "ssvc_exploitation", "ssvc_technical_impact"]:
+                t[ssvc_field] = None
+            if "cve" in t:
+                cve_id = t["cve"]
+                # Add SSVC data to ticket from our SSVC cache
+                if cve_id in self.__ssvc_cache:
+                    for ssvc_field in ["automatable", "exploitation", "technical_impact"]:
+                        t["ssvc_" + ssvc_field] = self.__ssvc_cache[cve_id].get(ssvc_field)
+                # Calculate ticket remediation deadline based on SSVC metrics
+                if t["kev"] and t["ssvc_technical_impact"] == "total":
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=3)
+                elif (t["kev"] and t["ssvc_technical_impact"] == "partial") or \
+                    (not t["kev"] and t["ssvc_technical_impact"] == "total"):
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=14)
+                elif not t["kev"] and t["ssvc_technical_impact"] == "partial":
+                    t["remediation_deadline"] = t["time_opened"] + datetime.timedelta(days=60)
 
     def __vulnerability_occurrence(self, tickets):
         df = SafeDataFrame(tickets, columns=["cvss_base_score", "name", "severity"])
@@ -1177,11 +1210,27 @@ class ReportGenerator(object):
 
             self.__results["certs"] = certs
 
+        # TODO: Update comment with official BOD number when available.
+        # Run BOD XX-XX calculations for Federal executive agencies.
+        if self.__results["owner_is_federal_executive"]:
+            # Build set of CVE IDs in current tickets
+            cve_ids = set()
+            for ticket in self.__results["tickets_0"]:
+                if ticket.get("cve"):
+                    cve_ids.add(ticket["cve"])
+            # Populate SSVC data cache for all current tickets
+            self.__cache_ssvc_data(cve_ids)
+            # Add SSVC data to all current tickets and calculate remediation
+            # deadline for each ticket
+            self.__calc_ssvc_remediation_deadlines()
+
     ###############################################################################
     # Figure Generation
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
+        if self.__results.get("owner_is_federal_executive"):
+            self.__figure_ssvc_vuln_remediation_deadlines()
         self.__figure_kev_severity_by_prominence()
         self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
@@ -1228,6 +1277,46 @@ class ReportGenerator(object):
             # have overlapping bubbles
             bubble_sizes.append(2 * vulns_ranked[severity] + 10)
         return bubble_sizes
+
+    def __figure_ssvc_vuln_remediation_deadlines(self):
+        """Generate figure showing distribution of SSVC-based remediation deadlines for open tickets."""
+        deadline_buckets = [
+            "OVERDUE",    # Tickets with remediation deadlines in the past
+            "<5 DAYS",    # Tickets due less than 5 days from now
+            "5-10 DAYS",  # Tickets due 5.0 - 9.9999... days from now
+            "10-21 DAYS", # Tickets due 10.0 - 20.9999... days from now
+            "21+ DAYS",   # Tickets due 21.0 or more days from now
+        ]
+
+        # Build list of counts of open tickets in each SSVC remediation
+        # deadline category, in the same order as deadline_buckets list above
+        tickets_by_deadline_counts = [0, 0, 0, 0, 0]
+        for t in self.__results["tickets_0"]:
+            if t.get("remediation_deadline"):
+                if t["remediation_deadline"] < self.__generated_time:
+                    tickets_by_deadline_counts[0] += 1
+                else:
+                    days_until_deadline = (t["remediation_deadline"] - self.__generated_time).days
+                    if days_until_deadline < 5:
+                        tickets_by_deadline_counts[1] += 1
+                    elif days_until_deadline < 10:
+                        tickets_by_deadline_counts[2] += 1
+                    elif days_until_deadline < 21:
+                        tickets_by_deadline_counts[3] += 1
+                    else:
+                        tickets_by_deadline_counts[4] += 1
+
+        bubbles = graphs.MyHorizontalBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # chart that looks aesthetically pleasing.
+            [10, 21, 32, 43, 54],       # Bubble x coordinates
+            [6, 6, 6, 6, 6],            # Bubble y coordinates
+            [4.5, 4.5, 4.5, 4.5, 4.5],  # Make all bubbles the same size
+            (RC_DARK_RED, RC_LIGHT_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            [i for i in deadline_buckets],
+            tickets_by_deadline_counts,
+        )
+        bubbles.plot("ssvc-remediation-deadlines", size=1.0)
 
     def __figure_kev_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
@@ -2525,6 +2614,8 @@ class ReportGenerator(object):
         self.__generate_certificate_attachment()
         self.__generate_domains_attachment()
         self.__generate_findings_attachment()
+        if self.__results.get("owner_is_federal_executive"):
+            self.__generate_findings_ssvc_attachment()
         self.__generate_mitigated_vulns_attachment()
         self.__generate_recently_detected_vulns_attachment()
         self.__generate_services_attachment()
@@ -2694,6 +2785,104 @@ class ReportGenerator(object):
 
         data = self.__results["tickets_0"]
         with open("findings.csv", "wb") as out_file:
+            header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
+            header_writer.writeheader()
+            data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
+            for row in data:
+                data_writer.writerow(row)
+
+    def __generate_findings_ssvc_attachment(self):
+        header_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "known_exploited",
+            "ransomware_exploited",
+            "severity",
+            "ssvc_automatable",
+            "ssvc_technical_impact",
+            "initial_detection",
+            "latest_detection",
+            "age_days",
+            "remediation_deadline",
+            "cvss_base_score",
+            "cvss_version",
+            "cvss_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "plugin_id",
+        ]
+
+        data_fields = [
+            "hostname",
+            "ip_int",
+            "ip",
+            "port",
+            "protocol",
+            "kev",
+            "kev_ransomware",
+            "severity",
+            "ssvc_automatable",
+            "ssvc_technical_impact",
+            "time_opened",
+            "last_detected",
+            "age",
+            "remediation_deadline",
+            "cvss_base_score",
+            "cvss_version",
+            "score_source",
+            "vpr_score",
+            "cve",
+            "name",
+            "description",
+            "solution",
+            "source",
+            "source_id",
+        ]
+
+        # Remove ip_int column if we are trying to be anonymous
+        if self.__anonymize:
+            header_fields.remove("ip_int")
+            data_fields.remove("ip_int")
+
+        # Add owner column if descendants are included
+        if self.__snapshots[0].get("descendants_included"):
+            header_fields.insert(0, "owner")
+            data_fields.insert(0, "owner")
+
+        # Remove hostname column if there are no hostnames in the tickets
+        if not self.__results["has_hostnames_in_tix"]:
+            header_fields.remove("hostname")
+            data_fields.remove("hostname")
+
+        # Filter out tickets that don't have remediation deadlines
+        data = [t for t in self.__results["tickets_0"] if t.get("remediation_deadline")]
+
+        if data:
+            df = DataFrame(data)
+            if "hostname" in df.columns:
+                # Replace nonexistent hostnames with empty strings so that they are
+                # not displayed as "NaN" later.
+                df["hostname"].fillna("", inplace=True)
+            # Sort data by remediation deadline (earliest to latest), then SSVC
+            # technical impact (total, partial, none), then KEV status (true then
+            # false), then CVSS base score (highest to lowest), then finding name
+            # (alphabetically)
+            df.sort_values(
+                by=["remediation_deadline", "ssvc_technical_impact", "kev", "cvss_base_score", "name"],
+                ascending=[True, False, False, False, True],
+                inplace=True,
+            )
+            # Convert back to list of dicts for writing to CSV
+            data = self.__dataframe_to_dicts(df)
+
+        with open("findings-ssvc.csv", "wb") as out_file:
             header_writer = csv.DictWriter(out_file, header_fields, extrasaction="ignore")
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
@@ -3635,7 +3824,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v1.1.0")
+    args = docopt(__doc__, version="v1.2.0")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
