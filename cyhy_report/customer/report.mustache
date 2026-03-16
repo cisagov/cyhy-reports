@@ -230,23 +230,21 @@
 %\setsansfont[Mapping=tex-text]{Franklin Gothic Book}
 \setmonofont{Source Code Pro}
 
-% DHS NCCIC Standard Fonts
+% CISA Standard Fonts
 \newfontfamily{\ArialFont}{Arial}
 \newfontfamily{\FranklinGothicDemiCondFont}{Franklin Gothic Demi Cond}
 \newfontfamily{\FranklinGothicMediumFont}{Franklin Gothic Medium}
 \newfontfamily{\SourceSansProFont}{Source Sans Pro}
 
-\newcommand\NCCICCoverTitle{\FranklinGothicMediumFont\fontsize{24pt}{24pt}\selectfont}
-\newcommand\NCCICTitle{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
-\newcommand\NCCICHeadingOne{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
-\newcommand\NCCICHeadingTwo{\FranklinGothicMediumFont\fontsize{14pt}{14pt}\selectfont}
-\newcommand\NCCICHeadingThree{\FranklinGothicMediumFont\fontsize{13pt}{13pt}\slshape\selectfont}	% \slshape gives italics (slanted type)
-\newcommand\NCCICHeadingFour{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\slshape\selectfont}
-\newcommand\NCCICCaption{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\slshape\selectfont}
+\newcommand\CoverTitle{\FranklinGothicMediumFont\fontsize{40pt}{40pt}\selectfont}
+\newcommand\CoverSubtitle{\FranklinGothicMediumFont\fontsize{28pt}{28pt}\selectfont}
+\newcommand\CoverRegular{\ArialFont\fontsize{14pt}{14pt}\selectfont}
+\newcommand\HeadingOne{\FranklinGothicMediumFont\fontsize{16pt}{16pt}\selectfont}
+\newcommand\HeadingTwo{\FranklinGothicMediumFont\fontsize{14pt}{14pt}\selectfont}
+\newcommand\HeadingThree{\FranklinGothicMediumFont\fontsize{13pt}{13pt}\slshape\selectfont}	% \slshape gives italics (slanted type)
+\newcommand\HeadingFour{\FranklinGothicMediumFont\fontsize{11pt}{11pt}\slshape\selectfont}
 
 \newfontfamily{\FranklinGothicBookFont}{Franklin Gothic Book}
-\newcommand\NCCICTitleCoverNumberDate{\FranklinGothicBookFont\fontsize{10pt}{10pt}\selectfont}
-
 \newfontfamily{\FranklinGothicDemiFont}{Franklin Gothic Demi}
 \newcommand\TLPFont{\FranklinGothicDemiFont\fontsize{11pt}{11pt}\selectfont}
 
@@ -277,9 +275,9 @@
 % Set formats for each heading level
 % \raggedright is used to prevent section headers from splitting words
 % across long lines
-\titleformat*{\section}{\NCCICHeadingOne\raggedright\color{dhs-blue}}
-\titleformat*{\subsection}{\NCCICHeadingTwo\color{dhs-dark-gray}}
-\titleformat*{\subsubsection}{\NCCICHeadingThree\color{dhs-blue}}
+\titleformat*{\section}{\HeadingOne\raggedright\color{dhs-blue}}
+\titleformat*{\subsection}{\HeadingTwo\color{dhs-dark-gray}}
+\titleformat*{\subsubsection}{\HeadingThree\color{dhs-blue}}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
