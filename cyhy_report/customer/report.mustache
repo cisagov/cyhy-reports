@@ -395,46 +395,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 	\begin{titlepage}
-		\newgeometry{left=0.1in,right=0.0in,top=0.0in,bottom=0.0in}
-
-		% Fake a header for the title page
-		\vspace*{0.5mm}
-		\begin{minipage}{\textwidth}
-    	\begin{minipage}{.32\linewidth}
-				\ % placeholder for left side of header
-			\end{minipage}
-			\begin{minipage}{.34\linewidth}
-				\ % placeholder for center of header
-			\end{minipage}
-			\begin{minipage}{.33\linewidth}
-				\ % placeholder for right side of header
-			\end{minipage}
-  		\end{minipage}
-
-		\vspace*{1.0in}
-    \hspace*{3.5mm}
-		\begin{lpic}[] {assets/assessment-summary-title}
-      \lbl[tl]{11, 114; {\textcolor{dhs-white}{\NCCICTitle{Cyber Hygiene Assessment}}}}
-			\lbl[tl]{150, 15.3; \colorbox{yellow}{\NCCICTitleCoverNumberDate{CYHY\uppercase{<<&report_oid>>}}}}
-			\lbl[tl]{150, 6.9; \colorbox{yellow}{\NCCICTitleCoverNumberDate{\usvardate\formatdate<<&calc.title_date_tex>>}}}
+		\newgeometry{left=0.0in, right=0.0in, top=0.0in, bottom=0.0in}
+		% Main cover graphic and text
+		\begin{lpic}[] {assets/vs-report-cover-page}
+			\lbl[tl]{25, 130; {\textcolor{dhs-blue}{\CoverTitle{Vulnerability Scanning Report}}}}
+			\lbl[tl]{25, 110; {\textcolor{dhs-blue}{\CoverSubtitle{<<&owner.agency.name>>}}}}
+			\lbl[tl]{25, 50; {\textcolor{dhs-blue}{\CoverRegular{Cybersecurity and Infrastructure Security Agency}}}}
+			\lbl[tl]{25, 40; {\textcolor{dhs-blue}{\CoverRegular{{Publication Date: \usvardate\formatdate<<&calc.title_date_tex>>}}}}}
 		\end{lpic}
-		\\~\\
-    \hspace*{9mm}{\textcolor{dhs-blue}{\NCCICCoverTitle{Cyber Hygiene Assessment\\}}}
-    \hspace*{8.3mm}{\textcolor{dhs-blue}{\NCCICTitle{<<&owner.agency.name>>}}}
-
-		% Fake a footer for the title page
-		\vspace*{1.6in}
-		\begin{minipage}{\textwidth}
-    	\begin{minipage}{.32\linewidth}
-				\hspace*{3mm} \raggedright \includegraphics[height=0.8in]{assets/cisa-logo}
-			\end{minipage}
-			\begin{minipage}{.34\linewidth}
-				\ % placeholder for center of footer
-			\end{minipage}
-			\begin{minipage}{.33\linewidth}
-				\ % placeholder for right side of footer
-			\end{minipage}
-  	\end{minipage}
 	\end{titlepage}
 \restoregeometry
 
