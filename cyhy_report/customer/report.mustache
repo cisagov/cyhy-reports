@@ -411,52 +411,116 @@
 
 \newpage
 \renewcommand{\footrulewidth}{0.4pt}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Content Start
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\label{sec:introduction}
+
+Welcome to your Cyber Hygiene (CyHy) Vulnerability Scanning (VS) report. This document aims to be a comprehensive weekly snapshot of known vulnerabilities detected on Internet-facing hosts for <<&owner.agency.name>> (<<&owner.agency.acronym>>).
+
+This service continuously monitors and assesses internet-accessible network assets (public, static IPv4 addresses) to
+evaluate their host and vulnerability status. In addition to weekly reports of all findings, you'll receive ad-hoc alerts about
+urgent findings, like potentially risky services and known exploited vulnerabilities. When used in conjunction with CISA
+CyHy Web Application Scanning service, an organization can gain a very in-depth analysis of an environment.
+
 \section{How To Use This Report}
 \label{sec:how-to-use-this-report}
-Welcome to your \gls{CyHy} report. This document aims to be a comprehensive weekly snapshot of known \glspl{vulnerability} detected on Internet-facing \glspl{host} for \gls{AGENCY}.
 
-You may wonder what you're supposed to do with all this information. While it's not our intent to prescribe to you a particular process for remediating vulnerabilities, we hope you'll use this report to strengthen your security posture. Here's a basic flow:
+\vspace*{-5mm}
+{\centering\framebox{\parbox{\dimexpr\linewidth-8\fboxsep-40\fboxrule}
+{\RCSourceSansProSemiBoldTwelve\centering\textbf{
+The following is the legend for this report. 
+The colors signify the severity of the findings.\\
+\vspace*{2mm}
+{\fboxsep=0pt\fbox{\color{v-critical}\rule{3mm}{3mm}}} Critical \hspace*{6mm}
+{\fboxsep=0pt\fbox{\color{v-high}\rule{3mm}{3mm}}} High \hspace*{6mm}
+{\fboxsep=0pt\fbox{\color{v-medium}\rule{3mm}{3mm}}} Medium \hspace*{6mm}
+{\fboxsep=0pt\fbox{\color{v-low}\rule{3mm}{3mm}}} Low}}}
+\par}
 
-\begin{enumerate}
-\item Review the \hyperref[sec:report-card]{Cyber Hygiene Report Card} for a high-level overview. This section gives a quick comparison of the problems we find week to week. If this is your first report, you should note that the Report Card will initially lack historical data to make comparisons against, though that data will exist in your next report.
-<<#owner_is_federal_executive>>
-\item Review the \hyperref[sec:ed1901]{Emergency Directive 19-01 ---
-  New Certificates Summary} for current certificate information. This
-  section gives a quick look at the currently expired, soon to expire,
-  and newly added certificates for known hostnames owned by or managed
-  on behalf of your organization.
-<</owner_is_federal_executive>>
-\item See \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities} for a list of unique vulnerabilities across all the systems we detect problems with. \autoref{app:detailed-findings}: \nameref{app:detailed-findings} provides more information about each vulnerability and all the hosts that we detect are susceptible to a given vulnerability. You should focus on those vulnerabilities rated with the greatest \gls{severity}, as well as those that impact your high-value assets, but don't ignore the medium or low vulnerabilities. Recognize that a vulnerability's rating tends to get worse with time.
-\item If this report is not your first, review \autoref{app:vuln-changes-since-last-report}: \nameref{app:vuln-changes-since-last-report} for a breakdown of all the changes we detected in your scope in the last week.
-\item If you've patched a vulnerability since your last report, verify it's listed here. If it's not present, there may still be an issue. It may also be possible that the issue was fixed after our latest scan, which was on \usvardate\formatdate<<&calc.end_date_tex>>.
-\item For additional analysis, see \autoref{app:attachments}: \nameref{app:attachments}, which provides \gls{CSV} files for all findings, \glspl{service}, hosts, and the scope that we scan.
-\item Review \autoref{app:false-positive-findings}: \nameref{app:false-positive-findings} to track any upcoming expiration dates for false positive designations. For any new false positives, please complete and return the False Positive Assertion Form found in \autoref{app:attachments}: \nameref{app:attachments} to the \gls{CISA}.
-\end{enumerate}
+\textbf{1. Review the Report Card}
+\vspace*{-5mm}  % Reduce vertical spacing
+\begin{itemize}
+  	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+  	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
+	\item Provides a snapshot of your organization's security posture,
+	      including assets scanned and vulnerabilities detected.
+	\item Highlights potentially risky open services and categorizes
+	      vulnerabilities by severity.
+	\item Tracks trends such as increases in vulnerable hosts and changes in
+	      security risks over time.
+\end{itemize}
 
-You should be aware that Cyber Hygiene does not scan your entire scope (all of the addresses your organization has sent us) every week, but does attempt to scan every \gls{host} each week. For an explanation of how \gls{CyHy} works, see the \nameref{sec:methodology} section.
+\vspace*{-5mm}  % Reduce vertical spacing
+\textbf{2. Review the Attachments}
+\vspace*{-5mm}  % Reduce vertical spacing
+\begin{itemize}
+  	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+  	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
+	\item Make sure you are using a desktop PDF reader, not an online one.
+	\item Provides Comma-Separated Values (CSV) files for all findings,
+	      services, hosts, and the scope that we scan.
+\end{itemize}
 
-As you review the report, you may have additional questions. Check out the answers we provide in the \nameref{app:FAQ} section. If you have any additional questions, email us at  \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
+\vspace*{-5mm}  % Reduce vertical spacing
+\textbf{3. Need Help?}
+\vspace*{-5mm}  % Reduce vertical spacing
+\begin{itemize}
+  	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+  	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
+	\item We've provided a list of \textbf{Frequently Asked Questions} and a
+		  \textbf{Glossary} in the \textbf{Attachments} section for your 
+		  convenience.
+	\item For any account modifications, such as changing Points of Contact
+		  (POCs), technical or distribution email addresses, or updating IP
+		  address scope, please have a technical Point of Contact from
+		  <<&owner.agency.acronym>> reach out to
+		  \href{mailto:vulnerability@mail.cisa.dhs.gov}{vulnerability@mail.cisa.dhs.gov}.
+\end{itemize}
 
-\subsection{<<&owner.agency.acronym>> Points of Contact}
-\label{subsec:points-of-contact}
-\gls{AGENCY} has defined the following points-of-contact for Cyber Hygiene activities; if present, reports are emailed solely to distribution lists. If you receive this report through a distribution list, the \gls{CISA} requests that you funnel your request through your technical POC(s).
-	\begin{table*}[h!]
-	    \setlength{\tabcolsep}{6pt}
- 		\centering
- 		\rowcolors{2}{white}{row-gray}
-  		\begin{tabular}{llll}
-	  	\toprule
-	  	 Type & Name & Email Address & Phone Number \\
-	  	\midrule
-      <<#owner.agency.contacts>>
-      <<type>> & <<name>> & \href{mailto:<<email>>}{<<email>>} & <<phone>> \\
-      <</owner.agency.contacts>>
-	  	\bottomrule
-  		\end{tabular}
-	\end{table*}
+\section{Vulnerability Scoring}
+\label{sec:vulnerability-scoring}
+
+When a Cyber Hygiene Vulnerability Scanning (CyHy VS) finding includes a Common Vulnerabilities and Exposures
+(CVE) identifier, the severity rating is determined using the following order of sources:
+\begin{itemize}
+  	\setlength{\parskip}{0pt}  % Minimize vertical spacing
+  	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
+	\item \href{https://cve.org/}{CVE.org} - Primary source
+	\item National Vulnerability Database (NVD) - CVSS v3.1, then CVSS v3.0
+	\item CVSS v2.0 - Used only if no v3 score is available, with one exception:
+		  a base score of 10.0 will be rated as Critical
+	\item Tenable Nessus score
+\end{itemize}
+
+\section{Scan Methodology}
+\label{sec:scan-methodology}
+
+\vspace*{-5mm}  % Reduce vertical spacing
+{\centering
+\scalegraphicsnofig[0.6]{assets/scan-methodology}\par
+}
+
+The Cyber Hygiene Vulnerability Scanning source IP addresses can be found at
+\href{https://rules.vm.cyber.dhs.gov/cyhy.txt}{https://rules.vm.cyber.dhs.gov/cyhy.txt}.
+
+Both Nmap and Nessus Professional are used to compile this data.  We enable all
+\href{https://www.tenable.com/plugins}{Nessus Plugins} except for those in the
+``Denial of Service" family.
+
+\section{Scanning Frequency}
+\label{sec:scanning-frequency}
+
+\vspace*{-5mm}  % Reduce vertical spacing
+Scanning occurs continuously between each weekly report based on the severity
+of vulnerabilities found. The graphic below details this scanning cadence.
+
+{\centering
+\scalegraphicsnofig[1.0]{assets/scanning-frequency}\par
+}
 
   % NOTE: If layout changes in the Report Card below result in additional
   % vertical spacing, you may end up with a blank page (here) before the
