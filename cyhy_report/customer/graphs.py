@@ -305,6 +305,10 @@ class MyBar(object):
                 width=0.5,
             )
 
+        if all(rect.get_height() == 0 for rect in rects):
+            # Keep the zero baseline at the bottom for all-zero bar charts.
+            ax.set_ylim(0, 1)
+
         if self.bigLabels:
             plt.xticks(
                 pos,
