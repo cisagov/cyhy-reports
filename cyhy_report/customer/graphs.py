@@ -229,16 +229,26 @@ class MyBar(object):
         bigLabels=False,
         barSeverities=None,
         legendLabels=None,
+        heightScale=1.0,
+        widthScale=1.0,
+        labelFontScale=1.0,
     ):
         self.series = series
         self.yscale = yscale
         self.bigLabels = bigLabels
         self.barSeverities = barSeverities
         self.legendLabels = legendLabels
+        self.heightScale = heightScale
+        self.widthScale = widthScale
+        self.labelFontScale = labelFontScale
 
     def plot(self, filename, size=1.0):
         fig = plt.figure(1)
-        fig.set_size_inches(fig.get_size_inches() * size)
+        width, height = fig.get_size_inches()
+        fig.set_size_inches(
+            width * size * self.widthScale, 
+            height * size * self.heightScale
+        )
 
         if self.bigLabels:
             fig.subplots_adjust(bottom=0.4)
@@ -250,7 +260,7 @@ class MyBar(object):
         if self.barSeverities:
             barColors = []
             for i in self.barSeverities:
-                barColors.append(COLORS[i - 1])
+                barColors.append(COLORS_VULN_SEVERITY[i - 1])
             if (
                 self.legendLabels
             ):  # build a dummy set of bars ('underneath' the real bars) to be used
@@ -258,7 +268,7 @@ class MyBar(object):
                     []
                 )  #  to color the legend; legendLabels are implicitly tied to COLORS
                 for i in range(len(self.legendLabels)):
-                    legendColors.append(COLORS[i])
+                    legendColors.append(COLORS_VULN_SEVERITY[i])
                 dummy_legend_rects = plt.bar(
                     pos,
                     self.series.values,
@@ -273,7 +283,7 @@ class MyBar(object):
                     ncol=len(self.legendLabels),
                     loc="upper center",
                     fancybox=True,
-                    prop={"size": 4},
+                    prop={"size": 4 * self.labelFontScale},
                     bbox_to_anchor=(0.5, 1.2),
                 )
                 leg.get_frame().set_alpha(0.5)
@@ -296,13 +306,23 @@ class MyBar(object):
             )
 
         if self.bigLabels:
-            plt.xticks(pos, wrapLabels(self.series.index, 24), rotation=55, fontsize=7)
+            plt.xticks(
+                pos,
+                wrapLabels(self.series.index, 24),
+                rotation=55,
+                fontsize=7 * self.labelFontScale,
+            )
             # Extremely nice function to auto-rotate the x axis labels.
             # It was made for dates (hence the name) but it works
             # for any long x tick labels
             # fig.autofmt_xdate()
         else:
-            plt.xticks(pos, wrapLabels(self.series.index, 6), rotation=None, fontsize=8)
+            plt.xticks(
+                pos,
+                wrapLabels(self.series.index, 6),
+                rotation=None,
+                fontsize=8 * self.labelFontScale,
+            )
 
         ax.yaxis.grid(False)
         ax.yaxis.tick_left()  # ticks only on left
@@ -340,7 +360,7 @@ class MyBar(object):
                 xycoords="data",
                 xytext=offset,
                 textcoords="offset points",
-                size=12,
+                size=12 * self.labelFontScale,
                 ha="center",
                 weight="bold",
                 color="black",
