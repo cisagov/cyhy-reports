@@ -1307,7 +1307,7 @@ class ReportGenerator(object):
             [50, 20, 65, 35],  # Bubble x coordinates
             [80, 55, 45, 20],  # Bubble y coordinates
             bubble_sizes,
-            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            (COLOR_CRITICAL, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW),
             [i.upper() for i in severities],
             vuln_data,
             ["RESOLVED", "NEW"],
