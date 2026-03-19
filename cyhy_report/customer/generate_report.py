@@ -1190,6 +1190,7 @@ class ReportGenerator(object):
         self.__figure_kev_severity_by_prominence()
         self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
+        self.__figure_max_age_of_active_vulns()
         self.__figure_max_age_of_active_kevs()
         self.__figure_max_age_of_active_criticals()
         self.__figure_max_age_of_active_highs()
@@ -1313,6 +1314,27 @@ class ReportGenerator(object):
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("vuln-severity-by-prominence", size=1.0)
+
+    def __figure_max_age_of_active_vulns(self):
+        df = DataFrame(self.__results["ss0_tix_days_open"])
+        if len(df):
+            # If there is no data for a particular severity, that counts as zero
+            # days open for that severity, so use fillna to replace NaN with 0
+            max_days_open = df.loc["max"].fillna(0)
+            # Remove "tix_open_as_of_date"; we don't want to display it here
+            max_days_open.pop("tix_open_as_of_date")
+            max_days_open = max_days_open.rename(lambda x: x.capitalize())
+            bar = graphs.MyBar(
+                    max_days_open,
+                    barSeverities=[4, 3, 2, 1],
+                    heightScale=1.5,
+                    labelFontScale=0.9,
+                    widthScale=0.8
+                )
+            bar.plot("max-age-active-vulns", size=0.5)
+        else:  # no vuln responsiveness data (older snapshots didn't have this)
+            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA)
+            message.plot("max-age-active-vulns", size=0.5)
 
     def __figure_max_age_of_active_kevs(self):
         max_age_kevs = self.__results["active_kev_max_age"]
