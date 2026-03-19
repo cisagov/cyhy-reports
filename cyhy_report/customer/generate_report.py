@@ -123,6 +123,11 @@ ANONYMOUS_IPV4 = r"x.x.\1"
 CVE_ID_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.IGNORECASE)
 CVE_URL = "https://web.nvd.nist.gov/view/vuln/detail?vulnId={}"
 
+COLOR_CRITICAL = "#fc6869"
+COLOR_HIGH = "#fd9a9b"
+COLOR_MEDIUM = "#fecb6e"
+COLOR_LOW = "#fffe9f"
+
 BLUE = "#5c90ba"
 GREEN = "#7bbe5e"
 YELLOW = "#cfc666"
