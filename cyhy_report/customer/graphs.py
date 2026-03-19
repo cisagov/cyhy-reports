@@ -1194,7 +1194,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d}".format(self.data[i][0]),
                 xy=(self.x_values[i], self.y_values[i] + 4),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=14,
                 weight="bold",
@@ -1203,7 +1203,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{}".format(self.categories[i]),
                 xy=(self.x_values[i], self.y_values[i] + 0),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 weight="bold",
@@ -1212,7 +1212,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d} {}".format(self.data[i][1], self.statuses[0]),
                 xy=(self.x_values[i], self.y_values[i] - 4),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 ha="center",
@@ -1220,7 +1220,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d} {}".format(self.data[i][2], self.statuses[1]),
                 xy=(self.x_values[i], self.y_values[i] - 8),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 ha="center",
