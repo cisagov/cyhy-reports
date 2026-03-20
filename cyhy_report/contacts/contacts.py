@@ -74,4 +74,7 @@ def main():
     """Output all points of contact in the CyHy database in CSV format."""
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
-    print(generate_contacts_csv(db).getvalue())
+    try:
+        print(generate_contacts_csv(db).getvalue())
+    except UnicodeDecodeError:
+        print("Unable to handle non-ASCII characters in a request doc.", file=sys.stderr)
