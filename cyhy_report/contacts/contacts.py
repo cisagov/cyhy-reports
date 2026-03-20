@@ -54,7 +54,16 @@ def generate_contacts_csv(db):
                     "Contact Type": contact.get("type", "N/A"),
                 }
             )
-            writer.writerow(row)
+            try:
+                writer.writerow(row)
+            except UnicodeEncodeError as e:
+                # We catch this exception so we can output a helpful
+                # message with the context to allow the user to fix the
+                # request document.  Without this we would have to go in
+                # and edit this file to determine which org is the
+                # problem child.
+                print("Non-ASCII character in contact of org {org_id}: {exception}".format(org_id=doc["_id"], exception=e))
+                raise
 
     return output
 
