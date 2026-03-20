@@ -12,8 +12,10 @@ Options:
 """
 
 # Standard Python Libraries
+from __future__ import print_function
 from csv import DictWriter
 import StringIO
+import sys
 
 # Third-Party Libraries
 from docopt import docopt
@@ -62,7 +64,7 @@ def generate_contacts_csv(db):
                 # request document.  Without this we would have to go in
                 # and edit this file to determine which org is the
                 # problem child.
-                print("Non-ASCII character in contact of org {org_id}: {exception}".format(org_id=doc["_id"], exception=e))
+                print("Non-ASCII character in contact of org {org_id}: {exception}".format(org_id=doc["_id"], exception=e), file=sys.stderr)
                 raise
 
     return output
