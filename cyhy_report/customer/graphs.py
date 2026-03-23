@@ -162,7 +162,7 @@ class MyStackedBar(object):
                 pos,
                 dataset,
                 align="center",
-                color=COLORS[i],
+                color=COLORS_VULN_SEVERITY[i],
                 edgecolor="white",
                 left=lefts,
             )
@@ -171,20 +171,21 @@ class MyStackedBar(object):
             bars.append(p)
 
         plt.yticks(pos, self.ylabels, rotation=None, fontsize=8)
-        try:
-            leg = plt.legend(
-                bars,
-                self.dataLabels,
-                ncol=len(self.dataLabels),
-                loc="upper center",
-                fancybox=True,
-                prop={"size": 4},
-            )
-            leg.get_frame().set_alpha(0.5)
-        except IndexError as e:
-            pass
-            # if there are no bars, the legend will throw a IndexError
-            # it should be safe to ignore, but there will be no legend
+        if self.dataLabels:
+            try:
+                leg = plt.legend(
+                    bars,
+                    self.dataLabels,
+                    ncol=len(self.dataLabels),
+                    loc="upper center",
+                    fancybox=True,
+                    prop={"size": 4},
+                )
+                leg.get_frame().set_alpha(0.5)
+            except IndexError as e:
+                pass
+                # if there are no bars, the legend will throw a IndexError
+                # it should be safe to ignore, but there will be no legend
 
         for bar in bars:
             for rect in bar:

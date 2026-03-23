@@ -1427,7 +1427,7 @@ class ReportGenerator(object):
         if self.__results["tickets_0"]:
             df = self.__top_risky_hosts(self.__results["tickets_0"])
             df = df[:5]  # trim to top 5
-            dataLabels = ("Low", "Medium", "High", "Critical")
+            dataLabels = None  # No legend needed
             bar = graphs.MyStackedBar(
                 (df["low"], df["medium"], df["high"], df["critical"]),
                 df["ip"],
@@ -1446,12 +1446,11 @@ class ReportGenerator(object):
             df = df[:5]  # trim to top 5
             df["plugin_name"] = self.__brief(df["plugin_name"])  # shorten labels
             series = df.set_index("plugin_name")["count"]
-            severityLabels = ("Low", "Medium", "High", "Critical")
             bar = graphs.MyBar(
                 series,
                 bigLabels=True,
                 barSeverities=list(df["severity"]),
-                legendLabels=severityLabels,
+                legendLabels=None,
             )
             bar.plot("top-five-risk-based-vulnerabilities", size=0.5)
         else:  # no vulnerabilities
