@@ -985,158 +985,52 @@ certificates that have been issued by an unusual organization.
 \newpage
 \section{Executive Summary}
 \label{sec:executive-summary}
-This report provides the results of a \gls{CISA} \gls{CyHy} assessment of \gls{AGENCY} conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
-The Cyber Hygiene assessment includes network mapping and \gls{vulnerability} scanning for Internet\-/accessible \gls{AGENCY} \glspl{host}.  This report is intended to provide \gls{AGENCY} with enhanced understanding of their cyber posture and to promote a secure and resilient \gls{IT} infrastructure across \gls{AGENCY}'s Internet\-/accessible networks and hosts.
-
-For this reporting period, a total of \numprint{<<&ss0.host_count>>} hosts were identified out of the \numprint{<<&calc.address_count>>} addresses provided to \gls{CISA}.  The scanning revealed \numprint{<<&ss0.vulnerabilities.total>>} total potential vulnerabilities on  \numprint{<<&ss0.vulnerable_host_count>>} vulnerable hosts, <<&calc.vuln_host_percent>>\% of all \gls{AGENCY} hosts.  \numprint{<<&ss0.unique_port_count>>} distinct open ports, \numprint{<<&calc.ss0_unique_services_count>>} distinct services, and \numprint{<<&ss0.unique_operating_systems>>} operating systems were detected.
-
-\numprint{<<&ss0.unique_vulnerabilities.total>>} distinct types of potential vulnerabilities (\numprint{<<&ss0.unique_vulnerabilities.critical>>} critical, \numprint{<<&ss0.unique_vulnerabilities.high>>} high, \numprint{<<&ss0.unique_vulnerabilities.medium>>} medium, and \numprint{<<&ss0.unique_vulnerabilities.low>>} low) were detected, as shown in \autoref{tab:vulns-by-severity}.  The vulnerabilities that were detected most frequently on \gls{AGENCY} hosts are displayed in \autoref{fig:top-five-vulnerabilities-count}.
-
-\gls{AGENCY} should review the potential vulnerabilities detected and report any \glspl{false positive} back to \gls{CISA} so they can be excluded from future reports.  Please refer to \autoref{app:detected-vulnerabilities}: \nameref{app:detected-vulnerabilities} for an illustration of the breakdown of vulnerability occurrences over time.
-
-%{\renewcommand{\arraystretch}{0.85}	% Slims down all following table heights by factor of 0.85
-\begin{minipage}{\linewidth}
-    \centering
-    \begin{minipage}{0.45\linewidth}
-		\begin{table}[H]
-		  \setlength{\tabcolsep}{4pt}
-		  \centering
-		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
-			  \toprule
-			  Severity & \multicolumn{2}{r}{Distinct Vulnerabilities} & \multicolumn{2}{r}{Total Vulnerabilities} \\
-			  \midrule
-			  Critical & \numprint{<<&ss0.unique_vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.vulnerabilities.critical>>} \\
-			  High & \numprint{<<&ss0.unique_vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.vulnerabilities.high>>} \\
-			  Medium & \numprint{<<&ss0.unique_vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.vulnerabilities.medium>>} \\
-			  Low & \numprint{<<&ss0.unique_vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.low>>} & \numprint{<<&ss0.vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.vulnerabilities.low>>} \\
-			  \midrule
-			  Total & & \numprint{<<&ss0.unique_vulnerabilities.total>>} & & \numprint{<<&ss0.vulnerabilities.total>>} \\
-			  \bottomrule
-		  \end{tabular}
-		  \vspace{3mm} \caption{Number of Vulnerabilities by Severity Level}
-		  \label{tab:vulns-by-severity}
-		\end{table}
-	\end{minipage}
-	\hspace{0.05\linewidth}
-	\begin{minipage}{0.45\linewidth}
-		\begin{figure}[H]
-			\centering
-			\scalegraphics{top-five-vulnerabilities-count}{Top Vulnerabilities by Occurrence}
-		\end{figure}
-	\end{minipage}
-\end{minipage}
-
-\vspace{0.2in}
-Additionally, the top high-risk \glspl{host} and top risk-based \glspl{vulnerability} are displayed in \autoref{fig:top-five-high-risk-hosts} and \autoref{fig:top-five-risk-based-vulnerabilities}.  For more information about these risk calculations, refer to \autoref{tab:risk-rating-system}: \nameref{tab:risk-rating-system}.
+This report provides the results of a CISA Cyber Hygiene (CyHy) assessment of <<&owner.agency.acronym>> conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
+For more information about these risk calculations, refer to the Methodology page and FAQs in the Attachment page.
 
 \begin{minipage}{\linewidth}
     \centering
     \begin{minipage}{0.45\linewidth}
 		\begin{figure}[H]
 			\centering
-			\scalegraphics{top-five-high-risk-hosts}{Top High-Risk Hosts}
+			\scalegraphics{top-five-high-risk-hosts}{The top five hosts with the
+			greatest security risk, weighted by vulnerability severity}
 		\end{figure}
 	\end{minipage}
     \hspace{0.05\linewidth}
     \begin{minipage}{0.45\linewidth}
 		\begin{figure}[H]
 			\centering
-			\scalegraphics{top-five-risk-based-vulnerabilities}{Top Risk-Based Vulnerabilities}
+			\scalegraphics{top-five-risk-based-vulnerabilities}{The top five
+			vulnerabilities with the greatest combined risk based on their
+			severity (CVSS score) and how often they were detected across assets}
 		\end{figure}
 	\end{minipage}
 \end{minipage}
+
+\vspace{0.5in}
+\begin{table*}[h!]
+  \setlength{\tabcolsep}{6pt}
+  \centering
+  \rowcolors{2}{white}{row-gray}
+  \begin{tabular}{p{4.75in}rrr}
+	  \toprule
+	  Vulnerability Name & Severity & Hosts & CVSS Score \\
+	  \midrule
+	  <<#top_10_vulnerability_occurrence>><<&plugin_name>> & <<&severity>> & <<&count>> & <<&cvss_base_score>> \\
+	  <</top_10_vulnerability_occurrence>>
+	  \bottomrule
+  \end{tabular}
+  \vspace{3mm} \caption{The Top 10 Vulnerabilities by Common Vulnerability Scoring System (CVSS)}
+  \label{tab:top-ten-vulnerabilities}
+\end{table*}
+<<^top_10_vulnerability_occurrence>>\begin{center}There were no vulnerabilities detected in the latest scans.\end{center}<</top_10_vulnerability_occurrence>>
 
 %% EXPIRING SOON FALSE POSITIVE alert message; only display if there are FPs expiring soon
 <<#expiring_soon_false_positive_tickets_count>>
 \vspace*{10mm}
 {\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
 See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
-
-\clearpage
-
-The most frequently detected operating systems and services for \gls{AGENCY} are displayed in \autoref{tab:top-operating-systems} and  \autoref{tab:top-services} respectively.
-
-\begin{minipage}{\linewidth}
-    \centering
-    \begin{minipage}{0.45\linewidth}
-		\begin{table}[H]
-		  \setlength{\tabcolsep}{4pt}
-		  \centering
-		  \begin{tabular}{p{2.0in}rr}
-			  \toprule
-			  Operating System & \multicolumn{2}{c}{Detections} \\
-			  \midrule
-			  <<#top_operating_systems>><<&operating_system>> & \numprint{<<&percent>>}\% & \numprint{<<&count>>} \\
-			  <</top_operating_systems>>
-			  \bottomrule
-		  \end{tabular}
-		  \vspace{3mm} \caption{Top Operating Systems Detected}\label{tab:top-operating-systems}
-		\end{table}
-		<<^top_operating_systems>>\begin{center}No Operating Systems Detected\end{center}<</top_operating_systems>>
-	\end{minipage}
-    \hspace{0.05\linewidth}
-    \begin{minipage}{0.45\linewidth}
-		\begin{table}[H]
-		  \setlength{\tabcolsep}{4pt}
-		  \centering
-		  \begin{tabular}{p{2.0in}rr}
-			  \toprule
-			  Service & \multicolumn{2}{c}{Detections} \\
-			  \midrule
-			  <<#top_services>><<&service_name>> & \numprint{<<&percent>>}\% & \numprint{<<&count>>} \\
-			  <</top_services>>
-			  \bottomrule
-		  \end{tabular}
-		  \vspace{3mm} \caption{Top Services Detected}\label{tab:top-services}
-		\end{table}
-		<<^top_services>>\begin{center}No Services Detected\end{center}<</top_services>>
-	\end{minipage}
-\end{minipage}
-
-\vspace{0.2in}
-The next two figures illustrate how quickly \gls{AGENCY} responds to \glspl{vulnerability} that have been identified.  \autoref{fig:vuln-responsiveness-days-to-close} shows how long it has taken \gls{AGENCY} to mitigate vulnerabilities of each severity level<<#calc.ss0_tix_closed_after_date_tex>> (for vulnerabilities mitigated since \usvardate\formatdate<<&calc.ss0_tix_closed_after_date_tex>>)<</calc.ss0_tix_closed_after_date_tex>>, while \autoref{fig:vuln-responsiveness-days-open} shows the median ages of current \glspl{active vulnerability}.  \Gls{vulnerability age} is based on the \gls{initial detection} date by \gls{CyHy}.
-
-\begin{figure}[H]
-	\centering
-	\scalegraphics{vuln-responsiveness-days-to-close}{Median Time in Days to Mitigate Vulnerabilities}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\scalegraphics{vuln-responsiveness-days-open}{Median Age in Days of Active Vulnerabilities}
-\end{figure}
-
-\clearpage
-
-\autoref{fig:critical-vuln-ages-over-time} displays the number of active critical \glspl{vulnerability} that were less than 30 days old and more than 30 days old, as of the date indicated on the graph.  \Gls{vulnerability age} is based on the \gls{initial detection} date by \gls{CyHy}.
-
-\begin{figure}[H]
-	\centering
-	\scalegraphics{critical-vuln-ages-over-time}{Critical Vulnerability Age Over Time}
-\end{figure}
-
-\vspace{0.2in}
-\autoref{fig:active-critical-age-distribution} and \autoref{tab:active-critical-age-summary} provide an age breakdown of every currently active critical vulnerability for \gls{AGENCY}.
-
-\begin{figure}[H]
-	\centering
-	\scalegraphics{active-critical-age-distribution}{Active Critical Vulnerability Age}
-\end{figure}
-
-\vspace{0.2in}
-\begin{table}[h]
-  \setlength{\tabcolsep}{8pt}
-  \centering
-  \begin{tabular}{l<<#active_critical_age_counts>>r<</active_critical_age_counts>>}
-	  \toprule
-	  <<#active_critical_age_counts>>& <<&bucket_range>> <</active_critical_age_counts>>\\
-	  <<#active_critical_age_counts>>& Days <</active_critical_age_counts>>\\
-	  \midrule
-	  Active Critical Vulnerabilities <<#active_critical_age_counts>>& \numprint{<<&count>>} <</active_critical_age_counts>>\\
-	  \bottomrule
-  \end{tabular}
-  \vspace{3mm} \caption{Active Critical Vulnerability Age Summary}\label{tab:active-critical-age-summary}
-\end{table}
 
 \clearpage
 
