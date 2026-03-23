@@ -1303,7 +1303,7 @@ class MyHorizontalBubbleChart(object):
             ax.annotate(
                 "{:,d}".format(self.data[i]),
                 xy=(self.x_values[i], self.y_values[i] - 0.5),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=50,
                 weight="bold",
@@ -1312,7 +1312,7 @@ class MyHorizontalBubbleChart(object):
             ax.annotate(
                 "{}".format(self.categories[i]),
                 xy=(self.x_values[i], self.y_values[i] - 2.25),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=22,
                 weight="bold",

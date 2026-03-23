@@ -127,6 +127,7 @@ COLOR_CRITICAL = "#fc6869"
 COLOR_HIGH = "#fd9a9b"
 COLOR_MEDIUM = "#fecb6e"
 COLOR_LOW = "#fffe9f"
+COLOR_SSVC_GREEN = "#d7e3bf"
 
 BLUE = "#5c90ba"
 GREEN = "#7bbe5e"
@@ -1234,6 +1235,46 @@ class ReportGenerator(object):
             # have overlapping bubbles
             bubble_sizes.append(2 * vulns_ranked[severity] + 10)
         return bubble_sizes
+
+    def __figure_ssvc_vuln_remediation_deadlines(self):
+        """Generate figure showing distribution of SSVC-based remediation deadlines for open tickets."""
+        deadline_buckets = [
+            "OVERDUE",    # Tickets with remediation deadlines in the past
+            "<5 DAYS",    # Tickets due less than 5 days from now
+            "5-10 DAYS",  # Tickets due 5.0 - 9.9999... days from now
+            "10-21 DAYS", # Tickets due 10.0 - 20.9999... days from now
+            "21+ DAYS",   # Tickets due 21.0 or more days from now
+        ]
+
+        # Build list of counts of open tickets in each SSVC remediation
+        # deadline category, in the same order as deadline_buckets list above
+        tickets_by_deadline_counts = [0, 0, 0, 0, 0]
+        for t in self.__results["tickets_0"]:
+            if t.get("remediation_deadline"):
+                if t["remediation_deadline"] < self.__generated_time:
+                    tickets_by_deadline_counts[0] += 1
+                else:
+                    days_until_deadline = (t["remediation_deadline"] - self.__generated_time).days
+                    if days_until_deadline < 5:
+                        tickets_by_deadline_counts[1] += 1
+                    elif days_until_deadline < 10:
+                        tickets_by_deadline_counts[2] += 1
+                    elif days_until_deadline < 21:
+                        tickets_by_deadline_counts[3] += 1
+                    else:
+                        tickets_by_deadline_counts[4] += 1
+
+        bubbles = graphs.MyHorizontalBubbleChart(
+            # Magic numbers below are the result of trial and error to get a
+            # chart that looks aesthetically pleasing.
+            [10, 21, 32, 43, 54],       # Bubble x coordinates
+            [6, 6, 6, 6, 6],            # Bubble y coordinates
+            [4.5, 4.5, 4.5, 4.5, 4.5],  # Make all bubbles the same size
+            (COLOR_CRITICAL, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW, COLOR_SSVC_GREEN),
+            [i for i in deadline_buckets],
+            tickets_by_deadline_counts,
+        )
+        bubbles.plot("ssvc-remediation-deadlines", size=1.0)
 
     def __figure_kev_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
