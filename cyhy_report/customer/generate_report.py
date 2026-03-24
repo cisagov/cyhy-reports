@@ -1207,6 +1207,7 @@ class ReportGenerator(object):
         self.__figure_active_vulns_cvss_histogram()
         self.__figure_vulnerability_count_per_host()
         self.__figure_total_vulnerabilities_over_time()
+        self.__figure_all_vulns_over_time()
         self.__figure_critical_high_vulns_over_time()
         self.__figure_medium_low_vulns_over_time()
         self.__figure_vulnerable_hosts_over_time()
@@ -1662,6 +1663,20 @@ class ReportGenerator(object):
             ylabel="Vulnerabilities",
         )
         line.plot("total-vulnerabilities-over-time", figsize=(8, 2.7))
+
+    def __figure_all_vulns_over_time(self):
+        d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
+        data = DataFrame(d1).T.reindex(
+            ["critical", "high", "medium", "low"], axis=1
+        )  # reorder and filter
+        data.columns = [i.title() for i in data.columns]
+        line = graphs.MyLine(
+            data,
+            linecolors=(COLOR_CRITICAL, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW),
+            yscale=self.__best_scale(data),
+            ylabel="Vulnerabilities",
+        )
+        line.plot("vulns-over-time-all-severities", figsize=(8, 4.0))
 
     def __figure_critical_high_vulns_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])

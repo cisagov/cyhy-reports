@@ -7,6 +7,7 @@ import matplotlib
 matplotlib.use("PDF")
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.patheffects as path_effects
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Circle, Ellipse, Rectangle, RegularPolygon, Wedge
 from matplotlib.collections import PatchCollection
@@ -754,10 +755,33 @@ class MyLine(object):
         colors = (c for c in self.linecolors)
         for col in self.df.columns:
             series = self.df[col]
-            series.plot(style=".-", color=colors.next(), linewidth=2, markersize=10)
+            line_color = colors.next()
+            series.plot(ax=ax, style="-", color=line_color, linewidth=4)
+            # Add a gray path effect to the lines to make them more visible
+            # (mainly useful for lighter colors)
+            ax.lines[-1].set_path_effects(
+                [
+                    path_effects.Stroke(linewidth=6, foreground=GREY_MID),
+                    path_effects.Normal(),
+                ]
+            )
+            # Plot the points (markers) on top of the lines to make them more
+            # visible and so that they don't also get the gray path effect,
+            # which makes them look weird
+            series.plot(
+                ax=ax,
+                style=".",
+                color="black",
+                markersize=8,
+                legend=False,
+                # Avoid duplicate legend entries
+                label="_nolegend_",
+            )
         leg = plt.legend(fancybox=True, loc="best")
         # set the alpha value of the legend: it will be translucent
         leg.get_frame().set_alpha(0.5)
+        ax.set_axisbelow(True)
+        ax.yaxis.grid(True)
         ax.set_ylim(ymin=0)  # Force y-axis to go to 0 (must be done after plot)
         fig.set_tight_layout(True)
         plt.savefig(filename + ".pdf")
