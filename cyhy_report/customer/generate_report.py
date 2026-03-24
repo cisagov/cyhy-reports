@@ -3660,33 +3660,13 @@ class ReportGenerator(object):
         return_code = subprocess.call(
             ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
         )
-        assert return_code == 0, "xelatex pass 1 of 3 return code was %s" % return_code
+        assert return_code == 0, "xelatex pass 1 of 2 return code was %s" % return_code
 
-        return_code = subprocess.call(
-            ["makeglossaries", "report"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, (
-            "makeglossaries pass 1 of 2 return code was %s" % return_code
-        )
-
+        # Run xelatex a second time to generate the contents of the TOC
         return_code = subprocess.call(
             ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
         )
-        assert return_code == 0, "xelatex pass 2 of 3 return code was %s" % return_code
-
-        # Both TOC and Glossary run longer than 1 page each, so we need to run them both again to get our numbering correct
-        # See http://tex.stackexchange.com/questions/74163/glossaries-issue-wrong-pagenumber-for-book-and-memoir
-        return_code = subprocess.call(
-            ["makeglossaries", "report"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, (
-            "makeglossaries pass 2 of 2 return code was %s" % return_code
-        )
-
-        return_code = subprocess.call(
-            ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, "xelatex pass 3 of 3 return code was %s" % return_code
+        assert return_code == 0, "xelatex pass 2 of 2 return code was %s" % return_code
 
     def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
         pdf_writer = PdfFileWriter()
