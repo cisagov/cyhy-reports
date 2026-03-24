@@ -739,7 +739,7 @@ of vulnerabilities found. The graphic below details this scanning cadence.
     }
 
     \vspace*{2mm}  % blank line needed on previous line for vertical spacing
-    \RCSourceSansProLightEight{\textit{Service counts are best guesses and may not be 100\% accurate. Details can be found in ``potentially-risky-services.csv'' in \autoref{app:attachments}.
+    \RCSourceSansProLightEight{\textit{Service counts are best guesses and may not be 100\% accurate. Details can be found in ``potentially-risky-services.csv'' on the Attachments page.
 	\\
 	\\
 	* Denotes the possibility of a network \\
@@ -821,7 +821,7 @@ You can find a list of potentially risky services detected as available on your 
 	\scalegraphics{potential-nmi-service-counts}{Potential Network Management Interface (NMI) Service Counts}
 \end{figure}
 
-The details for these findings can be found within the ``potentially-risky-services.csv" file located in \autoref{app:attachments}: \nameref{app:attachments}. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paper clip icon to the left of the CSV file in order to open it.
+The details for these findings can be found within the ``potentially-risky-services.csv" file located on the Attachments page. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paper clip icon to the left of the CSV file in order to open it.
 
 \newpage
 <<#owner_is_federal_executive>>
@@ -836,9 +836,7 @@ subdomains under them. Per the directive, agencies shall monitor
 CT log data for certificates issued that they did not request.
 <<^is_suborg>>
 Detailed information on the certificates discovered by CISA can
-be found in the
-\hyperref[app:attachments]{\texttt{certificates.csv}} attachment
-to this report.
+be found in the ``certificates.csv" attachment to this report.
 <</is_suborg>>
 <<#is_suborg>>
 We have no way to associate an organization's second-level domains
@@ -945,7 +943,7 @@ certificates that have been issued by an unusual organization.
 \section{Executive Summary}
 \label{sec:executive-summary}
 This report provides the results of a CISA Cyber Hygiene (CyHy) assessment of <<&owner.agency.acronym>> conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
-For more information about these risk calculations, refer to the Methodology page and FAQs in the Attachment page.
+For more information about these risk calculations, refer to the Scan Methodology section and the FAQ on the Attachments page.
 
 \begin{minipage}{\linewidth}
     \centering
@@ -997,14 +995,14 @@ For more information about these risk calculations, refer to the Methodology pag
 <<#expiring_soon_false_positive_tickets_count>>
 \vspace*{10mm}
 {\centering\framebox{\parbox{\dimexpr\linewidth-50\fboxsep-50\fboxrule}{\centering\textbf{\color{v-bad}\RCSmallNum \raisebox{.35ex}{\fontencoding{U}\fontfamily{futs}\selectfont\char 66} \color{black} <<&expiring_soon_false_positive_tickets_count>> false positive finding(s) expire within 30 days.\\
-See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-soon-false-positive-findings} for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
+See ``false-positive-findings.csv" on the Attachments page for more information.}}}\par}<</expiring_soon_false_positive_tickets_count>>
 
 \clearpage
 
 <<#display_owner>>\begin{landscape}
 \section{Sub-Organization Summary}
 \label{sec:sub-org-summary}
-This section shows the key Cyber Hygiene metrics for each sub-organization within <<&owner.agency.acronym>>.  A CSV with this data can be found in \autoref{app:attachments}: \nameref{app:attachments}.
+This section shows the key Cyber Hygiene metrics for each sub-organization within <<&owner.agency.acronym>>.  A CSV with this data can be found on the Attachments page.
 \rowcolors{3}{white}{row-gray}
 \setlength{\tabcolsep}{4.5pt}
 \begin{longtable}{p{1.0in}|rr|rr|rrrr|r|rrrr|rrrr}
