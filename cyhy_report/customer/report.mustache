@@ -344,53 +344,10 @@
   \sectionmark{#1}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Acronym / Glossary Definitions
+%%% Table of Contents Setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[acronym]{glossaries}
-\makeglossaries
-\newacronym{AGENCY}{<<&owner.agency.acronym>>}{<<&owner.agency.name>>}
-\newacronym{AWS}{AWS}{Amazon Web Services}
-\newacronym{CIRCIA}{CIRCIA}{Cyber Incident Reporting for Critical Infrastructure Act of 2022}
-\newacronym[description={Cybersecurity and Infrastructure Security Agency [\href{https://www.cisa.gov}{https://www.cisa.gov}]}]{CISA}{CISA}{Cybersecurity and Infrastructure Security Agency}
-\newacronym{CSV}{CSV}{Comma-Separated Values}
-\newacronym{CT}{CT}{Certificate transparency}
-\newacronym{CyHy}{CyHy}{Cyber Hygiene}
-\newacronym[description={Common Vulnerabilities and Exposures; for more information refer to \href{https://cve.mitre.org/about/faqs.html}{https://cve.mitre.org/about/faqs.html}}]{CVE}{CVE}{Common Vulnerabilities and Exposures}
-\newacronym[description={Common Vulnerability Scoring System; for more information refer to \href{https://www.first.org/cvss/v2}{https://www.first.org/cvss/v2}}]{CVSS}{CVSS}{Common Vulnerability Scoring System}
-\newacronym{DNS}{DNS}{Domain Name Service}
-\newacronym{DNSSEC}{DNSSEC}{Domain Name Service Security Extension}
-\newacronym{FTP}{FTP}{File Transfer Protocol}
-\newacronym{HTTP}{HTTP}{Hypertext Transfer Protocol}
-\newacronym{HTTPS}{HTTPS}{Hypertext Transfer Protocol Secure}
-\newacronym{IP}{IP}{Internet Protocol}
-\newacronym{IT}{IT}{Information Technology}
-\newacronym[longplural={Known Exploited Vulnerabilities}]{KEV}{KEV}{Known Exploited Vulnerability}
-\newacronym[description={National Institute of Standards and Technology; for more information refer to \href{http://www.nist.gov}{http://www.nist.gov}}]{NIST}{NIST}{National Institute of Standards and Technology}
-\newacronym[description={National Vulnerability Database; for more information refer to \href{https://nvd.nist.gov}{https://nvd.nist.gov}}]{NVD}{NVD}{National Vulnerability Database}
-\newacronym{OS}{OS}{Operating System}
-\newacronym{POAM}{POA\&M}{Plan Of Action and Milestones}
-\newacronym{RRS}{RRS}{Risk Rating System}
-\newacronym{RVWP}{RVWP}{Ransomware Vulnerability Warning Pilot}
-\newacronym{SMTP}{SMTP}{Simple Mail Transfer Protocol}
-\newacronym{SSH}{SSH}{Secure Shell}
-\newacronym{TCP}{TCP}{Transmission Control Protocol}
-
-\newglossaryentry{active vulnerability}{name={active vulnerability}, plural={active vulnerabilities}, description={A vulnerability that was detected in the most recent scan of a host used for this report}}
-\newglossaryentry{false positive}{name={false positive}, description={Any normal or expected behavior that is identified in this report as a potentially exploitable vulnerability}}
-\newglossaryentry{host}{name={host}, description={A device that has a least one open port/listening service}}
-\newglossaryentry{host scan}{name={host scan}, description={A scan of all assets to identify hosts}}
-\newglossaryentry{initial detection}{name={initial detection}, description={The initial point in time when Cyber Hygiene scans identified a vulnerability. This date is used to calculate the vulnerability's age}}
-\newglossaryentry{IP address}{name={IP address}, description={A numerical label that identifies each device using the Internet Protocol to communicate over a network}}
-\newglossaryentry{known exploited vulnerability}{name={known exploited vulnerability}, description={A vulnerability listed in \href{https://www.cisa.gov/known-exploited-vulnerabilities-catalog}{CISA's catalog of known exploited vulnerabilities}. For more information, please refer to \autoref{sec:known-exploited-vulnerabilities}: \nameref{sec:known-exploited-vulnerabilities}}, plural={known exploited vulnerabilities}}
-\newglossaryentry{latest detection}{name={latest detection}, description={The most recent time when Cyber Hygiene scans identified a particular vulnerability}}
-\newglossaryentry{mitigation detection}{name={mitigation detection}, description={The date when a previously identified vulnerability was no longer detected by Cyber Hygiene scans}}
-\newglossaryentry{service}{name={service}, description={An application running at the network application layer that provides communications capabilities across an IP computer network}}
-\newglossaryentry{severity}{name={severity}, description={Please review the following guide for vulnerability severity scoring information: \href{https://www.first.org/cvss/v2/guide}{https://www.first.org/cvss/v2/guide}}}
-\newglossaryentry{vulnerability}{name={vulnerability}, plural={vulnerabilities}, description={A weakness in an information system, system security procedures, internal controls, or implementation that could be exploited by a threat source}}
-\newglossaryentry{vulnerability age}{name={vulnerability age}, description={The time between a vulnerability's initial detection date and its latest detection date}}
-\newglossaryentry{vulnerable host}{name={vulnerable host}, description={A host with at least one vulnerability detected on the most recent scan used for this report}}
-\newglossaryentry{vulnerability scan}{name={vulnerability scan}, description={A vulnerability scan on all hosts identified during host scan}}
-
+% Specify name of the TOC as "Table of Contents" instead of default "Contents"
+\renewcommand{\contentsname}{Table of Contents}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Front Matter
@@ -605,11 +562,11 @@ of vulnerabilities found. The graphic below details this scanning cadence.
 
       \vspace*{1mm}  % blank line needed on previous line for vertical spacing
       {\RCSourceSansProSemiBoldSixteen <<#calc.address_scan_start_date_tex>>\usvardate\formatdate<<&calc.address_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.address_scan_end_date_tex>><</calc.address_scan_start_date_tex>><<^calc.address_scan_start_date_tex>>No assets scanned yet<</calc.address_scan_start_date_tex>>}\\
-      {\RCSourceSansProTwelve Completed \gls{host scan} on all assets}
+      {\RCSourceSansProTwelve Completed host scan on all assets}
 
       \vspace*{3mm}  % blank line needed on previous line for vertical spacing
       {\RCSourceSansProSemiBoldSixteen <<#calc.vuln_scan_start_date_tex>>\usvardate\formatdate<<&calc.vuln_scan_start_date_tex>> \textemdash{} \usvardate\formatdate<<&calc.vuln_scan_end_date_tex>><</calc.vuln_scan_start_date_tex>><<^calc.vuln_scan_start_date_tex>>No vulnerability scans yet<</calc.vuln_scan_start_date_tex>>}\\
-      {\RCSourceSansProTwelve Last \gls{vulnerability scan} on all hosts}
+      {\RCSourceSansProTwelve Last vulnerability scan on all hosts}
 
       \vspace*{4mm}  % blank line needed on previous line for vertical spacing
       \begin{minipage}[t]{0.45\textwidth}
@@ -802,7 +759,7 @@ of vulnerabilities found. The graphic below details this scanning cadence.
 \section{Binding Operational Directive 26-XX --- KEV-IN}
 \label{sec:bod-26-xx}
 
-\Glspl{vulnerability} that have previously been used to exploit public and
+Vulnerabilities that have previously been used to exploit public and
 private organizations are a frequent attack vector for malicious cyber actors,
 particularly for nation-states that work to compromise U.S. critical
 infrastructure to steal sensitive information, disrupt operations, and
@@ -811,7 +768,7 @@ agencies and the federal enterprise. It is essential to aggressively remediate
 known exploited vulnerabilities to protect federal information systems and
 reduce cyber incidents.
 
-\gls{CISA} issued BOD 26-XX [TODO: add URL link when available] to improve mission
+CISA issued BOD 26-XX [TODO: add URL link when available] to improve mission
 readiness across the federal government by efficiently prioritizing the most
 important vulnerabilities for fast action. It divides vulnerability remediation
 into four categories of urgency based on the following variables:
@@ -820,7 +777,8 @@ into four categories of urgency based on the following variables:
 \begin{itemize}
 	\setlength{\parskip}{0pt}  % Minimize vertical spacing
 	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
-	\item Is the vulnerability, as identified by a \gls{CVE} identifier, on CISA's
+	\item Is the vulnerability, as identified by a Common Vulnerabilities and
+	Exposures (CVE) identifier, on CISA's
 	\href{https://www.cisa.gov/known-exploited-vulnerabilities}{Known Exploitable Vulnerabilities catalog}?
 	\item Is the vulnerable information system internet-exposed?
 	\item Is the adversary able to automate all the steps necessary to exploit
@@ -852,7 +810,7 @@ This directive supersedes
 
 Threat actors often use certain classes of network devices to gain unrestricted access to organizational networks leading to full scale compromises. Inadequate security, misconfigurations, and out-of-date software make these devices more vulnerable to exploitation. The risk is further compounded if device management interfaces are connected directly to, and accessible from, the public-facing Internet. Most device management interfaces are designed to be accessed from dedicated physical interfaces and/or management networks and are not meant to be accessible directly from the public Internet.
 
-\gls{CISA} <<#owner_is_federal_executive>>issued \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-23-02}{Binding Operational Directive (BOD) 23-02} to push the federal government to take steps toward reducing the attack surface created by insecure or misconfigured management interfaces across certain classes of devices. The BOD requires networked management interfaces (NMIs) using certain protocols over the Internet to be removed from the public Internet or to be protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture (ZTA) within 14 days of discovery.<</owner_is_federal_executive>><<^owner_is_federal_executive>>recommends that networked management interfaces (NMIs) using certain protocols over the Internet be removed from the public Internet or be protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture (ZTA).<</owner_is_federal_executive>>
+CISA <<#owner_is_federal_executive>>issued \href{https://www.cisa.gov/news-events/directives/binding-operational-directive-23-02}{Binding Operational Directive (BOD) 23-02} to push the federal government to take steps toward reducing the attack surface created by insecure or misconfigured management interfaces across certain classes of devices. The BOD requires networked management interfaces (NMIs) using certain protocols over the Internet to be removed from the public Internet or to be protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture (ZTA) within 14 days of discovery.<</owner_is_federal_executive>><<^owner_is_federal_executive>>recommends that networked management interfaces (NMIs) using certain protocols over the Internet be removed from the public Internet or be protected by capabilities that enforce access control to the interface through a policy enforcement point separate from the interface itself as part of a Zero Trust Architecture (ZTA).<</owner_is_federal_executive>>
 
 We also recommend reviewing all hosts with potentially risky open services, especially if they are functioning as networked management interfaces, to ensure that each service is intended to be available to the public and, where applicable, the service is up to date on the latest version, correctly configured, and uses strong authentication.
 
@@ -870,31 +828,30 @@ The details for these findings can be found within the ``potentially-risky-servi
 \section{Emergency Directive 19-01 --- New Certificates Summary}
 \label{sec:ed1901}
 Issued on 22 January 2019, Emergency Directive (ED) 19-01 requires
-\gls{CISA} to assist Federal agencies in identifying newly added
-certificates to \gls{CT} logs for agency domains. \gls{CISA} is
+CISA to assist Federal agencies in identifying newly added
+certificates to Certificate Transparency (CT) logs for agency domains. CISA is
 supporting the directive by providing certificate information found in
-\gls{CT} log entries for known agency second-level domains and all
+CT log entries for known agency second-level domains and all
 subdomains under them. Per the directive, agencies shall monitor
-\gls{CT} log data for certificates issued that they did not request.
+CT log data for certificates issued that they did not request.
 <<^is_suborg>>
-Detailed information on the certificates discovered by \gls{CISA} can
+Detailed information on the certificates discovered by CISA can
 be found in the
 \hyperref[app:attachments]{\texttt{certificates.csv}} attachment
-within the agency's weekly Cyber Hygiene report.
+to this report.
 <</is_suborg>>
 <<#is_suborg>>
 We have no way to associate an organization's second-level domains
 with its various sub-organizations, so all domains are reported within
 the parent organization's overall weekly Cyber Hygiene report.  You
-may need to contact your technical POC(s) listed in Section
-\ref{subsec:points-of-contact} of this report to get the detailed
+may need to contact your technical POC(s) to get the detailed
 information for your sub-organization's domains.
 <</is_suborg>>
 
 <<^is_suborg>>
 We recommend focusing on validating that newly-added certificates were
 purposefully issued; new certificates issued without a known purpose
-may indicate \gls{DNS} infrastructure tampering. The issuing
+may indicate DNS infrastructure tampering. The issuing
 organization table is included to help identify possible outlier
 certificates that have been issued by an unusual organization.
 <</is_suborg>>
@@ -1047,7 +1004,7 @@ See \autoref{app:expiring-soon-false-positive-findings}: \nameref{app:expiring-s
 <<#display_owner>>\begin{landscape}
 \section{Sub-Organization Summary}
 \label{sec:sub-org-summary}
-This section shows the key \gls{CyHy} metrics for each sub-organization within \gls{AGENCY}.  A \gls{CSV} with this data can be found in \autoref{app:attachments}: \nameref{app:attachments}.
+This section shows the key Cyber Hygiene metrics for each sub-organization within <<&owner.agency.acronym>>.  A CSV with this data can be found in \autoref{app:attachments}: \nameref{app:attachments}.
 \rowcolors{3}{white}{row-gray}
 \setlength{\tabcolsep}{4.5pt}
 \begin{longtable}{p{1.0in}|rr|rr|rrrr|r|rrrr|rrrr}
