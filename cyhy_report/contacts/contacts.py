@@ -12,8 +12,10 @@ Options:
 """
 
 # Standard Python Libraries
+from __future__ import print_function
 from csv import DictWriter
 import StringIO
+import sys
 
 # Third-Party Libraries
 from docopt import docopt
@@ -54,7 +56,16 @@ def generate_contacts_csv(db):
                     "Contact Type": contact.get("type", "N/A"),
                 }
             )
-            writer.writerow(row)
+            try:
+                writer.writerow(row)
+            except UnicodeEncodeError as e:
+                # We catch this exception so we can output a helpful
+                # message with the context to allow the user to fix the
+                # request document.  Without this we would have to go in
+                # and edit this file to determine which org is the
+                # problem child.
+                print("Non-ASCII character in contact of org {org_id}: {exception}".format(org_id=doc["_id"], exception=e), file=sys.stderr)
+                raise
 
     return output
 
@@ -63,4 +74,7 @@ def main():
     """Output all points of contact in the CyHy database in CSV format."""
     args = docopt(__doc__, version="v0.0.1")
     db = database.db_from_config(args["--section"])
-    print(generate_contacts_csv(db).getvalue())
+    try:
+        print(generate_contacts_csv(db).getvalue())
+    except UnicodeDecodeError:
+        print("Unable to handle non-ASCII characters in a request doc.", file=sys.stderr)
