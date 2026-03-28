@@ -23,6 +23,7 @@ from docopt import docopt
 # cisagov Libraries
 from cyhy.db import database
 
+
 def generate_contacts_csv(db):
     """Generate a CSV file containing all points of contact in the CyHy database."""
     output = StringIO.StringIO()

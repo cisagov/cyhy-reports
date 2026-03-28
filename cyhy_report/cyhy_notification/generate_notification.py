@@ -125,12 +125,13 @@ RISKY_SERVICES_MAP = {
 # For BOD 23-02, we define a list of services that may indicate potential
 # publicly-accessible networked management interfaces that should be protected.
 POTENTIAL_NMI_SERVICES = [
-    "microsoft-ds",   # SMB
+    "microsoft-ds",  # SMB
     "ms-wbt-server",  # RDP
-    "rtelnet",        # Telnet
-    "smbdirect",      # SMB
-    "telnet",         # Telnet
+    "rtelnet",  # Telnet
+    "smbdirect",  # SMB
+    "telnet",  # Telnet
 ]
+
 
 class NotificationGenerator(object):
     """The class for generating notification documents."""
@@ -281,14 +282,14 @@ class NotificationGenerator(object):
             self.__cyhy_db.TicketDoc.collection.aggregate(
                 [
                     {"$match": {"_id": {"$in": ticket_ids}}},
-                    {"$sort":
-                        {
+                    {
+                        "$sort": {
                             "details.kev": -1,
                             "details.cvss_base_score": -1,
                             "time_opened": 1,
-                            "details.name": 1
+                            "details.name": 1,
                         },
-                    }
+                    },
                 ],
                 cursor={},
                 allowDiskUse=True,

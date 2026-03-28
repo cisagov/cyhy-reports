@@ -52,7 +52,7 @@ setup(
     description="Reporting components for Cyber Hygiene",
     # long_description=open('README.txt').read(),
     install_requires=[
-        # pip install of older basemap fails: see 
+        # pip install of older basemap fails: see
         # https://github.com/matplotlib/basemap/issues/251
         # Pin to basemap 1.2.2, the last release before they changed their package
         # structure.  Newer versions of basemap are once again installable via pip
