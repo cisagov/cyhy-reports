@@ -1423,32 +1423,6 @@ class ReportGenerator(object):
             for i in data:
                 self.__latex_escape_structure_make_cve_urls(i)
 
-    def __latex_convert_cve_to_url(self, data):
-        """assumes that all sequences contain dicts"""
-        if isinstance(data, dict):
-            for k, v in data.items():
-                if k.endswith("_tex"):  # skip special tex values
-                    continue
-                if isinstance(v, basestring):
-                    cve_ids = set(re.findall(CVE_ID_RE, v))
-                    if cve_ids:
-                        for (
-                            cve
-                        ) in (
-                            cve_ids
-                        ):  # LaTeX href format:  \href{https://www.dhs.gov}{https://www.dhs.gov}
-                            data[k] = data[k].replace(
-                                cve, "\href{" + CVE_URL.format(cve) + "}{" + cve + "}"
-                            )
-                else:
-                    self.__latex_convert_cve_to_url(v)
-        elif isinstance(data, (list, tuple)):
-            for i in data:
-                self.__latex_convert_cve_to_url(i)
-
-    def led(self, data):
-        self.__latex_escape_dict(data)
-
     def __convert_levels_to_text(self, data, field):
         for row in data:
             row[field] = SEVERITY_LEVELS[int(row[field])]
