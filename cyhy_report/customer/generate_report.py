@@ -78,17 +78,10 @@ STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
 # generated is from _port scans_ of "potentially risky services".
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 OMITTED_MESSAGE_NO_VULNS = "No Vulnerabilities Detected\nFigure Omitted"
-OMITTED_MESSAGE_NO_VULNS_MITIGATED = "No Vulnerabilities Mitigated\nFigure Omitted"
-OMITTED_MESSAGE_TOO_MANY_VULNS = "Too Many Vulnerabilities\nTo Display\nFigure Omitted"
 OMITTED_MESSAGE_NO_SERVICES = "No Services Detected\nFigure Omitted"
-OMITTED_MESSAGE_NO_OPERATING_SYSTEMS = "No Operating Systems Detected\nFigure Omitted"
 OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA = (
     "No Vulnerability Responsiveness\nData Available\nFigure Omitted"
 )
-OMITTED_MESSAGE_NO_CRITICALS_TO_DISPLAY = (
-    "No Critical Vulnerabilities To Display\nFigure Omitted"
-)
-OMITTED_MESSAGE_NO_CRITICALS = "No Critical Vulnerabilities Detected\nFigure Omitted"
 MUSTACHE_FILE = "report.mustache"
 REPORT_JSON = "report.json"
 REPORT_PDF = "report.pdf"
