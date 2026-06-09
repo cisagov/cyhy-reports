@@ -10,8 +10,8 @@ Usage:
 Options:
   -a --anonymize                 Make a sample anonymous notification.
   -d --debug                     Keep intermediate files for debugging.
-  -e --encrypt                   Encrypt with config key and owner keys if
-                                   the owner has a key in the datastore.
+  -e --encrypt                   Encrypt with owner key if the owner has a
+                                 key in the datastore.
   -f --final                     Remove draft watermark.
   -h --help                      Show this screen.
   --version                      Show version.
