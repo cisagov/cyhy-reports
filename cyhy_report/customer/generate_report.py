@@ -214,7 +214,7 @@ class ReportGenerator(object):
         title_date=None,
         final=False,
         anonymize=False,
-        encrypt_key=None,
+        encrypt=False,
         log_report=True,
     ):
         self.__cyhy_db = cyhy_db
@@ -231,7 +231,7 @@ class ReportGenerator(object):
         self.__title_date = title_date
         self.__draft = not final
         self.__anonymize = anonymize
-        self.__encrypt_key = encrypt_key
+        self.__encrypt = encrypt
         self.__report_oid = ObjectId()
         self.__generated_time = utcnow()
         self.__log_report_to_db = log_report
@@ -289,7 +289,7 @@ class ReportGenerator(object):
         self.__run_queries()
 
         # store key if present
-        owner_key = self.__results["owner"].get("key", None)
+        report_key = self.__results["owner"].get("key", None)
 
         # anonymize data if requested
         if self.__anonymize:
@@ -356,9 +356,9 @@ class ReportGenerator(object):
         self.__generate_final_pdf()
 
         # encrypt if requested and possible
-        if self.__encrypt_key != None and owner_key != None:
+        if self.__encrypt and report_key != None:
             self.__encrypt_pdf(
-                REPORT_PDF, ENCRYPTED_REPORT_PDF, self.__encrypt_key, owner_key
+                REPORT_PDF, ENCRYPTED_REPORT_PDF, report_key
             )
             shutil.move(ENCRYPTED_REPORT_PDF, REPORT_PDF)
             was_encrypted = True
@@ -3606,7 +3606,8 @@ class ReportGenerator(object):
         )
         assert return_code == 0, "xelatex pass 3 of 3 return code was %s" % return_code
 
-    def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
+    def __encrypt_pdf(self, name_in, name_out, report_key):
+        """Encrypt a PDF file with a key."""
         pdf_writer = PdfFileWriter()
         pdf_reader = PdfFileReader(open(name_in, "rb"))
 
@@ -3617,7 +3618,7 @@ class ReportGenerator(object):
         for i in xrange(pdf_reader.getNumPages()):
             pdf_writer.addPage(pdf_reader.getPage(i))
 
-        pdf_writer.encrypt(user_pwd=user_key, owner_pwd=owner_key.encode("ascii"))
+        pdf_writer.encrypt(user_pwd=report_key.encode("ascii"))
 
         with file(name_out, "wb") as f:
             pdf_writer.write(f)
@@ -3652,11 +3653,6 @@ def main():
         else:
             title_date = None
 
-        if args["--encrypt"]:
-            report_key = Config(args["--cyhy-section"]).report_key
-        else:
-            report_key = None
-
         print "Generating report for %s ..." % (owner),
         generator = ReportGenerator(
             cyhy_db,
@@ -3667,7 +3663,7 @@ def main():
             title_date=title_date,
             final=args["--final"],
             anonymize=args["--anonymize"],
-            encrypt_key=report_key,
+            encrypt=args["--encrypt"],
             log_report=not args["--nolog"],
         )
         was_encrypted, results = generator.generate_report()

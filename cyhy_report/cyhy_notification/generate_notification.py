@@ -142,7 +142,7 @@ class NotificationGenerator(object):
         debug=False,
         final=False,
         anonymize=False,
-        encrypt_key=None,
+        encrypt=False,
     ):
         """Construct a NotificationGenerator."""
         self.__cyhy_db = cyhy_db
@@ -151,7 +151,7 @@ class NotificationGenerator(object):
         self.__debug = debug
         self.__draft = not final
         self.__anonymize = anonymize
-        self.__encrypt_key = encrypt_key
+        self.__encrypt = encrypt
         self.__generated_time = utcnow()
 
     def generate_notification(self):
@@ -182,7 +182,7 @@ class NotificationGenerator(object):
             return False, self.__results
 
         # Store key if present
-        owner_key = self.__results["owner_request_doc"].get("key")
+        report_key = self.__results["owner_request_doc"].get("key")
 
         # Anonymize data if requested
         if self.__anonymize:
@@ -222,12 +222,11 @@ class NotificationGenerator(object):
             sys.exit(pdf_generated_rc)
 
         # Encrypt if requested and possible
-        if self.__encrypt_key is not None and owner_key is not None:
+        if self.__encrypt and report_key is not None:
             self.__encrypt_pdf(
                 NOTIFICATION_PDF,
                 ENCRYPTED_NOTIFICATION_PDF,
-                self.__encrypt_key,
-                owner_key,
+                report_key,
             )
             shutil.move(ENCRYPTED_NOTIFICATION_PDF, NOTIFICATION_PDF)
             was_encrypted = True
@@ -650,8 +649,8 @@ class NotificationGenerator(object):
 
         return return_code
 
-    def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
-        """Encrypt a PDF file with both a user key and an owner key."""
+    def __encrypt_pdf(self, name_in, name_out, report_key):
+        """Encrypt a PDF file with a key."""
         pdf_writer = PdfFileWriter()
         pdf_reader = PdfFileReader(open(name_in, "rb"))
 
@@ -663,7 +662,7 @@ class NotificationGenerator(object):
         for i in xrange(pdf_reader.getNumPages()):
             pdf_writer.addPage(pdf_reader.getPage(i))
 
-        pdf_writer.encrypt(user_pwd=user_key, owner_pwd=owner_key.encode("ascii"))
+        pdf_writer.encrypt(user_pwd=report_key.encode("ascii"))
 
         with file(name_out, "wb") as f:
             pdf_writer.write(f)
@@ -687,11 +686,6 @@ def main():
     cyhy_db = database.db_from_config(args["--cyhy-section"])
 
     for owner in args["OWNER"]:
-        if args["--encrypt"]:
-            report_key = Config(args["--cyhy-section"]).report_key
-        else:
-            report_key = None
-
         if args["--anonymize"]:
             print("Generating anonymized notification based on {} ...".format(owner)),
         else:
@@ -702,7 +696,7 @@ def main():
             debug=args["--debug"],
             final=args["--final"],
             anonymize=args["--anonymize"],
-            encrypt_key=report_key,
+            encrypt=args["--encrypt"],
         )
         was_encrypted, results = generator.generate_notification()
 
