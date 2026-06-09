@@ -37,7 +37,6 @@ from pyPdf import PdfFileWriter, PdfFileReader
 import unicodecsv as csv
 
 # cisagov Libraries
-from cyhy.core import Config
 from cyhy.db import database
 from cyhy.util import to_json, utcnow
 from cyhy_report.cyhy_notification._version import __version__
