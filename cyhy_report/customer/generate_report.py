@@ -356,7 +356,7 @@ class ReportGenerator(object):
         self.__generate_final_pdf()
 
         # encrypt if requested and possible
-        if self.__encrypt and report_key != None:
+        if self.__encrypt and report_key is not None:
             self.__encrypt_pdf(
                 REPORT_PDF, ENCRYPTED_REPORT_PDF, report_key
             )
