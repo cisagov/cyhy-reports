@@ -97,7 +97,7 @@ def generate_notification_pdfs(db, org_ids, master_report_key):
     for org_id in org_ids:
         logging.info("{} - Starting to create notification PDF".format(org_id))
         generator = NotificationGenerator(
-            db, org_id, final=True, encrypt_key=master_report_key
+            db, org_id, final=True, encrypt=True,
         )
         was_encrypted, results = generator.generate_notification()
         if was_encrypted:
