@@ -3609,19 +3609,23 @@ class ReportGenerator(object):
     def __encrypt_pdf(self, name_in, name_out, report_key):
         """Encrypt a PDF file with a key."""
         pdf_writer = PdfFileWriter()
-        pdf_reader = PdfFileReader(open(name_in, "rb"))
 
-        # metadata copy hack see: http://stackoverflow.com/questions/2574676/change-metadata-of-pdf-file-with-pypdf
-        metadata = pdf_reader.getDocumentInfo()
-        pdf_writer._info.getObject().update(metadata)  # copy metadata to dest
+        with file(name_in, "rb") as f_in:
+            pdf_reader = PdfFileReader(f_in)
+            # Metadata copy hack see:
+            # http://stackoverflow.com/questions/2574676/change-metadata-of-pdf-file-with-pypdf
+            metadata = pdf_reader.getDocumentInfo()
 
-        for i in xrange(pdf_reader.getNumPages()):
-            pdf_writer.addPage(pdf_reader.getPage(i))
+            # Copy metadata to destination
+            pdf_writer._info.getObject().update(metadata)
 
-        pdf_writer.encrypt(user_pwd=report_key.encode("ascii"))
+            for i in xrange(pdf_reader.getNumPages()):
+                pdf_writer.addPage(pdf_reader.getPage(i))
 
-        with file(name_out, "wb") as f:
-            pdf_writer.write(f)
+            pdf_writer.encrypt(user_pwd=report_key.encode("ascii"))
+
+            with file(name_out, "wb") as f_out:
+                pdf_writer.write(f_out)
 
     def __log_report(self):
         report = self.__cyhy_db.ReportDoc()
