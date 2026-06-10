@@ -649,7 +649,7 @@ class NotificationGenerator(object):
         return return_code
 
     def __encrypt_pdf(self, name_in, name_out, report_key):
-        """Encrypt a PDF file with a key."""
+        """Encrypt a report PDF file with a key."""
         pdf_writer = PdfFileWriter()
 
         with file(name_in, "rb") as f_in:
