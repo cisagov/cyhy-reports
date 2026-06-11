@@ -22,7 +22,6 @@ import sys
 
 import docopt
 
-from cyhy.core import Config
 from cyhy.db import database
 from cyhy.util import util
 from cyhy_report.cyhy_notification import NotificationGenerator
@@ -91,13 +90,13 @@ def find_cyhy_parents(db, org_id):
         cyhy_parents.update(find_cyhy_parents(db, request["_id"]))
     return cyhy_parents
 
-def generate_notification_pdfs(db, org_ids, master_report_key): 
+def generate_notification_pdfs(db, org_ids): 
     """Generate all notification PDFs for a list of organizations."""
     num_pdfs_created = 0
     for org_id in org_ids:
         logging.info("{} - Starting to create notification PDF".format(org_id))
         generator = NotificationGenerator(
-            db, org_id, final=True, encrypt_key=master_report_key
+            db, org_id, final=True, encrypt=True,
         )
         was_encrypted, results = generator.generate_notification()
         if was_encrypted:
@@ -141,8 +140,7 @@ def main():
     logging.debug("Will attempt to generate notifications for {} orgs: {}".format(len(notifications_org_ids), notifications_org_ids))
 
     # Create notification PDFs for CyHy orgs
-    master_report_key = Config(args["CYHY_DB_SECTION"]).report_key
-    num_pdfs_created = generate_notification_pdfs(db, notifications_org_ids, master_report_key)
+    num_pdfs_created = generate_notification_pdfs(db, notifications_org_ids)
     logging.info("{} notification PDFs created".format(num_pdfs_created))
 
     # Create a symlink to the latest notifications.  This is for the
