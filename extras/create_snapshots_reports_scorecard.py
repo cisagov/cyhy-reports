@@ -935,10 +935,18 @@ def main():
     if use_docker == 1:
         if (
             subprocess.call(
-                "docker run --rm --volume /etc/cyhy:/etc/cyhy --volume {}:/home/cyhy {}/cyhy-reports:stable cyhy-report -h".format(
-                    WEEKLY_REPORT_BASE_DIR, NCATS_DHUB_URL
-                ),
-                shell=True,
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--volume",
+                    "/etc/cyhy:/etc/cyhy",
+                    "--volume",
+                    "{}:/home/cyhy".format(WEEKLY_REPORT_BASE_DIR),
+                    "{}/cyhy-reports:stable".format(NCATS_DHUB_URL),
+                    "cyhy-report",
+                    "-h",
+                ]
             )
             != 0
         ):
