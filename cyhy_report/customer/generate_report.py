@@ -2963,7 +2963,7 @@ class ReportGenerator(object):
                     }
                 elif self.__snapshots[0].get("descendants_included"):
                     for snap in snapshot_family:
-                        if hostname in snap["hostnames"]:
+                        if hostname in snap.get("hostnames", []):
                             break
                     row = {
                         "owner": snap["owner"],
