@@ -2963,7 +2963,7 @@ class ReportGenerator(object):
                     }
                 elif self.__snapshots[0].get("descendants_included"):
                     for snap in snapshot_family:
-                        if hostname in snap["hostnames"]:
+                        if hostname in snap.get("hostnames", []):
                             break
                     row = {
                         "owner": snap["owner"],
@@ -3640,7 +3640,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v2.0.0")
+    args = docopt(__doc__, version="v2.0.1")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
