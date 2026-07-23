@@ -376,12 +376,13 @@ The colors signify the severity of the findings.\\
 \section{Vulnerability Scoring}
 \label{sec:vulnerability-scoring}
 
+\vspace*{-5mm}  % Reduce vertical spacing
 When a Cyber Hygiene Vulnerability Scanning (CyHy VS) finding includes a Common Vulnerabilities and Exposures
 (CVE) identifier, the severity rating is determined using the following order of sources:
+\vspace*{-10mm}  % Reduce vertical spacing
 \begin{itemize}
   	\setlength{\parskip}{0pt}  % Minimize vertical spacing
   	\setlength{\itemsep}{1pt}  % Minimize vertical spacing
-	\item \href{https://cve.org/}{CVE.org} - Primary source
 	\item National Vulnerability Database (NVD) - CVSS v3.1, then CVSS v3.0
 	\item CVSS v2.0 - Used only if no v3 score is available, with one exception:
 		  a base score of 10.0 will be rated as Critical
