@@ -878,6 +878,27 @@ For more information about these risk calculations, refer to the Scan Methodolog
 \begin{minipage}{\linewidth}
     \centering
     \begin{minipage}{0.45\linewidth}
+		\begin{table}[H]
+		  \setlength{\tabcolsep}{4pt}
+		  \centering
+		  \begin{tabular}{l>{\hspace{3.5pc}}rr>{\hspace{2.5pc}}rr}
+			  \toprule
+			  Severity & \multicolumn{2}{r}{Distinct Vulnerabilities} & \multicolumn{2}{r}{Total Vulnerabilities} \\
+			  \midrule
+			  Critical & \numprint{<<&ss0.unique_vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.critical_pct>>}\% & \numprint{<<&ss0.vulnerabilities.critical>>} \\
+			  High & \numprint{<<&ss0.unique_vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.high_pct>>}\% & \numprint{<<&ss0.vulnerabilities.high>>} \\
+			  Medium & \numprint{<<&ss0.unique_vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.medium_pct>>}\% & \numprint{<<&ss0.vulnerabilities.medium>>} \\
+			  Low & \numprint{<<&ss0.unique_vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.unique_vulnerabilities.low>>} & \numprint{<<&ss0.vulnerabilities.low_pct>>}\% & \numprint{<<&ss0.vulnerabilities.low>>} \\
+			  \midrule
+			  Total & & \numprint{<<&ss0.unique_vulnerabilities.total>>} & & \numprint{<<&ss0.vulnerabilities.total>>} \\
+			  \bottomrule
+		  \end{tabular}
+		  \vspace{3mm} \caption{Number of Vulnerabilities by Severity Level}
+		  \label{tab:vulns-by-severity}
+		\end{table}
+	\end{minipage}
+	\hspace{0.05\linewidth}
+	\begin{minipage}{0.45\linewidth}
 		\begin{figure}[H]
 			\centering
 			\scalegraphics{top-five-high-risk-hosts}{The top five hosts with the
