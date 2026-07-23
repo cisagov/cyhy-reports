@@ -935,6 +935,8 @@ See "false-positive-findings.csv" on the Attachments page for more information.}
 This section shows the key Cyber Hygiene metrics for each sub-organization within <<&owner.agency.acronym>>.  A CSV with this data can be found on the Attachments page.
 \rowcolors{3}{white}{row-gray}
 \setlength{\tabcolsep}{4.5pt}
+\setlength\LTleft{0pt}  % Left-align this longtable (default centers it) because it's very wide
+\setlength\LTright{\fill}  % Push any slack to the right
 \begin{longtable}{p{1.0in}|rr|rr|rrrr|r|rrrr|rrrr}
 	\toprule\label{tab:sub-org-summary}
 	Org & \multicolumn{2}{c|}{Addresses} & \multicolumn{2}{c|}{Hosts} & \multicolumn{4}{c|}{Vulnerabilities Detected} & Services & \multicolumn{4}{c|}{Median Days To Mitigate} & \multicolumn{4}{c}{Median Days Currently Active} \\
@@ -947,6 +949,7 @@ This section shows the key Cyber Hygiene metrics for each sub-organization withi
 		<<&ss0.owner>> Total & \numprint{<<&calc.address_count>>} & \numprint{<<&calc.addresses_scanned_percent>>}\% & \numprint{<<&ss0.host_count>>} & \numprint{<<&ss0.vulnerable_host_count>>} (<<&calc.vuln_host_percent>>\%) & \numprint{<<&ss0.vulnerabilities.critical>>} & \numprint{<<&ss0.vulnerabilities.high>>} & \numprint{<<&ss0.vulnerabilities.medium>>} & \numprint{<<&ss0.vulnerabilities.low>>} & \numprint{<<&ss0.port_count>>} & \numprint{<<&calc.ss0_tix_days_to_close.critical.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.high.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.medium.median>>} & \numprint{<<&calc.ss0_tix_days_to_close.low.median>>} & \numprint{<<&calc.ss0_tix_days_open.critical.median>>} & \numprint{<<&calc.ss0_tix_days_open.high.median>>} & \numprint{<<&calc.ss0_tix_days_open.medium.median>>} & \numprint{<<&calc.ss0_tix_days_open.low.median>>} \\
 	\bottomrule
 \end{longtable}
+\setlength\LTleft{\fill}  % Reset longtable alignment to be centered
 \addtocounter{table}{-1}
 \end{landscape}
 <</display_owner>>
