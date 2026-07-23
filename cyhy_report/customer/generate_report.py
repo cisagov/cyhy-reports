@@ -10,8 +10,8 @@ Usage:
 Options:
   -a --anonymize                 Make a sample anonymous report.
   -d --debug                     Keep intermediate files for debugging.
-  -e --encrypt                   Encrypt with config key and owner keys if
-                                   the owner has a key in the datastore.
+  -e --encrypt                   Encrypt with owner key if the owner has a
+                                 key in the datastore.
   -f --final                     Remove draft watermark.
   -h --help                      Show this screen.
   -n --nolog                     Do not log that this report was created.
@@ -207,7 +207,7 @@ class ReportGenerator(object):
         title_date=None,
         final=False,
         anonymize=False,
-        encrypt_key=None,
+        encrypt=False,
         log_report=True,
     ):
         self.__cyhy_db = cyhy_db
@@ -224,7 +224,7 @@ class ReportGenerator(object):
         self.__title_date = title_date
         self.__draft = not final
         self.__anonymize = anonymize
-        self.__encrypt_key = encrypt_key
+        self.__encrypt = encrypt
         self.__report_oid = ObjectId()
         self.__generated_time = utcnow()
         self.__log_report_to_db = log_report
@@ -282,7 +282,7 @@ class ReportGenerator(object):
         self.__run_queries()
 
         # store key if present
-        owner_key = self.__results["owner"].get("key", None)
+        report_key = self.__results["owner"].get("key", None)
 
         # anonymize data if requested
         if self.__anonymize:
@@ -349,9 +349,9 @@ class ReportGenerator(object):
         self.__generate_final_pdf()
 
         # encrypt if requested and possible
-        if self.__encrypt_key != None and owner_key != None:
+        if self.__encrypt and report_key is not None:
             self.__encrypt_pdf(
-                REPORT_PDF, ENCRYPTED_REPORT_PDF, self.__encrypt_key, owner_key
+                REPORT_PDF, ENCRYPTED_REPORT_PDF, report_key
             )
             shutil.move(ENCRYPTED_REPORT_PDF, REPORT_PDF)
             was_encrypted = True
@@ -2601,7 +2601,7 @@ class ReportGenerator(object):
                     }
                 elif self.__snapshots[0].get("descendants_included"):
                     for snap in snapshot_family:
-                        if hostname in snap["hostnames"]:
+                        if hostname in snap.get("hostnames", []):
                             break
                     row = {
                         "owner": snap["owner"],
@@ -3191,21 +3191,26 @@ class ReportGenerator(object):
         )
         assert return_code == 0, "xelatex pass 2 of 2 return code was %s" % return_code
 
-    def __encrypt_pdf(self, name_in, name_out, user_key, owner_key):
+    def __encrypt_pdf(self, name_in, name_out, report_key):
+        """Encrypt a report PDF file with a key."""
         pdf_writer = PdfFileWriter()
-        pdf_reader = PdfFileReader(open(name_in, "rb"))
 
-        # metadata copy hack see: http://stackoverflow.com/questions/2574676/change-metadata-of-pdf-file-with-pypdf
-        metadata = pdf_reader.getDocumentInfo()
-        pdf_writer._info.getObject().update(metadata)  # copy metadata to dest
+        with file(name_in, "rb") as f_in:
+            pdf_reader = PdfFileReader(f_in)
+            # Metadata copy hack see:
+            # http://stackoverflow.com/questions/2574676/change-metadata-of-pdf-file-with-pypdf
+            metadata = pdf_reader.getDocumentInfo()
 
-        for i in xrange(pdf_reader.getNumPages()):
-            pdf_writer.addPage(pdf_reader.getPage(i))
+            # Copy metadata to destination
+            pdf_writer._info.getObject().update(metadata)
 
-        pdf_writer.encrypt(user_pwd=user_key, owner_pwd=owner_key.encode("ascii"))
+            for i in xrange(pdf_reader.getNumPages()):
+                pdf_writer.addPage(pdf_reader.getPage(i))
 
-        with file(name_out, "wb") as f:
-            pdf_writer.write(f)
+            pdf_writer.encrypt(user_pwd=report_key.encode("ascii"))
+
+            with file(name_out, "wb") as f_out:
+                pdf_writer.write(f_out)
 
     def __log_report(self):
         report = self.__cyhy_db.ReportDoc()
@@ -3220,7 +3225,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v1.2.0")
+    args = docopt(__doc__, version="v2.0.1")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
@@ -3237,11 +3242,6 @@ def main():
         else:
             title_date = None
 
-        if args["--encrypt"]:
-            report_key = Config(args["--cyhy-section"]).report_key
-        else:
-            report_key = None
-
         print "Generating report for %s ..." % (owner),
         generator = ReportGenerator(
             cyhy_db,
@@ -3252,7 +3252,7 @@ def main():
             title_date=title_date,
             final=args["--final"],
             anonymize=args["--anonymize"],
-            encrypt_key=report_key,
+            encrypt=args["--encrypt"],
             log_report=not args["--nolog"],
         )
         was_encrypted, results = generator.generate_report()
