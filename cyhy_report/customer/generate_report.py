@@ -410,17 +410,24 @@ class ReportGenerator(object):
             except VulnScanNotFoundException as e:
                 print "\n  Warning (non-fatal): {}".format(e.message)
                 # The vuln_scan has likely been archived; get the vuln_scan _id and time from the
-                #   VulnScanNotFoundException and set description and solution to 'Not available'
+                # VulnScanNotFoundException and set description, solution, and plugin_output to
+                # 'Not available'
                 v = {
                     "_id": e.vuln_scan_id,
-                    "time": e.vuln_scan_time,
                     "description": "Not available",
+                    "plugin_output": "Not available",
                     "solution": "Not available",
+                    "time": e.vuln_scan_time,
                 }
             # flatten structure by copying details to ticket root
             t.update(t["details"])
             # copy some parts of vuln into ticket
-            t.update({k: v[k] for k in ["description", "solution"]})
+            t.update(
+                {
+                    k: v.get(k, "Not available")
+                    for k in ["description", "plugin_output", "solution"]
+                }
+            )
             t["last_detected"] = v[
                 "time"
             ]  # rename latest vuln's 'time' to more useful 'last_detected' in ticket
@@ -2289,6 +2296,7 @@ class ReportGenerator(object):
             "solution",
             "source",
             "plugin_id",
+            "plugin_output",
         ]
 
         data_fields = [
@@ -2313,12 +2321,14 @@ class ReportGenerator(object):
             "solution",
             "source",
             "source_id",
+            "plugin_output",
         ]
 
-        # Remove ip_int column if we are trying to be anonymous
+        # Remove ip_int and plugin_output columns if we are trying to be anonymous
         if self.__anonymize:
-            header_fields.remove("ip_int")
-            data_fields.remove("ip_int")
+            for f in ("ip_int", "plugin_output"):
+                header_fields.remove(f)
+                data_fields.remove(f)
     
         # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
