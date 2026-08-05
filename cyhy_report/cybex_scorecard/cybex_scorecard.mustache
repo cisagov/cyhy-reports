@@ -390,17 +390,28 @@ The data from the table below is available in CSV format in the \hyperref[sec:at
 
 \rowcolors{13}{white}{row-light-blue}
 \setlength{\tabcolsep}{6pt}
-\begin{longtable}{>{\raggedright}p{3.5in}||rrr||rr}
+% The three "Active Vulnerabilities" columns (Critical Severity, High
+% Severity, Known Exploited) use this fixed-width, right-aligned column
+% type instead of the default "r" so they all render at the same width.
+% With auto-width "r" columns, the wider "Exploited" header and the
+% "Not currently scanned for vulnerabilities" \multicolumn blurb would
+% force the Known Exploited column to be wider than the other two. The
+% 0.6in width is chosen so that blurb still fits on a single line across
+% the three-column span.
+\newcolumntype{V}{>{\raggedleft\arraybackslash}p{0.6in}}
+\begin{longtable}{>{\raggedright}p{3.5in}||VVV||rr}
   \toprule
     & \multicolumn{3}{c||}{\textbf{Active Vulnerabilities}} &
       \multicolumn{2}{c}{\textbf{BOD 18-01}}\\
     & \multicolumn{3}{c||}{\textbf{As of \monthdayonly\formatdate<<&title_date_tex>>}} &
       \multicolumn{2}{c}{\textbf{Email and Web Security}}\\
-    & \textbf{Critical-Severity} &
-      \textbf{High-Severity} &
-      \textbf{Known Exploited} &
+    & \textbf{Critical} &
+      \textbf{High} &
+      \textbf{Known} &
       \textbf{Web} & \textbf{Email}\\
-    & \ & \ & \ &
+    & \textbf{Severity} &
+      \textbf{Severity} &
+      \textbf{Exploited} &
       \textbf{Compliant} & \textbf{Compliant}\\
     \midrule \endhead\label{tab:overall-bod-results-by-agency}\textbf{\MakeUppercase{<<&scorecard_name>>} GOVERNMENT TOTAL} &
       \textbf{\numprint{<<&federal_totals.vuln-scan.metrics.open_criticals>>}} &
