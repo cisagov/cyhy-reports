@@ -3037,20 +3037,16 @@ class ScorecardGenerator(object):
     def __generate_bod_results_by_agency_attachment(self):
         header_fields = ('acronym', 'name', 'cfo_act',
                          'active_critical_vulns',
-                         'overdue_critical_vulns_{}+_days'.format(
-                            DAYS_UNTIL_OVERDUE_CRITICAL),
                          'active_high_vulns',
-                         'overdue_high_vulns_{}+_days'.format(
-                            DAYS_UNTIL_OVERDUE_HIGH),
+                         'active_kev_vulns',
                          'bod_18-01_web_compliant_%',
                          'bod_18-01_email_compliant_%',
                          '3des_exception'
         )
         data_fields = ('acronym', 'name', 'cfo_act_org',
                        'open_criticals',
-                       'open_overdue_criticals',
                        'open_highs',
-                       'open_overdue_highs',
+                       'open_kevs',
                        'live_bod1801_web_compliant_pct',
                        'live_bod1801_email_compliant_pct',
                        '3des_exception'
@@ -3065,16 +3061,14 @@ class ScorecardGenerator(object):
             for org in copy.deepcopy(self.__scorecard_doc['scores']):
                 if org['vuln-scan']['scanned']:
                     for vuln_scan_key in ('open_criticals',
-                                          'open_overdue_criticals',
                                           'open_highs',
-                                          'open_overdue_highs'):
+                                          'open_kevs'):
                         org[vuln_scan_key] = org['vuln-scan']['metrics'].get(
                                                                 vuln_scan_key)
                 else:
                     org['open_criticals'] = 'Not vuln-scanned by CyHy'
-                    for vuln_scan_key in ('open_overdue_criticals',
-                                          'open_highs',
-                                          'open_overdue_highs'):
+                    for vuln_scan_key in ('open_highs',
+                                          'open_kevs'):
                         org[vuln_scan_key] = 'N/A'
 
                 if org['https-scan']['scanned']:
