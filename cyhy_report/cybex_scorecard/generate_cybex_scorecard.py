@@ -444,6 +444,43 @@ class ScorecardGenerator(object):
             }
         ], database.TICKET_COLLECTION
 
+    def __open_kev_tix_pl(self):
+        return [
+            {
+                '$match': {
+                    'open': True,
+                    'details.kev': True,
+                    'false_positive': False
+                }
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'open_kev_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
+
+    def __open_kev_tix_for_orgs_pl(self, parent_org, descendant_orgs):
+        return [
+            {
+                '$match': {
+                    'open': True,
+                    'details.kev': True,
+                    'false_positive': False,
+                    'owner': {
+                        '$in': [parent_org] + descendant_orgs
+                    }
+                }
+            },
+            {
+                '$group': {
+                    '_id': {'owner': parent_org},
+                    'open_kev_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
+
     def __active_hosts_pl(self):
         return [
             {
@@ -588,6 +625,11 @@ class ScorecardGenerator(object):
         self.__results['vuln-scan']['open_high_ticket_counts'] = \
             database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
+        # Get relevant KEV (Known Exploited Vulnerability) ticket data
+        pipeline_collection = self.__open_kev_tix_pl()
+        self.__results['vuln-scan']['open_kev_ticket_counts'] = \
+            database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+
         pipeline_collection = self.__active_hosts_pl()
         self.__results['vuln-scan']['active_hosts'] = \
             database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
@@ -597,6 +639,7 @@ class ScorecardGenerator(object):
         # list so items can be properly removed from the original
         for results_field in ['open_critical_ticket_counts',
                               'open_high_ticket_counts',
+                              'open_kev_ticket_counts',
                               'active_hosts']:
             for r in list(self.__results['vuln-scan'][results_field]):
                 if r['_id']['owner'] in orgs_with_descendants:
@@ -620,6 +663,12 @@ class ScorecardGenerator(object):
                     HIGH_SEVERITY, self.__generated_time, r['_id'],
                     descendants, DAYS_UNTIL_OVERDUE_HIGH)
             self.__results['vuln-scan']['open_high_ticket_counts'] += \
+                database.run_pipeline_cursor(pipeline_collection,
+                                             self.__cyhy_db)
+
+            pipeline_collection = self.__open_kev_tix_for_orgs_pl(
+                r['_id'], descendants)
+            self.__results['vuln-scan']['open_kev_ticket_counts'] += \
                 database.run_pipeline_cursor(pipeline_collection,
                                              self.__cyhy_db)
 
@@ -2270,6 +2319,7 @@ class ScorecardGenerator(object):
                                                 'open_highs_30-90_days':0,
                                                 'open_highs_more_than_90_days':0,
                                                 'open_overdue_highs': 0,
+                                                'open_kevs':0,
                                                 'addresses':0,
                                                 'active_hosts':0}},
                       'trustymail': {'scanned':False,
@@ -2532,6 +2582,11 @@ class ScorecardGenerator(object):
                                 score['vuln-scan']['metrics'][score_field] = vuln_scan_result[result_field]
                             break
 
+                    for vuln_scan_result in self.__results['vuln-scan']['open_kev_ticket_counts']:
+                        if vuln_scan_result['_id']['owner'] == score['owner']:  # Found info for the current org
+                            score['vuln-scan']['metrics']['open_kevs'] = vuln_scan_result['open_kev_tix_count']
+                            break
+
                     for (result_field, score_field, data_key) in [('addresses', 'addresses', 'addresses_count'), ('active_hosts', 'active_hosts', 'active_hosts_count')]:
                         for i in self.__results['vuln-scan'][result_field]:
                             if i['_id']['owner'] == score['owner']:  # Found info for the current org
@@ -2569,7 +2624,7 @@ class ScorecardGenerator(object):
         # Build Federal/CFO Act/Non-CFO Act totals
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
             # initialize vuln-scan metrics to 0
-            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
+            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'open_kevs':0, 'addresses':0, 'active_hosts':0}}
 
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
@@ -2601,6 +2656,7 @@ class ScorecardGenerator(object):
                                                    ('vuln-scan', 'metrics', 'open_highs_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_more_than_90_days'),
                                                    ('vuln-scan', 'metrics', 'open_overdue_highs'),
+                                                   ('vuln-scan', 'metrics', 'open_kevs'),
                                                    ('vuln-scan', 'metrics', 'addresses'),
                                                    ('vuln-scan', 'metrics', 'active_hosts'),
                                                    ('trustymail', 'base_domains', 'domain_count'),
