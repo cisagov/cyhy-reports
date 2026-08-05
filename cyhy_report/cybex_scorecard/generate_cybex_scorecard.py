@@ -2546,13 +2546,28 @@ class ScorecardGenerator(object):
                 if t['_id'] == r['_id']:  # Found a current CyHy tally that matches this request (org)
                     # currentlyScanned = True
                     score['vuln-scan']['scanned'] = True
+                    # Legacy scorecards (generated before the CYHY-441
+                    # hack was removed) excluded vulnerabilities less than
+                    # 7 days old from the open_criticals/open_highs totals.
+                    # For those, add the <7-day bucket back so the delta
+                    # compares equivalent (full) totals.  Scorecards that
+                    # include recent vulns in their totals are marked with
+                    # the 'totals_include_recent_vulns' flag.
+                    legacy_prev_scorecard = not self.__previous_scorecard_data.get('totals_include_recent_vulns', False)
                     for i in self.__previous_scorecard_data['all_orgs_alpha']:
                         if i['owner'] == score['owner']:  # Found info for the current org
-                            if i['vuln-scan']['metrics'].get('open_criticals'):
-                                score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = i['vuln-scan']['metrics']['open_criticals']
+                            prev_metrics = i['vuln-scan']['metrics']
+                            if prev_metrics.get('open_criticals'):
+                                prev_open_criticals = prev_metrics['open_criticals']
+                                if legacy_prev_scorecard:
+                                    prev_open_criticals += prev_metrics.get('open_criticals_0-7_days', 0)
+                                score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = prev_open_criticals
 
-                            if i['vuln-scan']['metrics'].get('open_highs'):
-                                score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = i['vuln-scan']['metrics']['open_highs']
+                            if prev_metrics.get('open_highs'):
+                                prev_open_highs = prev_metrics['open_highs']
+                                if legacy_prev_scorecard:
+                                    prev_open_highs += prev_metrics.get('open_highs_0-7_days', 0)
+                                score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = prev_open_highs
                             break
 
                     # Search through CyHy query results for data from the current org and add it to the current score
@@ -2594,10 +2609,8 @@ class ScorecardGenerator(object):
                                 break
 
                     # Fields calculated from info retrieved above
-                    score['vuln-scan']['metrics']['open_criticals'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_criticals_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard']
 
-                    score['vuln-scan']['metrics']['open_highs'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_on_previous_scorecard']
 
                     # Add org's score to appropriate list
@@ -3355,6 +3368,11 @@ class ScorecardGenerator(object):
         result['all_orgs_bod1801_web_compliant'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['https-scan']['live_domains'].get('live_bod1801_web_compliant_pct'), x['https-scan']['live_domains'].get('live_uses_strong_hsts_pct'), x['https-scan']['live_domains'].get('live_enforces_https_pct'), x['https-scan']['live_domains'].get('live_supports_https_pct'), x['https-scan']['live_domains'].get('live_no_weak_crypto_pct'), x['https-scan']['live_domains'].get('live_domain_count')), reverse=True)
 
         result['currently_scanned_days'] = CURRENTLY_SCANNED_DAYS
+        # Flag indicating that open_criticals/open_highs totals include
+        # vulnerabilities less than 7 days old (i.e. the old CYHY-441 hack has
+        # been removed).  Used when this scorecard is later consumed as a
+        # previous scorecard to correctly compute deltas.
+        result['totals_include_recent_vulns'] = True
         result['title_date_tex'] = self.__generated_time.strftime('{%d}{%m}{%Y}')
         result['draft'] = self.__draft
         result['federal_totals'] = self.__results['federal_totals']
@@ -3440,6 +3458,7 @@ def generate_empty_scorecard_json():
     result['dmarc_reject_some'] = []
     result['dmarc_reject_none'] = []
     result['currently_scanned_days'] = CURRENTLY_SCANNED_DAYS
+    result['totals_include_recent_vulns'] = True
     result['title_date_tex'] = current_time.strftime('{%d}{%m}{%Y}')
     result['draft'] = True
     empty_totals = {'vuln-scan':
