@@ -2557,17 +2557,20 @@ class ScorecardGenerator(object):
                     for i in self.__previous_scorecard_data['all_orgs_alpha']:
                         if i['owner'] == score['owner']:  # Found info for the current org
                             prev_metrics = i['vuln-scan']['metrics']
-                            if prev_metrics.get('open_criticals'):
-                                prev_open_criticals = prev_metrics['open_criticals']
-                                if legacy_prev_scorecard:
-                                    prev_open_criticals += prev_metrics.get('open_criticals_0-7_days', 0)
-                                score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = prev_open_criticals
-
-                            if prev_metrics.get('open_highs'):
-                                prev_open_highs = prev_metrics['open_highs']
-                                if legacy_prev_scorecard:
-                                    prev_open_highs += prev_metrics.get('open_highs_0-7_days', 0)
-                                score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = prev_open_highs
+                            # Compute the previous totals unconditionally
+                            # (defaulting to 0 when absent).  We must not gate
+                            # on a truthy open_criticals/open_highs: on a legacy
+                            # scorecard the total excluded the <7-day bucket, so
+                            # it can legitimately be 0 while that bucket is
+                            # non-zero.  Skipping in that case would drop the
+                            # add-back and inflate the delta.
+                            prev_open_criticals = prev_metrics.get('open_criticals', 0)
+                            prev_open_highs = prev_metrics.get('open_highs', 0)
+                            if legacy_prev_scorecard:
+                                prev_open_criticals += prev_metrics.get('open_criticals_0-7_days', 0)
+                                prev_open_highs += prev_metrics.get('open_highs_0-7_days', 0)
+                            score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = prev_open_criticals
+                            score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = prev_open_highs
                             break
 
                     # Search through CyHy query results for data from the current org and add it to the current score
