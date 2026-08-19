@@ -444,6 +444,43 @@ class ScorecardGenerator(object):
             }
         ], database.TICKET_COLLECTION
 
+    def __open_kev_tix_pl(self):
+        return [
+            {
+                '$match': {
+                    'open': True,
+                    'details.kev': True,
+                    'false_positive': False
+                }
+            },
+            {
+                '$group': {
+                    '_id': {'owner': '$owner'},
+                    'open_kev_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
+
+    def __open_kev_tix_for_orgs_pl(self, parent_org, descendant_orgs):
+        return [
+            {
+                '$match': {
+                    'open': True,
+                    'details.kev': True,
+                    'false_positive': False,
+                    'owner': {
+                        '$in': [parent_org] + descendant_orgs
+                    }
+                }
+            },
+            {
+                '$group': {
+                    '_id': {'owner': parent_org},
+                    'open_kev_tix_count': {'$sum': 1}
+                }
+            }
+        ], database.TICKET_COLLECTION
+
     def __active_hosts_pl(self):
         return [
             {
@@ -588,6 +625,11 @@ class ScorecardGenerator(object):
         self.__results['vuln-scan']['open_high_ticket_counts'] = \
             database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
 
+        # Get relevant KEV (Known Exploited Vulnerability) ticket data
+        pipeline_collection = self.__open_kev_tix_pl()
+        self.__results['vuln-scan']['open_kev_ticket_counts'] = \
+            database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
+
         pipeline_collection = self.__active_hosts_pl()
         self.__results['vuln-scan']['active_hosts'] = \
             database.run_pipeline_cursor(pipeline_collection, self.__cyhy_db)
@@ -597,6 +639,7 @@ class ScorecardGenerator(object):
         # list so items can be properly removed from the original
         for results_field in ['open_critical_ticket_counts',
                               'open_high_ticket_counts',
+                              'open_kev_ticket_counts',
                               'active_hosts']:
             for r in list(self.__results['vuln-scan'][results_field]):
                 if r['_id']['owner'] in orgs_with_descendants:
@@ -620,6 +663,12 @@ class ScorecardGenerator(object):
                     HIGH_SEVERITY, self.__generated_time, r['_id'],
                     descendants, DAYS_UNTIL_OVERDUE_HIGH)
             self.__results['vuln-scan']['open_high_ticket_counts'] += \
+                database.run_pipeline_cursor(pipeline_collection,
+                                             self.__cyhy_db)
+
+            pipeline_collection = self.__open_kev_tix_for_orgs_pl(
+                r['_id'], descendants)
+            self.__results['vuln-scan']['open_kev_ticket_counts'] += \
                 database.run_pipeline_cursor(pipeline_collection,
                                              self.__cyhy_db)
 
@@ -2270,6 +2319,7 @@ class ScorecardGenerator(object):
                                                 'open_highs_30-90_days':0,
                                                 'open_highs_more_than_90_days':0,
                                                 'open_overdue_highs': 0,
+                                                'open_kevs':0,
                                                 'addresses':0,
                                                 'active_hosts':0}},
                       'trustymail': {'scanned':False,
@@ -2496,13 +2546,31 @@ class ScorecardGenerator(object):
                 if t['_id'] == r['_id']:  # Found a current CyHy tally that matches this request (org)
                     # currentlyScanned = True
                     score['vuln-scan']['scanned'] = True
+                    # Legacy scorecards (generated before the CYHY-441
+                    # hack was removed) excluded vulnerabilities less than
+                    # 7 days old from the open_criticals/open_highs totals.
+                    # For those, add the <7-day bucket back so the delta
+                    # compares equivalent (full) totals.  Scorecards that
+                    # include recent vulns in their totals are marked with
+                    # the 'totals_include_recent_vulns' flag.
+                    legacy_prev_scorecard = not self.__previous_scorecard_data.get('totals_include_recent_vulns', False)
                     for i in self.__previous_scorecard_data['all_orgs_alpha']:
                         if i['owner'] == score['owner']:  # Found info for the current org
-                            if i['vuln-scan']['metrics'].get('open_criticals'):
-                                score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = i['vuln-scan']['metrics']['open_criticals']
-
-                            if i['vuln-scan']['metrics'].get('open_highs'):
-                                score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = i['vuln-scan']['metrics']['open_highs']
+                            prev_metrics = i['vuln-scan']['metrics']
+                            # Compute the previous totals unconditionally
+                            # (defaulting to 0 when absent).  We must not gate
+                            # on a truthy open_criticals/open_highs: on a legacy
+                            # scorecard the total excluded the <7-day bucket, so
+                            # it can legitimately be 0 while that bucket is
+                            # non-zero.  Skipping in that case would drop the
+                            # add-back and inflate the delta.
+                            prev_open_criticals = prev_metrics.get('open_criticals', 0)
+                            prev_open_highs = prev_metrics.get('open_highs', 0)
+                            if legacy_prev_scorecard:
+                                prev_open_criticals += prev_metrics.get('open_criticals_0-7_days', 0)
+                                prev_open_highs += prev_metrics.get('open_highs_0-7_days', 0)
+                            score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard'] = prev_open_criticals
+                            score['vuln-scan']['metrics']['open_highs_on_previous_scorecard'] = prev_open_highs
                             break
 
                     # Search through CyHy query results for data from the current org and add it to the current score
@@ -2532,6 +2600,11 @@ class ScorecardGenerator(object):
                                 score['vuln-scan']['metrics'][score_field] = vuln_scan_result[result_field]
                             break
 
+                    for vuln_scan_result in self.__results['vuln-scan']['open_kev_ticket_counts']:
+                        if vuln_scan_result['_id']['owner'] == score['owner']:  # Found info for the current org
+                            score['vuln-scan']['metrics']['open_kevs'] = vuln_scan_result['open_kev_tix_count']
+                            break
+
                     for (result_field, score_field, data_key) in [('addresses', 'addresses', 'addresses_count'), ('active_hosts', 'active_hosts', 'active_hosts_count')]:
                         for i in self.__results['vuln-scan'][result_field]:
                             if i['_id']['owner'] == score['owner']:  # Found info for the current org
@@ -2539,10 +2612,8 @@ class ScorecardGenerator(object):
                                 break
 
                     # Fields calculated from info retrieved above
-                    score['vuln-scan']['metrics']['open_criticals'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_criticals_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_criticals'] - score['vuln-scan']['metrics']['open_criticals_on_previous_scorecard']
 
-                    score['vuln-scan']['metrics']['open_highs'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_0-7_days'] # Hack for CYHY-441; exclude criticals less than 7 days old from the open_criticals total
                     score['vuln-scan']['metrics']['open_highs_delta_since_last_scorecard'] = score['vuln-scan']['metrics']['open_highs'] - score['vuln-scan']['metrics']['open_highs_on_previous_scorecard']
 
                     # Add org's score to appropriate list
@@ -2569,7 +2640,7 @@ class ScorecardGenerator(object):
         # Build Federal/CFO Act/Non-CFO Act totals
         for total_id in ['federal_totals', 'cfo_totals', 'non_cfo_totals']:
             # initialize vuln-scan metrics to 0
-            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'addresses':0, 'active_hosts':0}}
+            self.__results[total_id]['vuln-scan'] = {'metrics': {'open_criticals':0, 'open_criticals_on_previous_scorecard':0, 'open_criticals_0-7_days':0, 'open_criticals_7-15_days':0, 'open_criticals_15-30_days':0, 'open_criticals_30-90_days':0, 'open_criticals_more_than_90_days':0, 'open_overdue_criticals':0, 'open_highs':0, 'open_highs_on_previous_scorecard':0, 'open_highs_0-7_days':0, 'open_highs_7-15_days':0, 'open_highs_15-30_days':0, 'open_highs_30-90_days':0, 'open_highs_more_than_90_days':0, 'open_overdue_highs':0, 'open_kevs':0, 'addresses':0, 'active_hosts':0}}
 
             # initialize trustymail metrics to 0
             self.__results[total_id]['trustymail'] = dict()
@@ -2601,6 +2672,7 @@ class ScorecardGenerator(object):
                                                    ('vuln-scan', 'metrics', 'open_highs_30-90_days'),
                                                    ('vuln-scan', 'metrics', 'open_highs_more_than_90_days'),
                                                    ('vuln-scan', 'metrics', 'open_overdue_highs'),
+                                                   ('vuln-scan', 'metrics', 'open_kevs'),
                                                    ('vuln-scan', 'metrics', 'addresses'),
                                                    ('vuln-scan', 'metrics', 'active_hosts'),
                                                    ('trustymail', 'base_domains', 'domain_count'),
@@ -2981,20 +3053,16 @@ class ScorecardGenerator(object):
     def __generate_bod_results_by_agency_attachment(self):
         header_fields = ('acronym', 'name', 'cfo_act',
                          'active_critical_vulns',
-                         'overdue_critical_vulns_{}+_days'.format(
-                            DAYS_UNTIL_OVERDUE_CRITICAL),
                          'active_high_vulns',
-                         'overdue_high_vulns_{}+_days'.format(
-                            DAYS_UNTIL_OVERDUE_HIGH),
+                         'active_kev_vulns',
                          'bod_18-01_web_compliant_%',
                          'bod_18-01_email_compliant_%',
                          '3des_exception'
         )
         data_fields = ('acronym', 'name', 'cfo_act_org',
                        'open_criticals',
-                       'open_overdue_criticals',
                        'open_highs',
-                       'open_overdue_highs',
+                       'open_kevs',
                        'live_bod1801_web_compliant_pct',
                        'live_bod1801_email_compliant_pct',
                        '3des_exception'
@@ -3009,16 +3077,14 @@ class ScorecardGenerator(object):
             for org in copy.deepcopy(self.__scorecard_doc['scores']):
                 if org['vuln-scan']['scanned']:
                     for vuln_scan_key in ('open_criticals',
-                                          'open_overdue_criticals',
                                           'open_highs',
-                                          'open_overdue_highs'):
+                                          'open_kevs'):
                         org[vuln_scan_key] = org['vuln-scan']['metrics'].get(
                                                                 vuln_scan_key)
                 else:
                     org['open_criticals'] = 'Not vuln-scanned by CyHy'
-                    for vuln_scan_key in ('open_overdue_criticals',
-                                          'open_highs',
-                                          'open_overdue_highs'):
+                    for vuln_scan_key in ('open_highs',
+                                          'open_kevs'):
                         org[vuln_scan_key] = 'N/A'
 
                 if org['https-scan']['scanned']:
@@ -3305,6 +3371,11 @@ class ScorecardGenerator(object):
         result['all_orgs_bod1801_web_compliant'] = sorted(self.__scorecard_doc['scores'], key=lambda x:(x['https-scan']['live_domains'].get('live_bod1801_web_compliant_pct'), x['https-scan']['live_domains'].get('live_uses_strong_hsts_pct'), x['https-scan']['live_domains'].get('live_enforces_https_pct'), x['https-scan']['live_domains'].get('live_supports_https_pct'), x['https-scan']['live_domains'].get('live_no_weak_crypto_pct'), x['https-scan']['live_domains'].get('live_domain_count')), reverse=True)
 
         result['currently_scanned_days'] = CURRENTLY_SCANNED_DAYS
+        # Flag indicating that open_criticals/open_highs totals include
+        # vulnerabilities less than 7 days old (i.e. the old CYHY-441 hack has
+        # been removed).  Used when this scorecard is later consumed as a
+        # previous scorecard to correctly compute deltas.
+        result['totals_include_recent_vulns'] = True
         result['title_date_tex'] = self.__generated_time.strftime('{%d}{%m}{%Y}')
         result['draft'] = self.__draft
         result['federal_totals'] = self.__results['federal_totals']
@@ -3390,6 +3461,7 @@ def generate_empty_scorecard_json():
     result['dmarc_reject_some'] = []
     result['dmarc_reject_none'] = []
     result['currently_scanned_days'] = CURRENTLY_SCANNED_DAYS
+    result['totals_include_recent_vulns'] = True
     result['title_date_tex'] = current_time.strftime('{%d}{%m}{%Y}')
     result['draft'] = True
     empty_totals = {'vuln-scan':
