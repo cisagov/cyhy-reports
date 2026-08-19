@@ -7,6 +7,7 @@ import matplotlib
 matplotlib.use("PDF")
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.patheffects as path_effects
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Circle, Ellipse, Rectangle, RegularPolygon, Wedge
 from matplotlib.collections import PatchCollection
@@ -24,6 +25,12 @@ YELLOW = "#cfc666"
 ORANGE = "#cf9c66"
 RED = "#c66270"
 COLORS = (BLUE, YELLOW, ORANGE, RED, GREEN)  # vuln colors first, then green
+
+COLOR_CRITICAL = "#fc6869"
+COLOR_HIGH = "#fd9a9b"
+COLOR_MEDIUM = "#fecb6e"
+COLOR_LOW = "#fffe9f"
+COLORS_VULN_SEVERITY = (COLOR_LOW, COLOR_MEDIUM, COLOR_HIGH, COLOR_CRITICAL)
 
 DARK_BLUE = "#3c698e"
 DARK_GREEN = "#56943c"
@@ -156,7 +163,7 @@ class MyStackedBar(object):
                 pos,
                 dataset,
                 align="center",
-                color=COLORS[i],
+                color=COLORS_VULN_SEVERITY[i],
                 edgecolor="white",
                 left=lefts,
             )
@@ -165,20 +172,21 @@ class MyStackedBar(object):
             bars.append(p)
 
         plt.yticks(pos, self.ylabels, rotation=None, fontsize=8)
-        try:
-            leg = plt.legend(
-                bars,
-                self.dataLabels,
-                ncol=len(self.dataLabels),
-                loc="upper center",
-                fancybox=True,
-                prop={"size": 4},
-            )
-            leg.get_frame().set_alpha(0.5)
-        except IndexError as e:
-            pass
-            # if there are no bars, the legend will throw a IndexError
-            # it should be safe to ignore, but there will be no legend
+        if self.dataLabels:
+            try:
+                leg = plt.legend(
+                    bars,
+                    self.dataLabels,
+                    ncol=len(self.dataLabels),
+                    loc="upper center",
+                    fancybox=True,
+                    prop={"size": 4},
+                )
+                leg.get_frame().set_alpha(0.5)
+            except IndexError as e:
+                pass
+                # if there are no bars, the legend will throw a IndexError
+                # it should be safe to ignore, but there will be no legend
 
         for bar in bars:
             for rect in bar:
@@ -223,16 +231,26 @@ class MyBar(object):
         bigLabels=False,
         barSeverities=None,
         legendLabels=None,
+        heightScale=1.0,
+        widthScale=1.0,
+        labelFontScale=1.0,
     ):
         self.series = series
         self.yscale = yscale
         self.bigLabels = bigLabels
         self.barSeverities = barSeverities
         self.legendLabels = legendLabels
+        self.heightScale = heightScale
+        self.widthScale = widthScale
+        self.labelFontScale = labelFontScale
 
     def plot(self, filename, size=1.0):
         fig = plt.figure(1)
-        fig.set_size_inches(fig.get_size_inches() * size)
+        width, height = fig.get_size_inches()
+        fig.set_size_inches(
+            width * size * self.widthScale, 
+            height * size * self.heightScale
+        )
 
         if self.bigLabels:
             fig.subplots_adjust(bottom=0.4)
@@ -244,7 +262,7 @@ class MyBar(object):
         if self.barSeverities:
             barColors = []
             for i in self.barSeverities:
-                barColors.append(COLORS[i - 1])
+                barColors.append(COLORS_VULN_SEVERITY[i - 1])
             if (
                 self.legendLabels
             ):  # build a dummy set of bars ('underneath' the real bars) to be used
@@ -252,7 +270,7 @@ class MyBar(object):
                     []
                 )  #  to color the legend; legendLabels are implicitly tied to COLORS
                 for i in range(len(self.legendLabels)):
-                    legendColors.append(COLORS[i])
+                    legendColors.append(COLORS_VULN_SEVERITY[i])
                 dummy_legend_rects = plt.bar(
                     pos,
                     self.series.values,
@@ -267,7 +285,7 @@ class MyBar(object):
                     ncol=len(self.legendLabels),
                     loc="upper center",
                     fancybox=True,
-                    prop={"size": 4},
+                    prop={"size": 4 * self.labelFontScale},
                     bbox_to_anchor=(0.5, 1.2),
                 )
                 leg.get_frame().set_alpha(0.5)
@@ -289,14 +307,28 @@ class MyBar(object):
                 width=0.5,
             )
 
+        if all(rect.get_height() == 0 for rect in rects):
+            # Keep the zero baseline at the bottom for all-zero bar charts.
+            ax.set_ylim(0, 1)
+
         if self.bigLabels:
-            plt.xticks(pos, wrapLabels(self.series.index, 24), rotation=55, fontsize=7)
+            plt.xticks(
+                pos,
+                wrapLabels(self.series.index, 24),
+                rotation=55,
+                fontsize=7 * self.labelFontScale,
+            )
             # Extremely nice function to auto-rotate the x axis labels.
             # It was made for dates (hence the name) but it works
             # for any long x tick labels
             # fig.autofmt_xdate()
         else:
-            plt.xticks(pos, wrapLabels(self.series.index, 6), rotation=None, fontsize=8)
+            plt.xticks(
+                pos,
+                wrapLabels(self.series.index, 6),
+                rotation=None,
+                fontsize=8 * self.labelFontScale,
+            )
 
         ax.yaxis.grid(False)
         ax.yaxis.tick_left()  # ticks only on left
@@ -334,7 +366,7 @@ class MyBar(object):
                 xycoords="data",
                 xytext=offset,
                 textcoords="offset points",
-                size=12,
+                size=12 * self.labelFontScale,
                 ha="center",
                 weight="bold",
                 color="black",
@@ -723,10 +755,33 @@ class MyLine(object):
         colors = (c for c in self.linecolors)
         for col in self.df.columns:
             series = self.df[col]
-            series.plot(style=".-", color=colors.next(), linewidth=2, markersize=10)
+            line_color = colors.next()
+            series.plot(ax=ax, style="-", color=line_color, linewidth=4)
+            # Add a gray path effect to the lines to make them more visible
+            # (mainly useful for lighter colors)
+            ax.lines[-1].set_path_effects(
+                [
+                    path_effects.Stroke(linewidth=6, foreground=GREY_MID),
+                    path_effects.Normal(),
+                ]
+            )
+            # Plot the points (markers) on top of the lines to make them more
+            # visible and so that they don't also get the gray path effect,
+            # which makes them look weird
+            series.plot(
+                ax=ax,
+                style=".",
+                color="black",
+                markersize=8,
+                legend=False,
+                # Avoid duplicate legend entries
+                label="_nolegend_",
+            )
         leg = plt.legend(fancybox=True, loc="best")
         # set the alpha value of the legend: it will be translucent
         leg.get_frame().set_alpha(0.5)
+        ax.set_axisbelow(True)
+        ax.yaxis.grid(True)
         ax.set_ylim(ymin=0)  # Force y-axis to go to 0 (must be done after plot)
         fig.set_tight_layout(True)
         plt.savefig(filename + ".pdf")
@@ -1188,7 +1243,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d}".format(self.data[i][0]),
                 xy=(self.x_values[i], self.y_values[i] + 4),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=14,
                 weight="bold",
@@ -1197,7 +1252,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{}".format(self.categories[i]),
                 xy=(self.x_values[i], self.y_values[i] + 0),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 weight="bold",
@@ -1206,7 +1261,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d} {}".format(self.data[i][1], self.statuses[0]),
                 xy=(self.x_values[i], self.y_values[i] - 4),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 ha="center",
@@ -1214,7 +1269,7 @@ class MyBubbleChart(object):
             ax.annotate(
                 "{:,d} {}".format(self.data[i][2], self.statuses[1]),
                 xy=(self.x_values[i], self.y_values[i] - 8),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=5,
                 ha="center",
@@ -1273,7 +1328,7 @@ class MyHorizontalBubbleChart(object):
             ax.annotate(
                 "{:,d}".format(self.data[i]),
                 xy=(self.x_values[i], self.y_values[i] - 0.5),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=50,
                 weight="bold",
@@ -1282,7 +1337,7 @@ class MyHorizontalBubbleChart(object):
             ax.annotate(
                 "{}".format(self.categories[i]),
                 xy=(self.x_values[i], self.y_values[i] - 2.25),
-                color="white",
+                color="black",
                 family="sans-serif",
                 size=22,
                 weight="bold",

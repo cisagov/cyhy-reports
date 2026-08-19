@@ -78,17 +78,10 @@ STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
 # generated is from _port scans_ of "potentially risky services".
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
 OMITTED_MESSAGE_NO_VULNS = "No Vulnerabilities Detected\nFigure Omitted"
-OMITTED_MESSAGE_NO_VULNS_MITIGATED = "No Vulnerabilities Mitigated\nFigure Omitted"
-OMITTED_MESSAGE_TOO_MANY_VULNS = "Too Many Vulnerabilities\nTo Display\nFigure Omitted"
 OMITTED_MESSAGE_NO_SERVICES = "No Services Detected\nFigure Omitted"
-OMITTED_MESSAGE_NO_OPERATING_SYSTEMS = "No Operating Systems Detected\nFigure Omitted"
 OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA = (
     "No Vulnerability Responsiveness\nData Available\nFigure Omitted"
 )
-OMITTED_MESSAGE_NO_CRITICALS_TO_DISPLAY = (
-    "No Critical Vulnerabilities To Display\nFigure Omitted"
-)
-OMITTED_MESSAGE_NO_CRITICALS = "No Critical Vulnerabilities Detected\nFigure Omitted"
 MUSTACHE_FILE = "report.mustache"
 REPORT_JSON = "report.json"
 REPORT_PDF = "report.pdf"
@@ -122,6 +115,11 @@ ANONYMOUS_IPV4 = r"x.x.\1"
 
 CVE_ID_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.IGNORECASE)
 CVE_URL = "https://web.nvd.nist.gov/view/vuln/detail?vulnId={}"
+
+COLOR_CRITICAL = "#fc6869"
+COLOR_HIGH = "#fd9a9b"
+COLOR_MEDIUM = "#fecb6e"
+COLOR_LOW = "#fffe9f"
 
 BLUE = "#5c90ba"
 GREEN = "#7bbe5e"
@@ -189,11 +187,6 @@ POTENTIAL_NMI_SERVICES = [
     "smbdirect",      # SMB
     "telnet",         # Telnet
 ]
-
-# I wanted to make the cutoff 4096 characters, but that barely fit on a single
-# page when there was a single affected host.  I went with 3072 instead to save
-# space on the page for when there are many affected hosts listed.
-FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH = 3072
 
 def SafeDataFrame(data=None, *args, **kwargs):
     """A wrapper around pandas DataFrame so that empty lists still
@@ -417,17 +410,24 @@ class ReportGenerator(object):
             except VulnScanNotFoundException as e:
                 print "\n  Warning (non-fatal): {}".format(e.message)
                 # The vuln_scan has likely been archived; get the vuln_scan _id and time from the
-                #   VulnScanNotFoundException and set description and solution to 'Not available'
+                # VulnScanNotFoundException and set description, solution, and plugin_output to
+                # 'Not available'
                 v = {
                     "_id": e.vuln_scan_id,
-                    "time": e.vuln_scan_time,
                     "description": "Not available",
+                    "plugin_output": "Not available",
                     "solution": "Not available",
+                    "time": e.vuln_scan_time,
                 }
             # flatten structure by copying details to ticket root
             t.update(t["details"])
             # copy some parts of vuln into ticket
-            t.update({k: v[k] for k in ["description", "solution"]})
+            t.update(
+                {
+                    k: v.get(k, "Not available")
+                    for k in ["description", "plugin_output", "solution"]
+                }
+            )
             t["last_detected"] = v[
                 "time"
             ]  # rename latest vuln's 'time' to more useful 'last_detected' in ticket
@@ -1182,29 +1182,12 @@ class ReportGenerator(object):
     ###############################################################################
     def __generate_figures(self):
         graphs.setup()
-        self.__figure_kev_severity_by_prominence()
-        self.__figure_kev_ransomware_severity_by_prominence()
         self.__figure_vuln_severity_by_prominence()
-        self.__figure_max_age_of_active_kevs()
-        self.__figure_max_age_of_active_criticals()
-        self.__figure_max_age_of_active_highs()
+        self.__figure_max_age_of_active_vulns()
         self.__figure_potential_nmi_service_counts()
         self.__figure_top_five_high_risk_hosts()
         self.__figure_top_five_risk_based_vulnerabilities()
-        self.__figure_top_five_vulnerabilities_count()
-        self.__figure_vuln_responsiveness_time_to_close()
-        self.__figure_vuln_responsiveness_time_open()
-        self.__figure_critical_vuln_ages_over_time()
-        self.__figure_active_critical_vuln_age_distribution()
-        self.__figure_network_map()
-        self.__figure_active_vulns_cvss_histogram()
-        self.__figure_vulnerability_count_per_host()
-        self.__figure_total_vulnerabilities_over_time()
-        self.__figure_critical_high_vulns_over_time()
-        self.__figure_medium_low_vulns_over_time()
-        self.__figure_vulnerable_hosts_over_time()
-        self.__figure_distinct_services_over_time()
-        self.__figure_distinct_vulns_over_time()
+        self.__figure_all_vulns_over_time()
 
     def __determine_bubble_sizes(self, severities, vuln_counts):
         vulns_sorted = sorted(vuln_counts.items(), key=lambda item: item[1])
@@ -1229,56 +1212,6 @@ class ReportGenerator(object):
             bubble_sizes.append(2 * vulns_ranked[severity] + 10)
         return bubble_sizes
 
-    def __figure_kev_severity_by_prominence(self):
-        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
-        kev_data = list()
-        active_kevs = dict()
-        for severity in severities:
-            active_kevs[severity] = self.__results["active_kev_counts"][severity]
-            kev_data.append(
-                (
-                    active_kevs[severity],
-                    self.__results["resolved_kev_counts"][severity],
-                    self.__results["new_kev_counts"][severity],
-                )
-            )
-
-        bubble_sizes = self.__determine_bubble_sizes(severities, active_kevs)
-
-        bubbles = graphs.MyBubbleChart(
-            # Magic numbers below are the result of trial and error to get a
-            # bubble chart that looks reasonably good and that will never
-            # have overlapping bubbles
-            [50, 20, 65, 35],  # Bubble x coordinates
-            [80, 55, 45, 20],  # Bubble y coordinates
-            bubble_sizes,
-            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
-            [i.upper() for i in severities],
-            kev_data,
-            ["RESOLVED", "NEW"],
-        )
-        bubbles.plot("kev-severity-by-prominence", size=1.0)
-
-    def __figure_kev_ransomware_severity_by_prominence(self):
-        severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
-        kev_ransomware_counts = list()
-        for severity in severities:
-            kev_ransomware_counts.append(
-                self.__results["active_kev_ransomware_counts"][severity]
-            )
-
-        bubbles = graphs.MyHorizontalBubbleChart(
-            # Magic numbers below are the result of trial and error to get a
-            # chart that looks aesthetically pleasing.
-            [10, 25, 40, 55],  # Bubble x coordinates
-            [6, 6, 6, 6],      # Bubble y coordinates
-            [5, 5, 5, 5],      # Make all bubbles the same size
-            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
-            [i.upper() for i in severities],
-            kev_ransomware_counts,
-        )
-        bubbles.plot("kev-ransomware-severity-by-prominence", size=1.0)
-
     def __figure_vuln_severity_by_prominence(self):
         severities = [i.lower() for i in reversed(SEVERITY_LEVELS[1:])]
         vuln_data = list()
@@ -1302,34 +1235,33 @@ class ReportGenerator(object):
             [50, 20, 65, 35],  # Bubble x coordinates
             [80, 55, 45, 20],  # Bubble y coordinates
             bubble_sizes,
-            (RC_DARK_RED, RC_ORANGE, RC_LIGHT_BLUE, RC_LIGHT_GREEN),
+            (COLOR_CRITICAL, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW),
             [i.upper() for i in severities],
             vuln_data,
             ["RESOLVED", "NEW"],
         )
         bubbles.plot("vuln-severity-by-prominence", size=1.0)
 
-    def __figure_max_age_of_active_kevs(self):
-        max_age_kevs = self.__results["active_kev_max_age"]
-        # 14 days is top end of gauge for KEVs
-        gauge = graphs.MyColorGauge(
-            "Days", max_age_kevs, 14, RC_LIGHT_RED, RC_DARK_BLUE
-        )
-        gauge.plot("max-age-active-kevs", size=1.0)
-
-    def __figure_max_age_of_active_criticals(self):
-        max_age_criticals = self.__results["ss0_tix_days_open"]["critical"]["max"]
-        # 15 days is top end of gauge for Criticals
-        gauge = graphs.MyColorGauge(
-            "Days", max_age_criticals, 15, RC_LIGHT_RED, RC_DARK_BLUE
-        )
-        gauge.plot("max-age-active-criticals", size=0.75)
-
-    def __figure_max_age_of_active_highs(self):
-        max_age_highs = self.__results["ss0_tix_days_open"]["high"]["max"]
-        # 30 days is top end of gauge for Highs
-        gauge = graphs.MyColorGauge("Days", max_age_highs, 30, RC_ORANGE, RC_DARK_BLUE)
-        gauge.plot("max-age-active-highs", size=0.75)
+    def __figure_max_age_of_active_vulns(self):
+        df = DataFrame(self.__results["ss0_tix_days_open"])
+        if len(df):
+            # If there is no data for a particular severity, that counts as zero
+            # days open for that severity, so use fillna to replace NaN with 0
+            max_days_open = df.loc["max"].fillna(0)
+            # Remove "tix_open_as_of_date"; we don't want to display it here
+            max_days_open.pop("tix_open_as_of_date")
+            max_days_open = max_days_open.rename(lambda x: x.capitalize())
+            bar = graphs.MyBar(
+                    max_days_open,
+                    barSeverities=[4, 3, 2, 1],
+                    heightScale=1.5,
+                    labelFontScale=0.9,
+                    widthScale=0.8
+                )
+            bar.plot("max-age-active-vulns", size=0.5)
+        else:  # no vuln responsiveness data (older snapshots didn't have this)
+            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA)
+            message.plot("max-age-active-vulns", size=0.5)
 
     def __figure_potential_nmi_service_counts(self):
         nmi_categories = set()
@@ -1359,7 +1291,7 @@ class ReportGenerator(object):
         if self.__results["tickets_0"]:
             df = self.__top_risky_hosts(self.__results["tickets_0"])
             df = df[:5]  # trim to top 5
-            dataLabels = ("Low", "Medium", "High", "Critical")
+            dataLabels = None  # No legend needed
             bar = graphs.MyStackedBar(
                 (df["low"], df["medium"], df["high"], df["critical"]),
                 df["ip"],
@@ -1378,291 +1310,30 @@ class ReportGenerator(object):
             df = df[:5]  # trim to top 5
             df["plugin_name"] = self.__brief(df["plugin_name"])  # shorten labels
             series = df.set_index("plugin_name")["count"]
-            severityLabels = ("Low", "Medium", "High", "Critical")
             bar = graphs.MyBar(
                 series,
                 bigLabels=True,
                 barSeverities=list(df["severity"]),
-                legendLabels=severityLabels,
+                legendLabels=None,
             )
             bar.plot("top-five-risk-based-vulnerabilities", size=0.5)
         else:  # no vulnerabilities
             message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
             message.plot("top-five-risk-based-vulnerabilities", size=0.5)
 
-    def __figure_top_five_vulnerabilities_count(self):
-        df = self.__vulnerability_occurrence(self.__results["tickets_0"])
-        if len(df):
-            df.sort_values(
-                by=["count", "severity"], ascending=[False, False], inplace=True
-            )
-            df = df[:5]  # trim to top 5
-            df["plugin_name"] = self.__brief(df["plugin_name"])  # shorten labels
-            series = df.set_index("plugin_name")["count"]
-            severityLabels = ("Low", "Medium", "High", "Critical")
-            bar = graphs.MyBar(
-                series,
-                bigLabels=True,
-                barSeverities=list(df["severity"]),
-                legendLabels=severityLabels,
-            )
-            bar.plot("top-five-vulnerabilities-count", size=0.5)
-        else:  # no vulnerabilities
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
-            message.plot("top-five-vulnerabilities-count", size=0.5)
-
-    def __figure_vuln_responsiveness_time_to_close(self):
-        df = DataFrame(self.__results["ss0_tix_days_to_close"])
-        if len(df):
-            median_days_to_close = df.loc["median"]
-            tix_closed_after_date = median_days_to_close.pop(
-                "tix_closed_after_date"
-            )  # Not currently displaying this date
-            if median_days_to_close.sum() > 0:
-                median_days_to_close = median_days_to_close.rename(
-                    lambda x: x.capitalize()
-                )
-                bar = graphs.MyBar(median_days_to_close, barSeverities=[4, 3, 2, 1])
-                bar.plot("vuln-responsiveness-days-to-close", size=0.5)
-            else:
-                message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS_MITIGATED)
-                message.plot("vuln-responsiveness-days-to-close", size=0.5)
-        else:  # no vuln responsiveness data (older snapshots didn't have this)
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA)
-            message.plot("vuln-responsiveness-days-to-close", size=0.5)
-
-    def __figure_vuln_responsiveness_time_open(self):
-        df = DataFrame(self.__results["ss0_tix_days_open"])
-        if len(df):
-            median_days_open = df.loc["median"]
-            tix_open_as_of_date = median_days_open.pop(
-                "tix_open_as_of_date"
-            )  # Not currently displaying this date
-            if median_days_open.sum() > 0:
-                median_days_open = median_days_open.rename(lambda x: x.capitalize())
-                bar = graphs.MyBar(median_days_open, barSeverities=[4, 3, 2, 1])
-                bar.plot("vuln-responsiveness-days-open", size=0.5)
-            else:
-                message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
-                message.plot("vuln-responsiveness-days-open", size=0.5)
-        else:  # no vuln responsiveness data (older snapshots didn't have this)
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULN_RESPONSIVENESS_DATA)
-            message.plot("vuln-responsiveness-days-open", size=0.5)
-
-    def __figure_critical_vuln_ages_over_time(self):
-        df = self.__results["critical_ticket_age_data"]
-        if len(df):
-            line = graphs.MyStackedLine(
-                df,
-                ylabel="Critical Vulnerabilities",
-                data_labels=["Active Less Than 30 Days", "Active 30+ Days"],
-                data_fill_colors=["#0099cc", "#cc0000"],
-            )
-            line.plot("critical-vuln-ages-over-time", size=1.0)
-        else:
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_CRITICALS_TO_DISPLAY)
-            message.plot("critical-vuln-ages-over-time", size=0.7)
-
-    def __figure_active_critical_vuln_age_distribution(self):
-        max_age_cutoff = int(ACTIVE_CRITICAL_AGE_CUTOFF_DAYS)
-        age_buckets = list()
-        for t in self.__results["tickets_0"]:
-            if t["severity"] == 4:
-                days_open = (self.__generated_time - t["time_opened"]).days
-                if days_open >= max_age_cutoff:
-                    age_buckets.append(max_age_cutoff)
-                else:
-                    age_buckets.append(days_open)
-        if len(age_buckets):
-            age_buckets.sort()
-            s1 = Series(age_buckets)
-            s2 = (
-                s1.value_counts()
-                .reindex(range(ACTIVE_CRITICAL_AGE_CUTOFF_DAYS + 1))
-                .fillna(0)
-            )
-            region_colors = [
-                (ACTIVE_CRITICAL_AGE_BUCKETS[0][1], "#ffffb2"),
-                (ACTIVE_CRITICAL_AGE_BUCKETS[1][1], "#fecc5c"),
-                (ACTIVE_CRITICAL_AGE_BUCKETS[2][1], "#fd8d3c"),
-                (ACTIVE_CRITICAL_AGE_BUCKETS[3][1], "#f03b20"),
-                (ACTIVE_CRITICAL_AGE_BUCKETS[4][1], "#bd0026"),
-            ]  # Colorize regions
-            bar = graphs.MyDistributionBar(
-                s2,
-                xlabel="Age (Days)",
-                ylabel="Critical Vulnerabilities",
-                final_bucket_accumulate=True,
-                x_major_tick_count=10,
-                region_colors=region_colors,
-                x_limit_extra=2,
-            )
-            bar.plot("active-critical-age-distribution", size=1.0)
-            self.__results["active_critical_age_counts"] = s2
-        else:
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_CRITICALS)
-            message.plot("active-critical-age-distribution", size=0.7)
-            self.__results["active_critical_age_counts"] = (
-                Series().reindex(range(ACTIVE_CRITICAL_AGE_CUTOFF_DAYS + 1)).fillna(0)
-            )
-
-    def __figure_network_map(self):
-        results = self.__results["ip_geoloc"]
-        locs = [i["loc"] for i in results]
-        host_map = graphs.MyMap(locs)
-        host_map.plot("network-map")
-
-    def __figure_vulnerability_count_per_host(self):
-        if len(self.__results["tickets_0"]):
-            s = self.__vulnerability_density(self.__results["tickets_0"])
-            bar = graphs.MyBar(s)
-            bar.plot("vulnerability-count-per-host", size=0.3)
-        else:
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
-            message.plot("vulnerability-count-per-host", size=0.4)
-
-    def __figure_active_vulns_cvss_histogram(self):
-        df = DataFrame(self.__results["tickets_0"])
-        if len(df):
-            cvss_histogram_data = np.histogram(
-                df["cvss_base_score"], range=(0.0, 10.0), bins=20
-            )
-            bar_colors = [
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                RED,
-            ]
-            tick_colors = [
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                BLUE,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                YELLOW,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                ORANGE,
-                RED,
-            ]
-            hist = graphs.Histogram2(
-                cvss_histogram_data,
-                bar_colors,
-                tick_colors,
-                x_label="CVSS",
-                y_label="Active Vulnerabilities",
-            )
-            hist.plot("active-vulns-cvss-histogram")
-        else:
-            message = graphs.MyMessage(OMITTED_MESSAGE_NO_VULNS)
-            message.plot("active-vulns-cvss-histogram", size=0.5)
-
-    def __figure_total_vulnerabilities_over_time(self):
-        d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex(["total"], axis=1)  # reorder and filter
-        data.columns = [i.title() for i in data.columns]
-        line = graphs.MyLine(
-            data,
-            linecolors=(BLACK, BLACK),
-            yscale=self.__best_scale(data),
-            ylabel="Vulnerabilities",
-        )
-        line.plot("total-vulnerabilities-over-time", figsize=(8, 2.7))
-
-    def __figure_critical_high_vulns_over_time(self):
+    def __figure_all_vulns_over_time(self):
         d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
         data = DataFrame(d1).T.reindex(
-            ["critical", "high"], axis=1
+            ["critical", "high", "medium", "low"], axis=1
         )  # reorder and filter
         data.columns = [i.title() for i in data.columns]
         line = graphs.MyLine(
             data,
-            linecolors=(RED, ORANGE),
+            linecolors=(COLOR_CRITICAL, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW),
             yscale=self.__best_scale(data),
             ylabel="Vulnerabilities",
         )
-        line.plot("vulns-over-time-critical-high", figsize=(8, 2.7))
-
-    def __figure_medium_low_vulns_over_time(self):
-        d1 = dict([(i["end_time"], i["vulnerabilities"]) for i in self.__snapshots])
-        data = DataFrame(d1).T.reindex(
-            ["medium", "low"], axis=1
-        )  # reorder and filter
-        data.columns = [i.title() for i in data.columns]
-        line = graphs.MyLine(
-            data,
-            linecolors=(YELLOW, BLUE),
-            yscale=self.__best_scale(data),
-            ylabel="Vulnerabilities",
-        )
-        line.plot("vulns-over-time-medium-low", figsize=(8, 2.7))
-
-    def __figure_vulnerable_hosts_over_time(self):
-        source_dict = dict()
-        for ss in self.__snapshots:
-            d = dict()
-            d["Hosts"] = ss["host_count"]
-            d["Vulnerable Hosts"] = ss["vulnerable_host_count"]
-            source_dict[ss["end_time"]] = d
-        df = DataFrame(source_dict).T
-        line = graphs.MyLine(
-            df, linecolors=(BLUE, RED), yscale=self.__best_scale(df), ylabel="Hosts"
-        )
-        line.plot("vulnerable-hosts-over-time", figsize=(8, 2.7))
-
-    def __figure_distinct_services_over_time(self):
-        source_dict = dict()
-        for ss in self.__snapshots:
-            d = dict()
-            d["Distinct Services"] = len(ss["services"])
-            source_dict[ss["end_time"]] = d
-        df = DataFrame(source_dict).T
-        line = graphs.MyLine(
-            df, linecolors=(BLUE, BLUE), yscale=self.__best_scale(df), ylabel="Services"
-        )
-        line.plot("distinct-services-over-time", figsize=(8, 2.7))
-
-    def __figure_distinct_vulns_over_time(self):
-        source_dict = dict()
-        for ss in self.__snapshots:
-            d = dict()
-            d["Distinct Vulnerabilities"] = ss["unique_vulnerabilities"]["total"]
-            source_dict[ss["end_time"]] = d
-        df = DataFrame(source_dict).T
-        line = graphs.MyLine(
-            df,
-            linecolors=(BLACK, BLACK),
-            yscale=self.__best_scale(df),
-            ylabel="Vulnerabilities",
-        )
-        line.plot("distinct-vulns-over-time", figsize=(8, 2.7))
+        line.plot("vulns-over-time-all-severities", figsize=(8, 4.0))
 
     ###############################################################################
     # Utilities
@@ -1715,32 +1386,6 @@ class ReportGenerator(object):
         elif isinstance(data, (list, tuple)):
             for i in data:
                 self.__latex_escape_structure_make_cve_urls(i)
-
-    def __latex_convert_cve_to_url(self, data):
-        """assumes that all sequences contain dicts"""
-        if isinstance(data, dict):
-            for k, v in data.items():
-                if k.endswith("_tex"):  # skip special tex values
-                    continue
-                if isinstance(v, basestring):
-                    cve_ids = set(re.findall(CVE_ID_RE, v))
-                    if cve_ids:
-                        for (
-                            cve
-                        ) in (
-                            cve_ids
-                        ):  # LaTeX href format:  \href{https://www.dhs.gov}{https://www.dhs.gov}
-                            data[k] = data[k].replace(
-                                cve, "\href{" + CVE_URL.format(cve) + "}{" + cve + "}"
-                            )
-                else:
-                    self.__latex_convert_cve_to_url(v)
-        elif isinstance(data, (list, tuple)):
-            for i in data:
-                self.__latex_convert_cve_to_url(i)
-
-    def led(self, data):
-        self.__latex_escape_dict(data)
 
     def __convert_levels_to_text(self, data, field):
         for row in data:
@@ -2651,6 +2296,7 @@ class ReportGenerator(object):
             "solution",
             "source",
             "plugin_id",
+            "plugin_output",
         ]
 
         data_fields = [
@@ -2675,12 +2321,14 @@ class ReportGenerator(object):
             "solution",
             "source",
             "source_id",
+            "plugin_output",
         ]
 
-        # Remove ip_int column if we are trying to be anonymous
+        # Remove ip_int and plugin_output columns if we are trying to be anonymous
         if self.__anonymize:
-            header_fields.remove("ip_int")
-            data_fields.remove("ip_int")
+            for f in ("ip_int", "plugin_output"):
+                header_fields.remove(f)
+                data_fields.remove(f)
     
         # Add owner column if descendants are included
         if self.__snapshots[0].get("descendants_included"):
@@ -3420,30 +3068,6 @@ class ReportGenerator(object):
         ):  # When the snapshot has descendants, we want to show 'owner' field throughout report
             result["display_owner"] = True
 
-        result["active_critical_age_counts"] = list()
-        for (bucket_start, bucket_end) in ACTIVE_CRITICAL_AGE_BUCKETS:
-            bucket_count = int(
-                self.__results["active_critical_age_counts"][
-                    bucket_start:bucket_end
-                ].sum()
-            )
-            result["active_critical_age_counts"].append(
-                {
-                    "bucket_range": "{}-{}".format(bucket_start, bucket_end),
-                    "count": bucket_count,
-                }
-            )
-        last_bucket_start = ACTIVE_CRITICAL_AGE_BUCKETS[-1][1]
-        last_bucket_count = int(
-            self.__results["active_critical_age_counts"][last_bucket_start:].sum()
-        )
-        result["active_critical_age_counts"].append(
-            {
-                "bucket_range": "{}+".format(last_bucket_start),
-                "count": last_bucket_count,
-            }
-        )
-
         result["vulnerability_history"] = self.__results["vulnerability_history"]
         result["detailed_findings"] = self.__results["detailed_findings"]
         for t in result["detailed_findings"]:
@@ -3451,15 +3075,6 @@ class ReportGenerator(object):
             t["first_detected_time_tex"] = t["first_detected"].strftime("{%H}{%M}{%S}")
             t["last_detected_date_tex"] = t["last_detected"].strftime("{%d}{%m}{%Y}")
             t["last_detected_time_tex"] = t["last_detected"].strftime("{%H}{%M}{%S}")
-            # Trim long descriptions so that they don't overflow the page
-            # (LaTeX table cells cannot span pages, as far as I know) or cause
-            # other issues. For more information, see:
-            # - https://github.com/cisagov/cyhy-reports/issues/123
-            # - https://github.com/cisagov/cyhy-reports/issues/124
-            if len(t.get("description", "")) > FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH:
-                t["description"] = t["description"][
-                    :FINDING_DESCRIPTION_MAX_DISPLAY_LENGTH] + \
-                    "... (Truncated; the full description is available in the findings attachment.)"
 
         result["mitigations"] = self.__results["mitigations"]
         for t in result["mitigations"]:
@@ -3578,33 +3193,13 @@ class ReportGenerator(object):
         return_code = subprocess.call(
             ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
         )
-        assert return_code == 0, "xelatex pass 1 of 3 return code was %s" % return_code
+        assert return_code == 0, "xelatex pass 1 of 2 return code was %s" % return_code
 
-        return_code = subprocess.call(
-            ["makeglossaries", "report"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, (
-            "makeglossaries pass 1 of 2 return code was %s" % return_code
-        )
-
+        # Run xelatex a second time to generate the contents of the TOC
         return_code = subprocess.call(
             ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
         )
-        assert return_code == 0, "xelatex pass 2 of 3 return code was %s" % return_code
-
-        # Both TOC and Glossary run longer than 1 page each, so we need to run them both again to get our numbering correct
-        # See http://tex.stackexchange.com/questions/74163/glossaries-issue-wrong-pagenumber-for-book-and-memoir
-        return_code = subprocess.call(
-            ["makeglossaries", "report"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, (
-            "makeglossaries pass 2 of 2 return code was %s" % return_code
-        )
-
-        return_code = subprocess.call(
-            ["xelatex", "report.tex"], stdout=output, stderr=subprocess.STDOUT
-        )
-        assert return_code == 0, "xelatex pass 3 of 3 return code was %s" % return_code
+        assert return_code == 0, "xelatex pass 2 of 2 return code was %s" % return_code
 
     def __encrypt_pdf(self, name_in, name_out, report_key):
         """Encrypt a report PDF file with a key."""
@@ -3640,7 +3235,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v2.0.1")
+    args = docopt(__doc__, version="v2.1.0")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
