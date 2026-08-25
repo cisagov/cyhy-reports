@@ -752,6 +752,19 @@ class MyLine(object):
             ax.set_xlabel(self.xlabel)
         if self.ylabel:
             ax.set_ylabel(self.ylabel)
+        if self.yscale == "log":
+            # A log-scaled y-axis cannot represent zero (or negative) values.
+            # If a series contains no positive values at all (e.g. an agency
+            # with zero critical vulnerabilities in every snapshot), letting
+            # matplotlib autoscale the axis raises "Data has no positive
+            # values, and therefore can not be log-scaled."  Setting the
+            # limits explicitly up front also disables y-axis autoscaling,
+            # which avoids that failure.  Note that zero values still cannot
+            # be drawn on a log axis, so such a series will not be visible.
+            max_positive = self.df[self.df > 0].max().max()
+            if pd.isnull(max_positive):
+                max_positive = 1.0
+            ax.set_ylim(0.8, max_positive * 1.5)
         colors = (c for c in self.linecolors)
         for col in self.df.columns:
             series = self.df[col]
@@ -782,7 +795,10 @@ class MyLine(object):
         leg.get_frame().set_alpha(0.5)
         ax.set_axisbelow(True)
         ax.yaxis.grid(True)
-        ax.set_ylim(ymin=0)  # Force y-axis to go to 0 (must be done after plot)
+        if self.yscale != "log":
+            # Force y-axis to go to 0 (must be done after plot).  Skipped for
+            # a log scale, where zero is not a valid limit.
+            ax.set_ylim(ymin=0)
         fig.set_tight_layout(True)
         plt.savefig(filename + ".pdf")
         plt.close()
