@@ -304,7 +304,7 @@ class ReportGenerator(object):
             self.__results = self.__anonymize_structure(self.__results)
             self.__results["owner"]["agency"]["name"] = "Sample Organization"
             self.__results["owner"]["agency"]["acronym"] = "SAMPLE"
-            # Anonymize the ED 19-01 data, if present
+            # Anonymize the certificate and domain data, if present
             if "second_level_domains" in self.__results:
                 self.__results["second_level_domains"] = ["example.com"]
             if "certs" in self.__results:
@@ -898,10 +898,11 @@ class ReportGenerator(object):
         )
 
         #
-        # Run ED 19-01 queries, but only for Federal executive
-        # agencies that are not suborgs.  We exclude suborgs because
-        # all domains are associated with the parent org, and hence
-        # there is nothing to display for suborgs.
+        # Collect the certificate and domain data used by the
+        # certificates.csv and domains.csv attachments, but only for
+        # Federal executive agencies that are not suborgs.  We exclude
+        # suborgs because all domains are associated with the parent
+        # org, and hence there is nothing to report for suborgs.
         #
         if (
             self.__results["owner_is_federal_executive"]
@@ -910,13 +911,8 @@ class ReportGenerator(object):
             certs = {}
 
             today = self.__generated_time
-            seven_days = datetime.timedelta(days=7)
-            seven_days_ago = today - seven_days
-            seven_days_from_today = today + seven_days
             thirty_days = datetime.timedelta(days=30)
             thirty_days_ago = today - thirty_days
-            thirty_days_from_today = today + thirty_days
-            start_of_current_fy = report_dates(now=self.__generated_time)["fy_start"]
 
             owner = self.__results["owner"]["_id"]
             owner_domains_cursor = self.__scan_db.domains.find(
@@ -937,241 +933,6 @@ class ReportGenerator(object):
                         },
                         "not_after": {"$gte": thirty_days_ago,},
                     }
-                )
-            )
-
-            # Get a count of certs for this organization:
-            # * That were issued since the start of the current fiscal year
-            # * That were issued in the last 30 days
-            # * That were issued in the last 7 days
-            # * That are unexpired
-            # * That expired in the last seven days
-            # * That expire in the next seven days
-            # * That expired in the last thirty days
-            # * That expire in the next thirty days
-            cert_counts_groups = list(
-                self.__scan_db.certs.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "trimmed_subjects": {
-                                    "$in": self.__results["second_level_domains"]
-                                }
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": "certs_count",
-                                "issued_current_fy": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$gte": [
-                                                    "$sct_or_not_before",
-                                                    start_of_current_fy,
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "issued_in_last_thirty_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$gte": [
-                                                    "$sct_or_not_before",
-                                                    thirty_days_ago,
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "issued_in_last_seven_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$gte": [
-                                                    "$sct_or_not_before",
-                                                    seven_days_ago,
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "unexpired": {
-                                    "$sum": {
-                                        "$cond": [{"$gte": ["$not_after", today]}, 1, 0]
-                                    }
-                                },
-                                "expired_in_last_seven_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$and": [
-                                                    {
-                                                        "$gte": [
-                                                            "$not_after",
-                                                            seven_days_ago,
-                                                        ]
-                                                    },
-                                                    {"$lte": ["$not_after", today]},
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "expire_in_next_seven_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$and": [
-                                                    {"$gte": ["$not_after", today]},
-                                                    {
-                                                        "$lte": [
-                                                            "$not_after",
-                                                            seven_days_from_today,
-                                                        ]
-                                                    },
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "expired_in_last_thirty_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$and": [
-                                                    {
-                                                        "$gte": [
-                                                            "$not_after",
-                                                            thirty_days_ago,
-                                                        ]
-                                                    },
-                                                    {"$lte": ["$not_after", today]},
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                                "expire_in_next_thirty_days": {
-                                    "$sum": {
-                                        "$cond": [
-                                            {
-                                                "$and": [
-                                                    {"$gte": ["$not_after", today]},
-                                                    {
-                                                        "$lte": [
-                                                            "$not_after",
-                                                            thirty_days_from_today,
-                                                        ]
-                                                    },
-                                                ]
-                                            },
-                                            1,
-                                            0,
-                                        ]
-                                    }
-                                },
-                            }
-                        },
-                    ],
-                    cursor={},
-                )
-            )
-
-            if len(cert_counts_groups) > 0:
-                cert_counts = cert_counts_groups[0]
-
-                # Get a count of all certs issued for this
-                # organization since the start of the current fiscal
-                # year
-                certs["certs_issued_this_fy_count"] = cert_counts["issued_current_fy"]
-
-                # Get a count of all certs issued for this
-                # organization in the last 30 days
-                certs["certs_issued_last_thirty_days_count"] = cert_counts[
-                    "issued_in_last_thirty_days"
-                ]
-
-                # Get a count of all certs issued for this
-                # organization in the last 7 days
-                certs["certs_issued_last_seven_days_count"] = cert_counts[
-                    "issued_in_last_seven_days"
-                ]
-
-                # Get a count of all certs for this organization that
-                # are unexpired
-                certs["unexpired_certs_count"] = cert_counts["unexpired"]
-
-                # Get a count of all certs for this organization that
-                # expired in the last 7 days
-                certs["certs_expired_last_seven_days_count"] = cert_counts[
-                    "expired_in_last_seven_days"
-                ]
-
-                # Get a count of all certs for this organization that
-                # expire in the next 7 days
-                certs["certs_expire_next_seven_days_count"] = cert_counts[
-                    "expire_in_next_seven_days"
-                ]
-
-                # Get a count of all certs for this organization that
-                # expired in the last 30 days
-                certs["certs_expired_last_thirty_days_count"] = cert_counts[
-                    "expired_in_last_thirty_days"
-                ]
-
-                # Get a count of all certs for this organization that
-                # expire in the next 30 days
-                certs["certs_expire_next_thirty_days_count"] = cert_counts[
-                    "expire_in_next_thirty_days"
-                ]
-            else:
-                # Set all counts to zero, since the query found nothing
-                certs["certs_issued_this_fy_count"] = 0
-                certs["certs_issued_last_thirty_days_count"] = 0
-                certs["certs_issued_last_seven_days_count"] = 0
-                certs["unexpired_certs_count"] = 0
-                certs["certs_expired_last_seven_days_count"] = 0
-                certs["certs_expire_next_seven_days_count"] = 0
-                certs["certs_expired_last_thirty_days_count"] = 0
-                certs["certs_expire_next_thirty_days_count"] = 0
-
-            # Aggregate the unexpired certs for this organization by
-            # issuer
-            certs["ca_aggregation"] = list(
-                self.__scan_db.certs.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "trimmed_subjects": {
-                                    "$in": self.__results["second_level_domains"]
-                                },
-                                "not_after": {"$gte": today},
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": {"issuer": "$issuer"},
-                                "count": {"$sum": 1},
-                            }
-                        },
-                        {"$sort": {"count": -1}},
-                    ],
-                    cursor={},
                 )
             )
 
@@ -3235,7 +2996,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v2.1.1")
+    args = docopt(__doc__, version="v2.2.0")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
