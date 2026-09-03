@@ -304,15 +304,9 @@ class ReportGenerator(object):
             self.__results = self.__anonymize_structure(self.__results)
             self.__results["owner"]["agency"]["name"] = "Sample Organization"
             self.__results["owner"]["agency"]["acronym"] = "SAMPLE"
-            # Anonymize the certificate and domain data, if present
+            # Anonymize the domain data, if present
             if "second_level_domains" in self.__results:
                 self.__results["second_level_domains"] = ["example.com"]
-            if "certs" in self.__results:
-                for d in self.__results["certs"][
-                    "unexpired_and_recently_expired_certs"
-                ]:
-                    d["subjects"] = ["sample.com"]
-                    d["pem"] = "REDACTED"
 
             tech_poc_count = distro_poc_count = 1
             for contact in self.__results["owner"]["agency"]["contacts"]:
@@ -898,22 +892,16 @@ class ReportGenerator(object):
         )
 
         #
-        # Collect the certificate and domain data used by the
-        # certificates.csv and domains.csv attachments, but only for
-        # Federal executive agencies that are not suborgs.  We exclude
-        # suborgs because all domains are associated with the parent
-        # org, and hence there is nothing to report for suborgs.
+        # Collect the domain data used by the domains.csv attachment,
+        # but only for Federal executive agencies that are not
+        # suborgs.  We exclude suborgs because all domains are
+        # associated with the parent org, and hence there is nothing
+        # to report for suborgs.
         #
         if (
             self.__results["owner_is_federal_executive"]
             and not self.__results["is_suborg"]
         ):
-            certs = {}
-
-            today = self.__generated_time
-            thirty_days = datetime.timedelta(days=30)
-            thirty_days_ago = today - thirty_days
-
             owner = self.__results["owner"]["_id"]
             owner_domains_cursor = self.__scan_db.domains.find(
                 {"agency.id": owner}, {"_id": True}
@@ -921,22 +909,6 @@ class ReportGenerator(object):
             self.__results["second_level_domains"] = [
                 d["_id"] for d in owner_domains_cursor
             ]
-
-            # Get all certs for this organization that are unexpired
-            # or expired in the last 30 days.  This data will be used
-            # to generate the CSV attachment.
-            certs["unexpired_and_recently_expired_certs"] = list(
-                self.__scan_db.certs.find(
-                    {
-                        "trimmed_subjects": {
-                            "$in": self.__results["second_level_domains"]
-                        },
-                        "not_after": {"$gte": thirty_days_ago,},
-                    }
-                )
-            )
-
-            self.__results["certs"] = certs
 
     ###############################################################################
     # Figure Generation
@@ -1928,7 +1900,6 @@ class ReportGenerator(object):
     #  Attachment Generation
     ###############################################################################
     def __generate_attachments(self):
-        self.__generate_certificate_attachment()
         self.__generate_domains_attachment()
         self.__generate_findings_attachment()
         self.__generate_mitigated_vulns_attachment()
@@ -1942,84 +1913,6 @@ class ReportGenerator(object):
         self.__generate_sub_org_summary_attachment()
         self.__generate_days_to_mitigate_attachment()
         self.__generate_days_currently_active_attachment()
-
-    def __generate_certificate_attachment(self):
-        # No need to do anything if no certs data was collected.  In
-        # that case this either isn't a federal executive agency or is
-        # a suborg of a federal agency, and hence the attachment won't
-        # be used
-        if "certs" in self.__results:
-            fields = (
-                "Date Cert Appeared in Logs",
-                "Subjects",
-                "Issuer",
-                "Not Valid Before",
-                "Not Valid After",
-                "Expired",
-                "Expiring in Next 7 Days",
-                "Expiring in Next 30 Days",
-                "Days Until Expiration",
-                "Certificate Lifetime in Days",
-                "Serial Number",
-                "Issued in Last 7 Days",
-                "Issued in Last 30 Days",
-                "Issued Current Fiscal Year",
-                "Certificate",
-            )
-
-            today = self.__generated_time
-            seven_days = datetime.timedelta(days=7)
-            seven_days_ago = today - seven_days
-            seven_days_from_today = today + seven_days
-            thirty_days = datetime.timedelta(days=30)
-            thirty_days_ago = today - thirty_days
-            thirty_days_from_today = today + thirty_days
-            start_of_current_fy = report_dates(now=self.__generated_time)["fy_start"]
-            data = self.__results["certs"]["unexpired_and_recently_expired_certs"]
-
-            with open("certificates.csv", "wb") as f:
-                # We're carefully controlling the fields, so if an
-                # unknown field appears it indicates an error
-                # (probably a typo).  That's why we're using
-                # extrasaction='raise' here.
-                writer = csv.DictWriter(f, fields, extrasaction="raise")
-                writer.writeheader()
-                for d in data:
-                    not_after = d["not_after"].replace(tzinfo=today.tzinfo)
-                    expired = not_after <= today
-                    expiring_in_next_seven_days = (not expired) and (
-                        not_after <= seven_days_from_today
-                    )
-                    expiring_in_next_thirty_days = (not expired) and (
-                        not_after <= thirty_days_from_today
-                    )
-                    issued = d["sct_or_not_before"].replace(tzinfo=today.tzinfo)
-                    issued_this_fy = issued >= start_of_current_fy
-                    issued_last_thirty_days = issued >= thirty_days_ago
-                    issued_last_seven_days = issued >= seven_days_ago
-
-                    row = {
-                        "Date Cert Appeared in Logs": issued,
-                        "Subjects": ",".join(d["subjects"]),
-                        "Issuer": d["issuer"],
-                        "Not Valid Before": d["not_before"].replace(
-                            tzinfo=today.tzinfo
-                        ),
-                        "Not Valid After": not_after,
-                        "Expired": expired,
-                        "Expiring in Next 7 Days": expiring_in_next_seven_days,
-                        "Expiring in Next 30 Days": expiring_in_next_thirty_days,
-                        "Days Until Expiration": (not_after - today).days,
-                        "Certificate Lifetime in Days": (
-                            not_after - d["not_before"]
-                        ).days,
-                        "Issued Current Fiscal Year": issued_this_fy,
-                        "Serial Number": d["serial"],
-                        "Issued in Last 30 Days": issued_last_thirty_days,
-                        "Issued in Last 7 Days": issued_last_seven_days,
-                        "Certificate": d["pem"],
-                    }
-                    writer.writerow(row)
 
     def __generate_domains_attachment(self):
         # No need to do anything if no second level domains data was
@@ -2619,9 +2512,6 @@ class ReportGenerator(object):
     def __generate_mustache_json(self, filename):
         ss0 = self.__snapshots[0]
         result = {"ss0": ss0, "is_suborg": self.__results["is_suborg"]}
-
-        if "certs" in self.__results:
-            result["certs"] = self.__results["certs"]
 
         result["draft"] = self.__draft
         calc = dict()  # calculated vaules for report
