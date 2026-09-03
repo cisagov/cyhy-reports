@@ -755,121 +755,6 @@ You can find a list of potentially risky services detected as available on your 
 The details for these findings can be found within the ``potentially-risky-services.csv" file located on the Attachments page. You will need to ensure you open the report with a dedicated PDF reader (such as Adobe Acrobat), and click on the paper clip icon to the left of the CSV file in order to open it.
 
 \newpage
-<<#owner_is_federal_executive>>
-\section{Emergency Directive 19-01 --- New Certificates Summary}
-\label{sec:ed1901}
-Issued on 22 January 2019, Emergency Directive (ED) 19-01 requires
-CISA to assist Federal agencies in identifying newly added
-certificates to Certificate Transparency (CT) logs for agency domains. CISA is
-supporting the directive by providing certificate information found in
-CT log entries for known agency second-level domains and all
-subdomains under them. Per the directive, agencies shall monitor
-CT log data for certificates issued that they did not request.
-<<^is_suborg>>
-Detailed information on the certificates discovered by CISA can
-be found in the ``certificates.csv" attachment to this report.
-<</is_suborg>>
-<<#is_suborg>>
-We have no way to associate an organization's second-level domains
-with its various sub-organizations, so all domains are reported within
-the parent organization's overall weekly Cyber Hygiene report.  You
-may need to contact your technical POC(s) to get the detailed
-information for your sub-organization's domains.
-<</is_suborg>>
-
-<<^is_suborg>>
-We recommend focusing on validating that newly-added certificates were
-purposefully issued; new certificates issued without a known purpose
-may indicate DNS infrastructure tampering. The issuing
-organization table is included to help identify possible outlier
-certificates that have been issued by an unusual organization.
-<</is_suborg>>
-
-<<^is_suborg>>
-{\RCHeadB\color{dhs-dark-gray} HIGH LEVEL FINDINGS\\
-\RCHashThick}\\
-\begin{minipage}[b]{0.45\textwidth}
-  {\RCSub UNEXPIRED CERTIFICATES}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.unexpired_certs_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.45\textwidth}
-  {\RCSub LATEST SCAN DATE}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \usvardate\formatdate<<&calc.title_date_tex>>}
-\end{minipage}
-
-\vspace*{0.1in}
-
-{\RCHeadB\color{dhs-dark-gray} NEW CERTIFICATES ISSUED\\
-\RCHashThick}\\
-\begin{minipage}[b]{0.3\textwidth}
-  {\RCSub CURRENT FISCAL YEAR}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_issued_this_fy_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.3\textwidth}
-  {\RCSub LAST 30 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_issued_last_thirty_days_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.3\textwidth}
-  {\RCSub LAST 7 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_issued_last_seven_days_count>>}}
-\end{minipage}
-
-\vspace*{0.1in}
-
-{\RCHeadB\color{dhs-dark-gray} CERTIFICATE EXPIRATION\\
-\RCHashThick}\\
-\begin{minipage}[b]{0.2125\textwidth}
-  {\RCSub EXPIRED IN LAST 7 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_expired_last_seven_days_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-  {\RCSub EXPIRED IN LAST 30 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_expired_last_thirty_days_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-  {\RCSub EXPIRING IN 7 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_expire_next_seven_days_count>>}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.2125\textwidth}
-  {\RCSub EXPIRING IN 30 DAYS}\\[-3pt]
-  \RCHashDot\\
-	  {\RCBigNum \numprint{<<&certs.certs_expire_next_thirty_days_count>>}}
-\end{minipage}
-
-\vspace*{0.1in}
-
-\setlength{\tabcolsep}{0.4pt}
-\rowcolors{4}{white}{row-gray}
-\begin{longtable}{>{\raggedright}p{4.5in}p{2.0in}}
-  \toprule
-  \textbf{Issuing Agency} & \textbf{Number of Certificates}\\
-  \hhline{==}
-  \endhead
-  <<#certs.ca_aggregation>>
-  <<&_id.issuer>> & \numprint{<<&count>>}\\
-  <</certs.ca_aggregation>>
-  <<^certs.ca_aggregation>>
-  \multicolumn{2}{|c|}{\emph{No certificates}}\\
-  <</certs.ca_aggregation>>
-\end{longtable}
-<</is_suborg>>
-<</owner_is_federal_executive>>
-
-\newpage
 \section{Executive Summary}
 \label{sec:executive-summary}
 This report provides the results of a CISA Cyber Hygiene (CyHy) assessment of <<&owner.agency.acronym>> conducted from \usvardate\formatdate<<&calc.start_date_tex>> at \formattime<<&calc.start_time_tex>> UTC through \usvardate\formatdate<<&calc.end_date_tex>> at \formattime<<&calc.end_time_tex>> UTC.
@@ -959,7 +844,6 @@ This section shows the key Cyber Hygiene metrics for each sub-organization withi
 \label{sec:attachments}
 Below are the relevant attachments that provide additional technical details and a more in-depth view of your vulnerability findings.  To access the attachments embedded within the report, \textbf{open the report with a dedicated PDF reader} (such as Adobe Acrobat) and \textbf{double-click} on the \textbf{paper clip icon} or \textbf{file name}.
 \begin{itemize}
-<<#owner_is_federal_executive>><<^is_suborg>>\item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=certificates.csv]{certificates.csv} \textbf{certificates.csv:} Data collected about each certificate found that was issued for a domain known to belong to you.<</is_suborg>><</owner_is_federal_executive>>
 \item \attachfile[appearance=false,mimetype=application/pdf,icon=Paperclip,ucfilespec=assets/cyber-hygiene-false-positive-assertion-form.pdf]{assets/cyber-hygiene-false-positive-assertion-form.pdf} \textbf{cyber-hygiene-false-positive-assertion-form.pdf:} Form to request that one or more vulnerabilities be marked as false positives; send the completed form to \href{mailto:vulnerability@cisa.dhs.gov}{vulnerability@cisa.dhs.gov}.
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-currently-active.csv]{days-currently-active.csv} \textbf{days-currently-active.csv:} Metrics over time for median and maximum age of active vulnerabilities (active as of date listed in each row).
 \item \attachfile[appearance=false,mimetype=text/csv,icon=Paperclip,ucfilespec=days-to-mitigate.csv]{days-to-mitigate.csv} \textbf{days-to-mitigate.csv:} Metrics over time for median and maximum days to mitigate findings (calculated with vulnerabilities mitigated since date listed in each row).
