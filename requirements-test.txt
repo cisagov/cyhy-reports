@@ -1,0 +1,2 @@
+# Python 2.7-compatible mock support for unit tests.
+mock>=2.0,<4.0
