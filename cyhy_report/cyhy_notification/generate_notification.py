@@ -43,6 +43,14 @@ from cyhy_report.cyhy_notification._version import __version__
 
 # constants
 SEVERITY_LEVELS = ["Informational", "Low", "Medium", "High", "Critical"]
+# Maximum number of characters Excel can display in a single cell.  Longer
+# values spill onto subsequent rows, which makes findings.csv look malformed.
+# See cisagov/cyhy-reports#149.
+EXCEL_MAX_CELL_CHARACTERS = 32767
+PLUGIN_OUTPUT_TRUNCATION_NOTICE = (
+    "\n\n[This plugin output was truncated by CISA because it exceeds "
+    "{:,} characters]".format(EXCEL_MAX_CELL_CHARACTERS)
+)
 VULNERABILITY_FINDINGS_CSV_FILE = "findings.csv"
 RISKY_SERVICES_CSV_FILE = "potentially-risky-services.csv"
 MUSTACHE_FILE = "notification.mustache"
@@ -130,6 +138,23 @@ POTENTIAL_NMI_SERVICES = [
     "smbdirect",      # SMB
     "telnet",         # Telnet
 ]
+
+def truncate_plugin_output(plugin_output):
+    """Truncate plugin output that is too long for a single spreadsheet cell.
+
+    The returned value, including the appended truncation notice, is no longer
+    than EXCEL_MAX_CELL_CHARACTERS.
+    """
+    if not plugin_output or len(plugin_output) <= EXCEL_MAX_CELL_CHARACTERS:
+        return plugin_output
+
+    return (
+        plugin_output[
+            : EXCEL_MAX_CELL_CHARACTERS - len(PLUGIN_OUTPUT_TRUNCATION_NOTICE)
+        ]
+        + PLUGIN_OUTPUT_TRUNCATION_NOTICE
+    )
+
 
 class NotificationGenerator(object):
     """The class for generating notification documents."""
@@ -513,6 +538,14 @@ class NotificationGenerator(object):
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for ticket in self.__results["tickets"]:
                 if ticket["based_on_vulnscan"]:
+                    plugin_output = ticket.get("plugin_output")
+                    if (
+                        plugin_output
+                        and len(plugin_output) > EXCEL_MAX_CELL_CHARACTERS
+                    ):
+                        # Copy the ticket so the truncation is local to this CSV
+                        ticket = dict(ticket)
+                        ticket["plugin_output"] = truncate_plugin_output(plugin_output)
                     data_writer.writerow(ticket)
 
     def __generate_risky_services_attachment(self):
