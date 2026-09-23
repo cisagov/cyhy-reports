@@ -71,6 +71,14 @@ TICKET_AGE_BUCKET_CUTOFF_DAYS = 30
 ACTIVE_CRITICAL_AGE_CUTOFF_DAYS = 180
 ACTIVE_CRITICAL_AGE_BUCKETS = [(0, 7), (7, 14), (14, 21), (21, 30), (30, 90)]
 FALSE_POSITIVE_EXPIRING_SOON_DAYS = 30
+# Maximum number of characters Excel can display in a single cell.  Longer
+# values spill onto subsequent rows, which makes findings.csv look malformed.
+# See cisagov/cyhy-reports#149.
+EXCEL_MAX_CELL_CHARACTERS = 32767
+PLUGIN_OUTPUT_TRUNCATION_NOTICE = (
+    "\n\n[This plugin output was truncated by CISA because it exceeds "
+    "{:,} characters]".format(EXCEL_MAX_CELL_CHARACTERS)
+)
 STATIC_SERVICES = set(["http", "https", "smtp", "ssh", "domain", "ftp"])
 # Note: CyHy does not ingest any vulnerability scan reports with severity 0
 # ("Informational"), therefore there are no _vulnerability scan_ tickets in
@@ -194,6 +202,22 @@ def SafeDataFrame(data=None, *args, **kwargs):
     if not data:
         data = None
     return DataFrame(data, *args, **kwargs)
+
+
+def truncate_plugin_output(plugin_output):
+    """Truncate plugin output that is too long for a single spreadsheet cell.
+
+    The returned value, including the appended truncation notice, is no longer
+    than EXCEL_MAX_CELL_CHARACTERS."""
+    if not plugin_output or len(plugin_output) <= EXCEL_MAX_CELL_CHARACTERS:
+        return plugin_output
+
+    return (
+        plugin_output[
+            : EXCEL_MAX_CELL_CHARACTERS - len(PLUGIN_OUTPUT_TRUNCATION_NOTICE)
+        ]
+        + PLUGIN_OUTPUT_TRUNCATION_NOTICE
+    )
 
 
 class ReportGenerator(object):
@@ -2000,6 +2024,11 @@ class ReportGenerator(object):
             header_writer.writeheader()
             data_writer = csv.DictWriter(out_file, data_fields, extrasaction="ignore")
             for row in data:
+                plugin_output = row.get("plugin_output")
+                if plugin_output and len(plugin_output) > EXCEL_MAX_CELL_CHARACTERS:
+                    # Copy the ticket so the truncation is local to this CSV
+                    row = dict(row)
+                    row["plugin_output"] = truncate_plugin_output(plugin_output)
                 data_writer.writerow(row)
 
     def __generate_mitigated_vulns_attachment(self):
@@ -2886,7 +2915,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v2.2.0")
+    args = docopt(__doc__, version="v2.2.1")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
