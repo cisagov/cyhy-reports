@@ -2923,7 +2923,7 @@ class ReportGenerator(object):
 
 
 def main():
-    args = docopt(__doc__, version="v2.2.1")
+    args = docopt(__doc__, version="v2.2.2")
     cyhy_db = database.db_from_config(args["--cyhy-section"])
     scan_db = database.db_from_config(args["--scan-section"])
 
