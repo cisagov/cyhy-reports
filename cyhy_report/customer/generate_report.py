@@ -768,11 +768,15 @@ class ReportGenerator(object):
         results = database.run_pipeline_cursor(
             queries.services_attachment_pl([ss0_snapshot_oid]), self.__cyhy_db
         )
-        # Anonymize hostname if requested
+        # Anonymize hostname and owner if requested
         if self.__anonymize:
             for r in results:
                 if r.get("hostname"):
                     r["hostname"] = "host.sample.gov"
+                if r["owner"] == self.__owner:
+                    r["owner"] = "SAMPLE"
+                else:
+                    r["owner"] = "SUB_ORG"
         self.__results["services_attachment"] = results
 
         ss0_host_scans = list(
@@ -810,11 +814,15 @@ class ReportGenerator(object):
         self.__results["hosts_attachment"] = [
             i for i in ss0_host_scans if i["ip_int"] in active_host_ip_ints
         ]
-        # Anonymize hostname if requested
+        # Anonymize hostname and owner if requested
         if self.__anonymize:
             for host in self.__results["hosts_attachment"]:
                 if host.get("hostname"):
                     host["hostname"] = "host.sample.gov"
+                if host["owner"] == self.__owner:
+                    host["owner"] = "SAMPLE"
+                else:
+                    host["owner"] = "SUB_ORG"
 
         results = self.__cyhy_db.snapshots.find(
             {"latest": True},
