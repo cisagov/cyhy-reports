@@ -2855,10 +2855,6 @@ class ReportGenerator(object):
         # escape latex special characters in all values and convert any instances of CVE IDs into hyperlinks to the NVD (NIST)
         self.__latex_escape_structure_make_cve_urls(result)
 
-        # anonymize data if requested
-        # if self.__anonymize:
-        #     result = self.__anonymize_structure(result)
-
         with open(filename, "wb") as out:
             out.write(to_json(result))
 
