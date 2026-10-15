@@ -73,7 +73,7 @@ def generate_stakeholders_csv(db):
 
     CI_sectors = dict()
     for sector in db.RequestDoc.get_by_owner("CRITICAL_INFRASTRUCTURE")["children"]:
-        CI_sectors[sector] = db.RequestDoc.get_by_owner(sector)["children"]
+        CI_sectors[sector] = db.RequestDoc.get_all_descendants(sector)
 
     new_csvfile = StringIO.StringIO()
     wr = csv.writer(new_csvfile)
